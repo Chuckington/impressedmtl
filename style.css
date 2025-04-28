@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: #f7f7f7; /* Couleur d’arrière-plan */
+    font-family: 'Luckiest Guy', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo {
+    width: 500px; /* Ajuste cette taille selon tes besoins */
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: #000000;
+    font-weight: 400;
+}
