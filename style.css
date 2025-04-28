@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
 
 body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    background-color: #f7f7f7; /* Couleur d’arrière-plan */
-    font-family: 'Luckiest Guy', sans-serif;
+    background-color: #f7f7f7;
+    font-family: 'Fredoka', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,11 +19,39 @@ body {
 }
 
 .logo {
-    width: 500px; /* Ajuste cette taille selon tes besoins */
+    width: 200px;
     margin-bottom: 30px;
+    opacity: 0;
+    animation: fadeInLogo 2s ease forwards;
 }
 
 h1 {
     color: #000000;
-    font-weight: 400;
+    font-weight: 700;
+    opacity: 0;
+    animation: fadeInText 2s ease forwards;
+    animation-delay: 0.8s; /* Le texte commence après le logo */
+}
+
+/* Animations */
+@keyframes fadeInLogo {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInText {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
