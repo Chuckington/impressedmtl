@@ -20,28 +20,32 @@
 
     header {
       width: 100%;
-      background-color: #ffffff;
+      background-color: #fff;
       padding: 20px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       position: sticky;
       top: 0;
-      z-index: 999;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     }
 
-    .header-title {
-      text-align: center;
-      flex-grow: 1;
+    .header-left {
+      flex: 0 0 auto;
     }
 
-    .header-title h1 {
+    .header-center {
+      flex: 1 1 auto;
+      text-align: center;
+    }
+
+    .header-center h1 {
       font-size: 1.8rem;
       margin-bottom: 4px;
     }
 
-    .header-title p {
+    .header-center p {
       font-size: 1rem;
       color: #555;
     }
@@ -62,7 +66,7 @@
     }
 
     main {
-      padding: 60px 20px 40px;
+      padding: 100px 20px 60px;
       max-width: 1200px;
       margin: 0 auto;
     }
@@ -121,12 +125,17 @@
 </head>
 <body>
   <header>
-    <a href="index.html" class="download-btn">← Retour à l’accueil</a>
-    <div class="header-title">
+    <div class="header-left">
+      <a href="index.html" class="download-btn">← Retour à l’accueil</a>
+    </div>
+    <div class="header-center">
       <h1>Inventaire Impressed</h1>
       <p>Vêtements disponibles pour personnalisation</p>
     </div>
-    <div style="width: 135px;"></div> <!-- placeholder pour équilibrer -->
+    <div class="header-left" style="opacity: 0;">
+      <!-- Invisible pour équilibrer la ligne -->
+      <span class="download-btn" style="visibility: hidden;">Espace</span>
+    </div>
   </header>
 
   <main>
