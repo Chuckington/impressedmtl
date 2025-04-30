@@ -55,3 +55,33 @@ h1 {
     transform: translateY(0);
   }
 }
+.small-link {
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.small-link a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.small-link a:hover {
+    text-decoration: underline;
+}
+
+.download-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 15px;
+    background-color: #000;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.download-btn:hover {
+    background-color: #444;
+}
