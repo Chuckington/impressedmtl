@@ -7,13 +7,40 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+    }
+
+    header {
+      background-color: #ffffff;
+      padding: 40px 20px 20px 20px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    header p {
+      margin: 10px 0 0;
+      font-size: 1rem;
+      color: #555;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 30px;
-      padding: 20px;
-      width: 100%;
+      padding: 40px 20px;
       max-width: 1100px;
+      margin: 0 auto;
     }
 
     .card {
@@ -31,11 +58,12 @@
     }
 
     .card-image {
-      background-color: #f7f7f7;
+      background-color: #f0f0f0;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
+      height: 220px;
     }
 
     .card-image img {
@@ -61,21 +89,23 @@
     }
 
     .back-btn {
-      margin-top: 40px;
+      display: block;
+      width: fit-content;
+      margin: 40px auto;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>Inventaire Impressed</h1>
-    <p>Voici les vêtements actuellement disponibles pour personnalisation :</p>
+    <p>Voici les vêtements disponibles pour personnalisation :</p>
+  </header>
 
-    <div id="inventaire" class="grid">
-      <!-- Cartes produits insérées ici -->
-    </div>
-
-    <a href="index.html" class="download-btn back-btn">← Retour à l’accueil</a>
+  <div id="inventaire" class="grid">
+    <p>Chargement...</p>
   </div>
+
+  <a href="index.html" class="download-btn back-btn">← Retour à l’accueil</a>
 
   <script>
     const supabase = window.supabase.createClient(
@@ -84,12 +114,16 @@
     );
 
     async function loadInventaire() {
-      const { data, error } = await supabase.from('inventaire').select('*');
+      const { data, error } = await supabase
+        .from('inventaire')
+        .select('*')
+        .order('nom', { ascending: true });
+
       const container = document.getElementById('inventaire');
       container.innerHTML = '';
 
       if (error || !data || data.length === 0) {
-        container.innerHTML = `<p>Erreur ou inventaire vide.</p>`;
+        container.innerHTML = `<p style="text-align: center;">Erreur ou inventaire vide.</p>`;
         return;
       }
 
