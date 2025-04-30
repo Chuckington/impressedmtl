@@ -6,13 +6,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    html, body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    html, body {
       font-family: 'Fredoka', sans-serif;
       background-color: #f7f7f7;
       min-height: 100%;
-      height: auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+    }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+    }
+
+    .header-title h1 {
+      font-size: 1.8rem;
+    }
+
+    .header-title p {
+      font-size: 1rem;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .download-btn {
+      display: inline-block;
+      padding: 10px 14px;
+      background-color: #000;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .download-btn:hover {
+      background-color: #444;
     }
 
     .container {
@@ -86,6 +132,16 @@
   </style>
 </head>
 <body>
+
+  <header>
+    <a href="index.html" class="download-btn">← Retour à l’accueil</a>
+    <div class="header-title">
+      <h1>Inventaire Impressed</h1>
+      <p>Vêtements disponibles pour personnalisation</p>
+    </div>
+    <div style="width: 140px;"></div> <!-- placeholder pour équilibre visuel -->
+  </header>
+
   <div class="container">
     <div id="inventaire" class="grid">
       <p>Chargement...</p>
@@ -133,5 +189,6 @@
 
     loadInventaire();
   </script>
+
 </body>
 </html>
