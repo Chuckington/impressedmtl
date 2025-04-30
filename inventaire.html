@@ -7,9 +7,13 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    body {
       background-color: #f7f7f7;
       font-family: 'Fredoka', sans-serif;
     }
@@ -17,33 +21,27 @@
     header {
       width: 100%;
       background-color: #ffffff;
-      padding: 30px 40px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      padding: 20px 40px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       position: sticky;
       top: 0;
-      z-index: 100;
-      box-sizing: border-box;
+      z-index: 999;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     }
 
-    .header-left {
-      flex: 1;
-    }
-
-    .header-center {
-      flex: 2;
+    .header-title {
       text-align: center;
+      flex-grow: 1;
     }
 
-    .header-center h1 {
-      margin: 0;
-      font-size: 2rem;
+    .header-title h1 {
+      font-size: 1.8rem;
+      margin-bottom: 4px;
     }
 
-    .header-center p {
-      margin: 8px 0 0;
+    .header-title p {
       font-size: 1rem;
       color: #555;
     }
@@ -63,14 +61,16 @@
       background-color: #444;
     }
 
+    main {
+      padding: 60px 20px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 30px;
-      padding: 80px 20px 60px;
-      max-width: 1200px;
-      margin: 0 auto;
-      box-sizing: border-box;
     }
 
     .card {
@@ -103,7 +103,7 @@
     }
 
     .card-content {
-      padding: 15px 20px 20px 20px;
+      padding: 15px 20px 20px;
       text-align: left;
     }
 
@@ -121,14 +121,12 @@
 </head>
 <body>
   <header>
-    <div class="header-left">
-      <a href="index.html" class="download-btn">← Retour à l’accueil</a>
-    </div>
-    <div class="header-center">
+    <a href="index.html" class="download-btn">← Retour à l’accueil</a>
+    <div class="header-title">
       <h1>Inventaire Impressed</h1>
       <p>Vêtements disponibles pour personnalisation</p>
     </div>
-    <div class="header-left"><!-- vide pour équilibre visuel --></div>
+    <div style="width: 135px;"></div> <!-- placeholder pour équilibrer -->
   </header>
 
   <main>
