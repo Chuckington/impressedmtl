@@ -4,49 +4,49 @@
   <meta charset="UTF-8" />
   <title>Inventaire Impressed</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      box-sizing: border-box;
+    html, body {
       margin: 0;
       padding: 0;
-    }
-
-    body {
       font-family: 'Fredoka', sans-serif;
       background-color: #f7f7f7;
+      min-height: 100%;
+      height: auto;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
       padding: 40px 20px;
-      min-height: 100vh;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 40px;
-      max-width: 1200px;
-      margin: 0 auto;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1000px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
       .grid {
         grid-template-columns: 1fr;
       }
     }
 
     .card {
-      background-color: #ffffff;
-      border-radius: 20px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.06);
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform 0.2s ease;
-      height: 500px;
-    }
-
-    .card:hover {
-      transform: scale(1.02);
+      height: 100%;
     }
 
     .card-image {
@@ -55,11 +55,11 @@
       justify-content: center;
       align-items: center;
       padding: 30px;
-      height: 280px;
+      height: 260px;
     }
 
     .card-image img {
-      max-height: 220px;
+      max-height: 200px;
       max-width: 100%;
       object-fit: contain;
     }
@@ -67,7 +67,7 @@
     .card-content {
       padding: 20px;
       text-align: left;
-      flex: 1;
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -75,20 +75,21 @@
 
     .card-content h3 {
       margin: 0 0 10px;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
     }
 
     .card-content p {
       margin: 5px 0;
       font-size: 1rem;
-      color: #333;
+      color: #444;
     }
   </style>
 </head>
 <body>
-
-  <div id="inventaire" class="grid">
-    <p>Chargement...</p>
+  <div class="container">
+    <div id="inventaire" class="grid">
+      <p>Chargement...</p>
+    </div>
   </div>
 
   <script>
@@ -132,6 +133,5 @@
 
     loadInventaire();
   </script>
-
 </body>
 </html>
