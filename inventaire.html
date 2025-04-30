@@ -11,34 +11,61 @@
       margin: 0;
       padding: 0;
       background-color: #f7f7f7;
+      font-family: 'Fredoka', sans-serif;
     }
 
     header {
       background-color: #ffffff;
-      padding: 40px 20px 20px 20px;
-      text-align: center;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      padding: 20px 30px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
+    .header-left {
+      flex: 1;
     }
 
-    header p {
-      margin: 10px 0 0;
+    .header-center {
+      flex: 1;
+      text-align: center;
+    }
+
+    .header-center h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .header-center p {
+      margin: 5px 0 0;
       font-size: 1rem;
       color: #555;
+    }
+
+    .download-btn {
+      display: inline-block;
+      padding: 8px 12px;
+      background-color: #000;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .download-btn:hover {
+      background-color: #444;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 30px;
-      padding: 40px 20px;
+      padding: 60px 20px;
       max-width: 1100px;
       margin: 0 auto;
     }
@@ -87,25 +114,23 @@
       font-size: 0.9rem;
       color: #333;
     }
-
-    .back-btn {
-      display: block;
-      width: fit-content;
-      margin: 40px auto;
-    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Inventaire Impressed</h1>
-    <p>Voici les vêtements disponibles pour personnalisation :</p>
+    <div class="header-left">
+      <a href="index.html" class="download-btn">← Retour à l’accueil</a>
+    </div>
+    <div class="header-center">
+      <h1>Inventaire Impressed</h1>
+      <p>Vêtements disponibles pour personnalisation</p>
+    </div>
+    <div class="header-left"><!-- vide pour équilibrer le centre --></div>
   </header>
 
   <div id="inventaire" class="grid">
     <p>Chargement...</p>
   </div>
-
-  <a href="index.html" class="download-btn back-btn">← Retour à l’accueil</a>
 
   <script>
     const supabase = window.supabase.createClient(
