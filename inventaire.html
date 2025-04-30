@@ -14,40 +14,36 @@
     }
 
     body {
-      background-color: #f7f7f7;
       font-family: 'Fredoka', sans-serif;
+      background-color: #f7f7f7;
     }
 
     header {
-      width: 100%;
-      background-color: #fff;
-      padding: 20px 40px;
       position: sticky;
       top: 0;
-      z-index: 1000;
+      background-color: white;
+      width: 100%;
+      padding: 20px 30px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
     }
 
-    .header-left {
-      flex: 0 0 auto;
-    }
-
-    .header-center {
-      flex: 1 1 auto;
+    .header-title {
       text-align: center;
+      flex: 1;
     }
 
-    .header-center h1 {
+    .header-title h1 {
       font-size: 1.8rem;
-      margin-bottom: 4px;
     }
 
-    .header-center p {
+    .header-title p {
       font-size: 1rem;
       color: #555;
+      margin-top: 4px;
     }
 
     .download-btn {
@@ -66,15 +62,21 @@
     }
 
     main {
-      padding: 100px 20px 60px;
       max-width: 1200px;
       margin: 0 auto;
+      padding: 40px 20px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 30px;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .card {
@@ -124,18 +126,14 @@
   </style>
 </head>
 <body>
+
   <header>
-    <div class="header-left">
-      <a href="index.html" class="download-btn">← Retour à l’accueil</a>
-    </div>
-    <div class="header-center">
+    <a href="index.html" class="download-btn">← Retour à l’accueil</a>
+    <div class="header-title">
       <h1>Inventaire Impressed</h1>
       <p>Vêtements disponibles pour personnalisation</p>
     </div>
-    <div class="header-left" style="opacity: 0;">
-      <!-- Invisible pour équilibrer la ligne -->
-      <span class="download-btn" style="visibility: hidden;">Espace</span>
-    </div>
+    <div style="width: 140px;"></div>
   </header>
 
   <main>
@@ -185,5 +183,6 @@
 
     loadInventaire();
   </script>
+
 </body>
 </html>
