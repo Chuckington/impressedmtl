@@ -2,46 +2,89 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Personnalisations</title>
+  <title>Inventaire Impressed</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
       font-family: 'Fredoka', sans-serif;
       background-color: #f7f7f7;
-      padding: 40px 20px;
-      min-height: 100vh;
+      min-height: 100%;
     }
+
+    header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+    }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+    }
+
+    .header-title h1 {
+      font-size: 1.8rem;
+    }
+
+    .header-title p {
+      font-size: 1rem;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .download-btn {
+      display: inline-block;
+      padding: 10px 14px;
+      background-color: #000;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .download-btn:hover {
+      background-color: #444;
+    }
+
     .container {
       max-width: 1300px;
       margin: 0 auto;
+      padding: 40px 20px;
     }
-    .back-link {
-      display: inline-block;
-      margin-bottom: 30px;
-      text-decoration: none;
-      background-color: #000;
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 8px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 2rem;
-    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 30px;
+      gap: 40px;
     }
+
     @media (max-width: 1000px) {
-      .grid { grid-template-columns: repeat(2, 1fr); }
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
+
     @media (max-width: 600px) {
-      .grid { grid-template-columns: 1fr; }
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
+
     .card {
       background-color: white;
       border-radius: 16px;
@@ -49,47 +92,62 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.4s ease forwards;
+      cursor: pointer;
+      transition: transform 0.2s ease;
     }
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+
+    .card:hover {
+      transform: scale(1.02);
     }
+
     .card-image {
       background-color: #f0f0f0;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 30px;
-      height: 220px;
+      height: 260px;
     }
+
     .card-image img {
-      max-height: 160px;
+      max-height: 200px;
+      max-width: 100%;
       object-fit: contain;
     }
+
     .card-content {
       padding: 20px;
+      text-align: left;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
+
     .card-content h3 {
-      margin-bottom: 10px;
+      margin: 0 0 10px;
       font-size: 1.2rem;
     }
+
     .card-content p {
       margin: 5px 0;
-      font-size: 0.95rem;
-      color: #333;
+      font-size: 1rem;
+      color: #444;
     }
   </style>
 </head>
 <body>
+  <header>
+    <a href="index.html" class="download-btn">← Retour à l’accueil</a>
+    <div class="header-title">
+      <h1>Inventaire Impressed</h1>
+      <p>Vêtements disponibles pour personnalisation</p>
+    </div>
+    <div style="width: 140px;"></div>
+  </header>
+
   <div class="container">
-    <a href="inventaire.html" class="back-link">← Retour à l'inventaire</a>
-    <h1 id="page-title">Personnalisations</h1>
-    <div id="custom-list" class="grid">
+    <div id="inventaire" class="grid">
       <p>Chargement...</p>
     </div>
   </div>
@@ -100,56 +158,54 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    const params = new URLSearchParams(window.location.search);
-    const tableName = params.get('table');
-
-    const nomsPropres = {
-      inventairecrewneck: "Crewneck",
-      inventairehoodie: "Hoodie",
-      inventairepolosport: "Polo Sport",
-      inventairesousverre: "Sous-verre sublimé (4 pack)",
-      inventairetablier: "Tablier",
-      inventairetotebag: "Tote Bag",
-      inventairetshirtcroptop: "T-Shirt Crop top",
-      inventairetshirtdebase: "T-Shirt de base",
-      inventairetshirtlongsleeve: "Long Sleeve",
-      inventairetshirtpremium: "T-Shirt Premium - Sport",
-      inventairetuque: "Tuque",
-      inventaireveste: "Veste",
-      inventairetapisdesouris: "Tapis de souris"
+    const correspondanceTables = {
+      'crewneck': 'inventairecrewneck',
+      'hoodie': 'inventairehoodie',
+      'polo sport': 'inventairepolosport',
+      'sous-verre sublimé (4 pack)': 'inventairesousverre',
+      'tablier': 'inventairetablier',
+      'tote bag': 'inventairetotebag',
+      't-shirt crop top': 'inventairetshirtcroptop',
+      't-shirt de base': 'inventairetshirtdebase',
+      'long sleeve': 'inventairetshirtlongsleeve',
+      't-shirt premium - sport': 'inventairetshirtpremium',
+      'tuque': 'inventairetuque',
+      'veste': 'inventaireveste',
+      'tapis de souris': 'inventairetapisdesouris'
     };
 
-    async function loadData() {
-      if (!tableName || !nomsPropres[tableName]) {
-        document.getElementById('custom-list').innerHTML = '<p>Erreur : produit inconnu.</p>';
-        document.getElementById('page-title').textContent = 'Erreur';
-        return;
-      }
+    async function loadInventaire() {
+      const { data, error } = await supabase
+        .from('inventaire')
+        .select('*')
+        .order('nom', { ascending: true });
 
-      document.getElementById('page-title').textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
-
-      const { data, error } = await supabase.from(tableName).select('*').order('nom', { ascending: true });
-      const container = document.getElementById('custom-list');
+      const container = document.getElementById('inventaire');
       container.innerHTML = '';
 
       if (error || !data || data.length === 0) {
-        container.innerHTML = '<p>Erreur ou personnalisations indisponibles.</p>';
+        container.innerHTML = `<p style="text-align: center;">Erreur ou inventaire vide.</p>`;
         return;
       }
 
-      data.forEach((item, index) => {
-        const card = document.createElement('div');
+      data.forEach(item => {
+        const nomNettoye = item.nom.trim().toLowerCase();
+        const tableTarget = correspondanceTables[nomNettoye];
+        const card = document.createElement('a');
+
+        if (!tableTarget) return;
+
+        card.href = `produit.html?table=${tableTarget}`;
         card.classList.add('card');
-        card.style.animationDelay = `${index * 0.05}s`;
 
         card.innerHTML = `
           <div class="card-image">
-            <img src="${item.image_url}" alt="${item.nom}" />
+            <img src="${item.image_url}" alt="Image de ${item.nom}">
           </div>
           <div class="card-content">
             <h3>${item.nom}</h3>
-            <p><strong>Personnalisation :</strong> ${item.personnalisation}</p>
-            <p><strong>Prix :</strong> ${item.prix}$</p>
+            <p><strong>Modèle:</strong> ${item.modèle || 'Non spécifié'}</p>
+            <p><strong>Prix:</strong> ${item.prix}$</p>
           </div>
         `;
 
@@ -157,7 +213,7 @@
       });
     }
 
-    loadData();
+    loadInventaire();
   </script>
 </body>
 </html>
