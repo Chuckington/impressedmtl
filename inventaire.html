@@ -92,7 +92,12 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      height: 100%;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
     }
 
     .card-image {
@@ -132,14 +137,13 @@
   </style>
 </head>
 <body>
-
   <header>
     <a href="index.html" class="download-btn">← Retour à l’accueil</a>
     <div class="header-title">
       <h1>Inventaire Impressed</h1>
       <p>Vêtements disponibles pour personnalisation</p>
     </div>
-    <div style="width: 140px;"></div> <!-- placeholder pour équilibre visuel -->
+    <div style="width: 140px;"></div>
   </header>
 
   <div class="container">
@@ -169,7 +173,10 @@
       }
 
       data.forEach(item => {
-        const card = document.createElement('div');
+        const tableTarget = 'inventaire' + item.nom.toLowerCase().replace(/\s/g, '').replace(/[éèêë]/g, 'e');
+
+        const card = document.createElement('a');
+        card.href = `produit.html?table=${tableTarget}`;
         card.classList.add('card');
 
         card.innerHTML = `
@@ -189,6 +196,5 @@
 
     loadInventaire();
   </script>
-
 </body>
 </html>
