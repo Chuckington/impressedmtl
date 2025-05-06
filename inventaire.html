@@ -158,6 +158,22 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
+    const correspondanceTables = {
+      'Crewneck': 'inventairecrewneck',
+      'Hoodie': 'inventairehoodie',
+      'Polo Sport': 'inventairepolosport',
+      'Sous-verre sublimé (4 pack)': 'inventairesousverre',
+      'Tablier': 'inventairetablier',
+      'Tote Bag': 'inventairetotebag',
+      'T-Shirt Crop top': 'inventairetshirtcroptop',
+      'T-Shirt de base': 'inventairetshirtdebase',
+      'Long Sleeve': 'inventairetshirtlongsleeve',
+      'T-Shirt Premium - Sport': 'inventairetshirtpremium',
+      'Tuque': 'inventairetuque',
+      'Veste': 'inventaireveste',
+      'Tapis de souris': 'inventairetapisdesouris'
+    };
+
     async function loadInventaire() {
       const { data, error } = await supabase
         .from('inventaire')
@@ -173,15 +189,11 @@
       }
 
       data.forEach(item => {
-        const normalizeNom = item.nom
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[̀-ͯ]/g, '')
-          .replace(/[^a-z0-9]/g, '');
-
-        const tableTarget = `inventaire${normalizeNom}`;
-
+        const tableTarget = correspondanceTables[item.nom];
         const card = document.createElement('a');
+
+        if (!tableTarget) return;
+
         card.href = `produit.html?table=${tableTarget}`;
         card.classList.add('card');
 
