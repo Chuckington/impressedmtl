@@ -106,54 +106,58 @@
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
-      inventairepolosport: "Polo sport",
-      inventairesousverre: "Sous-verre",
+      inventairepolosport: "Polo Sport",
+      inventairesousverre: "Sous-verre sublimé (4 pack)",
       inventairetablier: "Tablier",
-      inventairetotebag: "Tote bag",
-      inventairetshirtcroptop: "T-shirt crop top",
-      inventairetshirtdebase: "T-shirt de base",
-      inventairetshirtlongsleeve: "T-shirt manches longues",
-      inventairetshirtpremium: "T-shirt premium",
+      inventairetotebag: "Tote Bag",
+      inventairetshirtcroptop: "T-Shirt Crop top",
+      inventairetshirtdebase: "T-Shirt de base",
+      inventairetshirtlongsleeve: "Long Sleeve",
+      inventairetshirtpremium: "T-Shirt Premium - Sport",
       inventairetuque: "Tuque",
       inventaireveste: "Veste"
     };
 
-    if (!tableName || !nomsPropres[tableName]) {
-      document.getElementById('custom-list').innerHTML = '<p>Erreur : produit inconnu.</p>';
-      document.getElementById('page-title').textContent = 'Erreur';
-    } else {
+    async function loadData() {
+      if (!tableName || !nomsPropres[tableName]) {
+        document.getElementById('custom-list').innerHTML = '<p>Erreur : produit inconnu.</p>';
+        document.getElementById('page-title').textContent = 'Erreur';
+        return;
+      }
+
       document.getElementById('page-title').textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
-      supabase.from(tableName).select('*').order('nom', { ascending: true })
-        .then(({ data, error }) => {
-          const container = document.getElementById('custom-list');
-          container.innerHTML = '';
+      const { data, error } = await supabase.from(tableName).select('*').order('nom', { ascending: true });
 
-          if (error || !data || data.length === 0) {
-            container.innerHTML = '<p>Erreur ou personnalisations indisponibles.</p>';
-            return;
-          }
+      const container = document.getElementById('custom-list');
+      container.innerHTML = '';
 
-          data.forEach((item, index) => {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.style.animationDelay = `${index * 0.05}s`;
+      if (error || !data || data.length === 0) {
+        container.innerHTML = '<p>Erreur ou personnalisations indisponibles.</p>';
+        return;
+      }
 
-            card.innerHTML = `
-              <div class="card-image">
-                <img src="${item.image_url}" alt="${item.nom}" />
-              </div>
-              <div class="card-content">
-                <h3>${item.nom}</h3>
-                <p><strong>Personnalisation :</strong> ${item.personnalisation}</p>
-                <p><strong>Prix :</strong> ${item.prix}$</p>
-              </div>
-            `;
+      data.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.style.animationDelay = `${index * 0.05}s`;
 
-            container.appendChild(card);
-          });
-        });
+        card.innerHTML = `
+          <div class="card-image">
+            <img src="${item.image_url}" alt="${item.nom}" />
+          </div>
+          <div class="card-content">
+            <h3>${item.nom}</h3>
+            <p><strong>Personnalisation :</strong> ${item.personnalisation}</p>
+            <p><strong>Prix :</strong> ${item.prix}$</p>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
     }
+
+    loadData();
   </script>
 </body>
 </html>
