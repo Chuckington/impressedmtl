@@ -11,6 +11,7 @@
       font-family: 'Fredoka', sans-serif;
       background-color: #f7f7f7;
       padding: 40px 20px;
+      min-height: 100vh;
     }
     .container {
       max-width: 1300px;
@@ -48,6 +49,15 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.4s ease forwards;
+    }
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     .card-image {
       background-color: #f0f0f0;
@@ -77,7 +87,7 @@
 </head>
 <body>
   <div class="container">
-    <a href="index.html" class="back-link">← Retour à l'accueil</a>
+    <a href="inventaire.html" class="back-link">← Retour à l'inventaire</a>
     <h1 id="page-title">Personnalisations</h1>
     <div id="custom-list" class="grid">
       <p>Chargement...</p>
@@ -93,10 +103,26 @@
     const params = new URLSearchParams(window.location.search);
     const tableName = params.get('table');
 
-    if (!tableName) {
-      document.getElementById('custom-list').innerHTML = '<p>Erreur : aucun produit choisi.</p>';
+    const nomsPropres = {
+      inventairecrewneck: "Crewneck",
+      inventairehoodie: "Hoodie",
+      inventairepolosport: "Polo sport",
+      inventairesousverre: "Sous-verre",
+      inventairetablier: "Tablier",
+      inventairetotebag: "Tote bag",
+      inventairetshirtcroptop: "T-shirt crop top",
+      inventairetshirtdebase: "T-shirt de base",
+      inventairetshirtlongsleeve: "T-shirt manches longues",
+      inventairetshirtpremium: "T-shirt premium",
+      inventairetuque: "Tuque",
+      inventaireveste: "Veste"
+    };
+
+    if (!tableName || !nomsPropres[tableName]) {
+      document.getElementById('custom-list').innerHTML = '<p>Erreur : produit inconnu.</p>';
+      document.getElementById('page-title').textContent = 'Erreur';
     } else {
-      document.getElementById('page-title').textContent = `Personnalisations pour ${tableName.replace('inventaire', '')}`;
+      document.getElementById('page-title').textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
       supabase.from(tableName).select('*').order('nom', { ascending: true })
         .then(({ data, error }) => {
@@ -108,9 +134,10 @@
             return;
           }
 
-          data.forEach(item => {
+          data.forEach((item, index) => {
             const card = document.createElement('div');
             card.classList.add('card');
+            card.style.animationDelay = `${index * 0.05}s`;
 
             card.innerHTML = `
               <div class="card-image">
