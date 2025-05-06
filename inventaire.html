@@ -173,7 +173,13 @@
       }
 
       data.forEach(item => {
-        const tableTarget = 'inventaire' + item.nom.toLowerCase().replace(/\s/g, '').replace(/[éèêë]/g, 'e');
+        const normalizeNom = item.nom
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[̀-ͯ]/g, '')
+          .replace(/[^a-z0-9]/g, '');
+
+        const tableTarget = `inventaire${normalizeNom}`;
 
         const card = document.createElement('a');
         card.href = `produit.html?table=${tableTarget}`;
