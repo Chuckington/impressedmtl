@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Contact — Impressed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
+  <script>
+    // Initialise EmailJS avec ta Public Key
+    emailjs.init('dBR9p8QzU7CsEjjIn');
+  </script>
+  <style>
+    .container { max-width: 600px; margin: 60px auto; padding: 0 20px; }
+    form { display: flex; flex-direction: column; gap: 16px; }
+    label { font-weight: 500; display: flex; flex-direction: column; }
+    input, textarea {
+      width: 100%; padding: 8px; border: 1px solid #ccc;
+      border-radius: 4px; font-family: inherit;
+    }
+    button {
+      padding: 12px; background-color: #000; color: #fff;
+      border: none; border-radius: 5px; cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover { background-color: #444; }
+    .back-link { display: inline-block; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <a href="index.html" class="download-btn back-link">← Retour à l'accueil</a>
+    <h1>Prendre rendez-vous</h1>
+
+    <form id="contact-form">
+      <label>Nom
+        <input type="text" name="Nom" required />
+      </label>
+      <label>Courriel
+        <input type="email" name="Courriel" required />
+      </label>
+      <label>Téléphone
+        <input type="tel" name="Téléphone" required />
+      </label>
+      <label>Message
+        <textarea name="Message" rows="4" placeholder="Votre message…"></textarea>
+      </label>
+      <button type="submit">Envoyer</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      emailjs.sendForm(
+        'service_jrtganq',       // ton service_id
+        'template_4udrpwp',      // ton template_id
+        this,                    // le formulaire
+        'dBR9p8QzU7CsEjjIn'      // ta public key
+      )
+      .then(() => {
+        alert('Merci ! Votre demande a bien été envoyée.');
+        this.reset();
+      }, (err) => {
+        console.error(err);
+        alert('Oups… Une erreur est survenue. Réessayez plus tard.');
+      });
+    });
+  </script>
+
+</body>
+</html>
