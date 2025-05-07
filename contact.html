@@ -24,6 +24,13 @@
       margin: 0 auto;
       padding: 0 20px;
     }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2rem;
+      /* Désactivation des animations */
+      animation: none !important;
+    }
     .back-link {
       display: inline-block;
       margin-bottom: 30px;
@@ -32,14 +39,8 @@
       color: #fff;
       padding: 10px 16px;
       border-radius: 8px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 2rem;
-      /* animation removed for instant display */
-      opacity: 1;
-      transform: none;
+      /* Désactivation des animations */
+      animation: none !important;
     }
     form {
       display: flex;
@@ -70,6 +71,8 @@
       cursor: pointer;
       font-size: 1rem;
       transition: background-color 0.2s ease;
+      /* Désactivation des animations */
+      animation: none !important;
     }
     button:hover { background-color: #444; }
   </style>
@@ -90,7 +93,7 @@
       </label>
       <label>
         Téléphone
-        <input type="tel" name="Téléphone" required />
+        <input type="tel" name="Telephone" required placeholder="514-000-0000" />
       </label>
       <label>
         Message
