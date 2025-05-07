@@ -8,53 +8,39 @@
   <!-- EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
   <script>
+    // Initialise EmailJS avec ta Public Key
     emailjs.init('dBR9p8QzU7CsEjjIn');
   </script>
   <style>
-    .container {
-      max-width: 600px;
-      margin: 60px auto;
-      padding: 0 20px;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; padding: 40px 20px; min-height: 100vh; }
+    .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
+    .back-link { display: inline-block; margin-bottom: 30px; }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2rem;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease forwards;
+      animation-delay: 0.1s;
     }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    label {
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-      font-size: 1.1rem;
-    }
+    form { display: flex; flex-direction: column; gap: 20px; }
+    label { font-weight: 500; display: flex; flex-direction: column; font-size: 1.1rem; }
     input, textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-family: inherit;
+      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit;
     }
     textarea { min-height: 120px; }
     button {
-      padding: 14px;
-      background-color: #000;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.2s ease;
+      padding: 14px; background-color: #000; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s ease;
     }
     button:hover { background-color: #444; }
-    .back-link {
-      display: inline-block;
-      margin-bottom: 30px;
-    }
   </style>
 </head>
 <body>
-
   <div class="container">
     <a href="index.html" class="download-btn back-link">← Retour à l'accueil</a>
     <h1>Prendre rendez-vous</h1>
@@ -70,7 +56,7 @@
       </label>
       <label>
         Téléphone
-        <input type="tel" name="Téléphone" required />
+        <input type="tel" name="Telephone" required />
       </label>
       <label>
         Message
@@ -84,10 +70,10 @@
     document.getElementById('contact-form').addEventListener('submit', function(e) {
       e.preventDefault();
       emailjs.sendForm(
-        'service_jrtganq',
-        'template_4udrpwp',
-        this,
-        'dBR9p8QzU7CsEjjIn'
+        'service_jrtganq',   // ton service_id
+        'template_4udrpwp',  // ton template_id
+        this,                // le formulaire
+        'dBR9p8QzU7CsEjjIn'  // ta public key
       )
       .then(() => {
         alert('Merci ! Votre demande a bien été envoyée.');
@@ -98,6 +84,5 @@
       });
     });
   </script>
-
 </body>
 </html>
