@@ -13,36 +13,70 @@
   </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; padding: 40px 20px; min-height: 100vh; }
-    .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
-    .back-link { display: inline-block; margin-bottom: 30px; }
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background-color: #f7f7f7;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 30px;
+      text-decoration: none;
+      background-color: #000;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+    }
     h1 {
       text-align: center;
       margin-bottom: 40px;
       font-size: 2rem;
-      opacity: 0;
-      animation: fadeInUp 0.5s ease forwards;
-      animation-delay: 0.1s;
+      /* animation removed for instant display */
+      opacity: 1;
+      transform: none;
     }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
-    form { display: flex; flex-direction: column; gap: 20px; }
-    label { font-weight: 500; display: flex; flex-direction: column; font-size: 1.1rem; }
+    label {
+      font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      font-size: 1.1rem;
+    }
     input, textarea {
-      width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit;
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
     }
     textarea { min-height: 120px; }
     button {
-      padding: 14px; background-color: #000; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s ease;
+      padding: 14px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s ease;
     }
     button:hover { background-color: #444; }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="index.html" class="download-btn back-link">← Retour à l'accueil</a>
+    <a href="index.html" class="back-link">← Retour à l'accueil</a>
     <h1>Prendre rendez-vous</h1>
 
     <form id="contact-form">
@@ -56,7 +90,7 @@
       </label>
       <label>
         Téléphone
-        <input type="tel" name="Telephone" required />
+        <input type="tel" name="Téléphone" required placeholder="514-000-0000" />
       </label>
       <label>
         Message
@@ -72,7 +106,7 @@
       emailjs.sendForm(
         'service_jrtganq',   // ton service_id
         'template_4udrpwp',  // ton template_id
-        this,                // le formulaire
+        this,
         'dBR9p8QzU7CsEjjIn'  // ta public key
       )
       .then(() => {
