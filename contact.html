@@ -28,8 +28,8 @@
       text-align: center;
       margin-bottom: 40px;
       font-size: 2rem;
-      /* Désactivation des animations */
-      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
     }
     .back-link {
       display: inline-block;
@@ -39,8 +39,8 @@
       color: #fff;
       padding: 10px 16px;
       border-radius: 8px;
-      /* Désactivation des animations */
-      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
     }
     form {
       display: flex;
@@ -60,6 +60,8 @@
       border-radius: 6px;
       font-size: 1rem;
       font-family: inherit;
+      opacity: 1 !important;
+      transform: none !important;
     }
     textarea { min-height: 120px; }
     button {
@@ -71,8 +73,8 @@
       cursor: pointer;
       font-size: 1rem;
       transition: background-color 0.2s ease;
-      /* Désactivation des animations */
-      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
     }
     button:hover { background-color: #444; }
   </style>
@@ -93,7 +95,7 @@
       </label>
       <label>
         Téléphone
-        <input type="tel" name="Telephone" required placeholder="514-000-0000" />
+        <input type="tel" name="Telephone" required />
       </label>
       <label>
         Message
