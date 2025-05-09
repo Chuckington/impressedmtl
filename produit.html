@@ -8,92 +8,48 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Fredoka', sans-serif;
-      background-color: #f7f7f7;
-      padding: 40px 20px;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-    }
-    .back-link {
-      display: inline-block;
-      margin-bottom: 30px;
-      text-decoration: none;
-      background-color: #000;
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 8px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 2rem;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 30px;
-    }
+    body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; padding: 40px 20px; min-height: 100vh; }
+    .container { max-width: 1300px; margin: 0 auto; }
+    .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; background-color: #000; color: #fff; padding: 10px 16px; border-radius: 8px; }
+    h1 { text-align: center; margin-bottom: 40px; font-size: 2rem; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
     @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-    .card {
-      background-color: white;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.4s ease forwards;
-    }
-    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-    .card-image {
-      background-color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 30px;
-      height: 220px;
-    }
+    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; padding-bottom: 10px; }
+    .card-image { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; padding: 30px; height: 220px; }
     .card-image img { max-height: 160px; object-fit: contain; }
-    .card-content { padding: 20px; }
+    .card-content { padding: 20px; flex-grow: 1; }
     .card-content h3 { margin-bottom: 10px; font-size: 1.2rem; }
     .card-content p { margin: 5px 0; font-size: 0.95rem; color: #333; }
+    .personalize { display: flex; align-items: center; margin-top: 10px; }
+    .personalize input { margin-right: 8px; }
+    #order-summary { background: #fff; padding: 20px; box-shadow: 0 -2px 6px rgba(0,0,0,0.05); margin-top: 40px; position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+    #order-summary label { display: flex; align-items: center; }
+    #quantity { width: 60px; margin-left: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    #total-price { font-weight: bold; font-size: 1.2rem; }
   </style>
 </head>
 <body>
   <div class="container">
     <a href="inventaire.html" class="back-link">← Retour à l'inventaire</a>
     <h1 id="page-title">Chargement...</h1>
-    <div id="custom-list" class="grid">
-      <p>Chargement...</p>
+    <div id="custom-list" class="grid"><p>Chargement...</p></div>
+    <div id="order-summary">
+      <div>
+        <label>Quantité: <input type="number" id="quantity" value="1" min="1" /></label>
+      </div>
+      <div>Total: <span id="total-price">0.00</span> $</div>
     </div>
   </div>
-
   <script>
-    // ----------------
-    // Configuration
-    // ----------------
     const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
-    // Crée le client Supabase
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // -------------
-    // Récupère param 'table'
-    // -------------
     const params = new URLSearchParams(window.location.search);
     let tableName = params.get('table');
     tableName = tableName ? tableName.trim().toLowerCase() : null;
-    console.log('Table demandée :', tableName);
 
-    // -------------
-    // Mapping noms propres
-    // -------------
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
@@ -110,56 +66,60 @@
       inventairetapisdesouris: "Tapis de souris"
     };
 
-    // -------------
-    // Chargement des données
-    // -------------
+    let basePrice = 0;
     async function loadData() {
       const titleEl = document.getElementById('page-title');
       const container = document.getElementById('custom-list');
+      const qtyInput = document.getElementById('quantity');
+      const totalEl = document.getElementById('total-price');
 
       if (!tableName || !nomsPropres[tableName]) {
-        console.error('Table inconnue :', tableName);
         titleEl.textContent = 'Erreur';
         container.innerHTML = '<p>Produit inconnu.</p>';
         return;
       }
-
-      // Affiche le titre propre
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
-      container.innerHTML = '<p>Chargement...</p>';
 
-      try {
-        const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
-        console.log('Données reçues :', data, 'Erreur :', error);
+      // Fetch base price from main inventory
+      const { data: baseData, error: baseErr } = await supa.from('inventaire')
+        .select('prix').eq('nom', nomsPropres[tableName]).single();
+      if (baseErr || !baseData) { console.error('Erreur base price', baseErr); return; }
+      basePrice = parseFloat(baseData.prix);
 
-        if (error) throw error;
-        if (!data || data.length === 0) {
-          container.innerHTML = '<p>Aucune personnalisation disponible.</p>';
-          return;
-        }
+      // Fetch personalizations
+      const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
+      if (error) { console.error(error); container.innerHTML = '<p>Erreur de chargement.</p>'; return; }
+      if (!data || data.length === 0) { container.innerHTML = '<p>Aucune personnalisation disponible.</p>'; return; }
 
-        // Vide le loader
-        container.innerHTML = '';
-        data.forEach((item, idx) => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.style.animationDelay = `${idx * 0.05}s`;
-          card.innerHTML = `
-            <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
-            <div class="card-content">
-              <h3>${item.nom}</h3>
-              <p><strong>Personnalisations:</strong> ${item.personnalisation}</p>
-              <p><strong>Prix:</strong> ${item.prix}$</p>
+      container.innerHTML = '';
+      data.forEach((item, idx) => {
+        const card = document.createElement('div'); card.className = 'card';
+        card.innerHTML = `
+          <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
+          <div class="card-content">
+            <h3>${item.nom}</h3>
+            <p><strong>Prix:</strong> ${item.prix}$</p>
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" />
+              <label for="opt-${item.id}">Ajouter personnalisation</label>
             </div>
-          `;
-          container.appendChild(card);
-        });
-      } catch (err) {
-        console.error('Erreur chargement Supabase:', err);
-        container.innerHTML = '<p>Erreur de chargement.</p>';
-      }
-    }
+          </div>`;
+        container.appendChild(card);
+      });
 
+      function updateTotal() {
+        const qty = parseInt(qtyInput.value) || 1;
+        const selected = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+          .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
+        const total = (basePrice + selected) * qty;
+        totalEl.textContent = total.toFixed(2);
+      }
+
+      // Init total
+      updateTotal();
+      qtyInput.addEventListener('input', updateTotal);
+      container.addEventListener('change', e => { if (e.target.classList.contains('personalization-checkbox')) updateTotal(); });
+    }
     loadData();
   </script>
 </body>
