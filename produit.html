@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Personnalisations</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Supabase JS via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,9 +50,7 @@
       transform: translateY(20px);
       animation: fadeInUp 0.4s ease forwards;
     }
-    @keyframes fadeInUp {
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
     .card-image {
       background-color: #f0f0f0;
       display: flex;
@@ -69,65 +68,96 @@
 <body>
   <div class="container">
     <a href="inventaire.html" class="back-link">← Retour à l'inventaire</a>
-    <h1 id="page-title">Personnalisations</h1>
+    <h1 id="page-title">Chargement...</h1>
     <div id="custom-list" class="grid">
       <p>Chargement...</p>
     </div>
   </div>
 
   <script>
-    const supabase = supabase.createClient(
-      'https://vwvvbtcatamszncjuiso.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-    );
+    // ----------------
+    // Configuration
+    // ----------------
+    const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
+    // Crée le client Supabase
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Récupère et normalise le paramètre URL
+    // -------------
+    // Récupère param 'table'
+    // -------------
     const params = new URLSearchParams(window.location.search);
     let tableName = params.get('table');
-    tableName = tableName?.trim().toLowerCase();
+    tableName = tableName ? tableName.trim().toLowerCase() : null;
     console.log('Table demandée :', tableName);
 
+    // -------------
+    // Mapping noms propres
+    // -------------
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
-      // ... autres mappings ...
+      inventairepolosport: "Polo Sport",
+      inventairesousverre: "Sous-verre sublimé (4 pack)",
+      inventairetablier: "Tablier",
+      inventairetotebag: "Tote Bag",
+      inventairetshirtcroptop: "T-Shirt Crop top",
+      inventairetshirtdebase: "T-Shirt de base",
+      inventairetshirtlongsleeve: "Long Sleeve",
+      inventairetshirtpremium: "T-Shirt Premium - Sport",
+      inventairetuque: "Tuque",
+      inventaireveste: "Veste",
+      inventairetapisdesouris: "Tapis de souris"
     };
 
+    // -------------
+    // Chargement des données
+    // -------------
     async function loadData() {
-      if (!tableName || !nomsPropres[tableName]) {
-        document.getElementById('page-title').textContent = 'Erreur';
-        document.getElementById('custom-list').innerHTML = '<p>Produit inconnu.</p>';
-        return;
-      }
-
-      document.getElementById('page-title').textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
-
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('*')
-        .order('nom', { ascending: true });
-
+      const titleEl = document.getElementById('page-title');
       const container = document.getElementById('custom-list');
-      container.innerHTML = '';
-      if (error || !data.length) {
-        container.innerHTML = '<p>Aucune personnalisation disponible.</p>';
+
+      if (!tableName || !nomsPropres[tableName]) {
+        console.error('Table inconnue :', tableName);
+        titleEl.textContent = 'Erreur';
+        container.innerHTML = '<p>Produit inconnu.</p>';
         return;
       }
 
-      data.forEach((item, idx) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.animationDelay = `${idx * 0.05}s`;
-        card.innerHTML = `
-          <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
-          <div class="card-content">
-            <h3>${item.nom}</h3>
-            <p><strong>Personnalisation :</strong> ${item.personnalisation}</p>
-            <p><strong>Prix :</strong> ${item.prix}$</p>
-          </div>
-        `;
-        container.appendChild(card);
-      });
+      // Affiche le titre propre
+      titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
+      container.innerHTML = '<p>Chargement...</p>';
+
+      try {
+        const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
+        console.log('Données reçues :', data, 'Erreur :', error);
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p>Aucune personnalisation disponible.</p>';
+          return;
+        }
+
+        // Vide le loader
+        container.innerHTML = '';
+        data.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.animationDelay = `${idx * 0.05}s`;
+          card.innerHTML = `
+            <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
+            <div class="card-content">
+              <h3>${item.nom}</h3>
+              <p><strong>Personnalisations:</strong> ${item.personnalisation}</p>
+              <p><strong>Prix:</strong> ${item.prix}$</p>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Erreur chargement Supabase:', err);
+        container.innerHTML = '<p>Erreur de chargement.</p>';
+      }
     }
 
     loadData();
