@@ -54,7 +54,8 @@
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
       inventairepolosport: "Polo Sport",
-      inventairesousverre: "Sous-verre sublimé (4 pack)",
+      inventairesousverrecarre: "Sous-verre sublimé (4 pack)",
+      inventairesousverrerond: "Sous-verre sublimé (4 pack)",
       inventairetablier: "Tablier",
       inventairetotebag: "Tote Bag",
       inventairetshirtcroptop: "T-Shirt Crop top",
@@ -66,7 +67,7 @@
       inventairetapisdesouris: "Tapis de souris"
     };
 
-    const noCheckboxTables = ['inventairesousverre', 'inventairetapisdesouris'];
+    const noCheckboxTables = ['inventairesousverrecarre', 'inventairesousverrerond', 'inventairetapisdesouris'];
 
     let basePrice = 0;
     async function loadData() {
@@ -82,7 +83,7 @@
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
-      // Récupérer le prix de base avec recherche insensible à la case
+      // Récupérer le prix de base avec recherche insensible à la casse
       const { data: baseData, error: baseErr } = await supa
         .from('inventaire')
         .select('prix')
