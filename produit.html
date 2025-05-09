@@ -66,6 +66,11 @@
       inventairetapisdesouris: "Tapis de souris"
     };
 
+    const noCheckboxTables = [
+      'inventairesousverre',
+      'inventairetapisdesouris'
+    ];
+
     let basePrice = 0;
     async function loadData() {
       const titleEl = document.getElementById('page-title');
@@ -80,29 +85,34 @@
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
-      // Fetch base price from main inventory
+      // Récupérer le prix de base
       const { data: baseData, error: baseErr } = await supa.from('inventaire')
         .select('prix').eq('nom', nomsPropres[tableName]).single();
-      if (baseErr || !baseData) { console.error('Erreur base price', baseErr); return; }
+      if (baseErr || !baseData) { console.error('Erreur prix de base', baseErr); return; }
       basePrice = parseFloat(baseData.prix);
 
-      // Fetch personalizations
+      // Récupérer personnalisations
       const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
       if (error) { console.error(error); container.innerHTML = '<p>Erreur de chargement.</p>'; return; }
       if (!data || data.length === 0) { container.innerHTML = '<p>Aucune personnalisation disponible.</p>'; return; }
 
       container.innerHTML = '';
       data.forEach((item, idx) => {
-        const card = document.createElement('div'); card.className = 'card';
+        const showCheckbox = !noCheckboxTables.includes(tableName);
+        const personalizationHTML = showCheckbox
+          ? `<div class="personalize">
+               <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" />
+               <label for="opt-${item.id}">Ajouter personnalisation</label>
+             </div>`
+          : '';
+        const card = document.createElement('div');
+        card.className = 'card';
         card.innerHTML = `
           <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
           <div class="card-content">
             <h3>${item.nom}</h3>
             <p><strong>Prix:</strong> ${item.prix}$</p>
-            <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" />
-              <label for="opt-${item.id}">Ajouter personnalisation</label>
-            </div>
+            ${personalizationHTML}
           </div>`;
         container.appendChild(card);
       });
@@ -115,7 +125,6 @@
         totalEl.textContent = total.toFixed(2);
       }
 
-      // Init total
       updateTotal();
       qtyInput.addEventListener('input', updateTotal);
       container.addEventListener('change', e => { if (e.target.classList.contains('personalization-checkbox')) updateTotal(); });
