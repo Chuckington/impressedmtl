@@ -36,12 +36,8 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 30px;
     }
-    @media (max-width: 1000px) {
-      .grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 600px) {
-      .grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     .card {
       background-color: white;
       border-radius: 16px;
@@ -54,10 +50,7 @@
       animation: fadeInUp 0.4s ease forwards;
     }
     @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      to { opacity: 1; transform: translateY(0); }
     }
     .card-image {
       background-color: #f0f0f0;
@@ -67,22 +60,10 @@
       padding: 30px;
       height: 220px;
     }
-    .card-image img {
-      max-height: 160px;
-      object-fit: contain;
-    }
-    .card-content {
-      padding: 20px;
-    }
-    .card-content h3 {
-      margin-bottom: 10px;
-      font-size: 1.2rem;
-    }
-    .card-content p {
-      margin: 5px 0;
-      font-size: 0.95rem;
-      color: #333;
-    }
+    .card-image img { max-height: 160px; object-fit: contain; }
+    .card-content { padding: 20px; }
+    .card-content h3 { margin-bottom: 10px; font-size: 1.2rem; }
+    .card-content p { margin: 5px 0; font-size: 0.95rem; color: #333; }
   </style>
 </head>
 <body>
@@ -95,64 +76,56 @@
   </div>
 
   <script>
-    const supabase = window.supabase.createClient(
+    const supabase = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
     );
 
+    // Récupère et normalise le paramètre URL
     const params = new URLSearchParams(window.location.search);
-    const tableName = params.get('table');
+    let tableName = params.get('table');
+    tableName = tableName?.trim().toLowerCase();
+    console.log('Table demandée :', tableName);
 
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
-      inventairepolosport: "Polo Sport",
-      inventairesousverre: "Sous-verre sublimé (4 pack)",
-      inventairetablier: "Tablier",
-      inventairetotebag: "Tote Bag",
-      inventairetshirtcroptop: "T-Shirt Crop top",
-      inventairetshirtdebase: "T-Shirt de base",
-      inventairetshirtlongsleeve: "Long Sleeve",
-      inventairetshirtpremium: "T-Shirt Premium - Sport",
-      inventairetuque: "Tuque",
-      inventaireveste: "Veste"
+      // ... autres mappings ...
     };
 
     async function loadData() {
       if (!tableName || !nomsPropres[tableName]) {
-        document.getElementById('custom-list').innerHTML = '<p>Erreur : produit inconnu.</p>';
         document.getElementById('page-title').textContent = 'Erreur';
+        document.getElementById('custom-list').innerHTML = '<p>Produit inconnu.</p>';
         return;
       }
 
       document.getElementById('page-title').textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
-      const { data, error } = await supabase.from(tableName).select('*').order('nom', { ascending: true });
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .order('nom', { ascending: true });
 
       const container = document.getElementById('custom-list');
       container.innerHTML = '';
-
-      if (error || !data || data.length === 0) {
-        container.innerHTML = '<p>Erreur ou personnalisations indisponibles.</p>';
+      if (error || !data.length) {
+        container.innerHTML = '<p>Aucune personnalisation disponible.</p>';
         return;
       }
 
-      data.forEach((item, index) => {
+      data.forEach((item, idx) => {
         const card = document.createElement('div');
-        card.classList.add('card');
-        card.style.animationDelay = `${index * 0.05}s`;
-
+        card.className = 'card';
+        card.style.animationDelay = `${idx * 0.05}s`;
         card.innerHTML = `
-          <div class="card-image">
-            <img src="${item.image_url}" alt="${item.nom}" />
-          </div>
+          <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
           <div class="card-content">
             <h3>${item.nom}</h3>
             <p><strong>Personnalisation :</strong> ${item.personnalisation}</p>
             <p><strong>Prix :</strong> ${item.prix}$</p>
           </div>
         `;
-
         container.appendChild(card);
       });
     }
