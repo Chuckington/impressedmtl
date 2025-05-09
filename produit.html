@@ -66,10 +66,7 @@
       inventairetapisdesouris: "Tapis de souris"
     };
 
-    const noCheckboxTables = [
-      'inventairesousverre',
-      'inventairetapisdesouris'
-    ];
+    const noCheckboxTables = ['inventairesousverre', 'inventairetapisdesouris'];
 
     let basePrice = 0;
     async function loadData() {
@@ -85,11 +82,19 @@
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
-      // Récupérer le prix de base
-      const { data: baseData, error: baseErr } = await supa.from('inventaire')
-        .select('prix').eq('nom', nomsPropres[tableName]).single();
-      if (baseErr || !baseData) { console.error('Erreur prix de base', baseErr); return; }
-      basePrice = parseFloat(baseData.prix);
+      // Récupérer le prix de base avec recherche insensible à la case
+      const { data: baseData, error: baseErr } = await supa
+        .from('inventaire')
+        .select('prix')
+        .ilike('nom', nomsPropres[tableName])
+        .limit(1)
+        .single();
+      if (baseErr || !baseData) {
+        console.error('Erreur prix de base', baseErr);
+        basePrice = 0;
+      } else {
+        basePrice = parseFloat(baseData.prix);
+      }
 
       // Récupérer personnalisations
       const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
@@ -97,7 +102,7 @@
       if (!data || data.length === 0) { container.innerHTML = '<p>Aucune personnalisation disponible.</p>'; return; }
 
       container.innerHTML = '';
-      data.forEach((item, idx) => {
+      data.forEach((item) => {
         const showCheckbox = !noCheckboxTables.includes(tableName);
         const personalizationHTML = showCheckbox
           ? `<div class="personalize">
