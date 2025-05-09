@@ -14,7 +14,7 @@
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
     @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden; display: flex; flex-direction: column; padding-bottom: 10px; }
+    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; padding-bottom: 10px; }
     .card-image { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; padding: 30px; height: 220px; }
     .card-image img { max-height: 160px; object-fit: contain; }
     .card-content { padding: 20px; flex-grow: 1; }
@@ -31,10 +31,8 @@
 <body>
   <div class="container">
     <a href="inventaire.html" class="back-link">← Retour à l'inventaire</a>
-    <h1 id="page-title">Personnalisations</h1>
-    <div id="custom-list" class="grid">
-      <p>Chargement...</p>
-    </div>
+    <h1 id="page-title">Chargement...</h1>
+    <div id="custom-list" class="grid"><p>Chargement...</p></div>
     <div id="order-summary">
       <label>Quantité: <input type="number" id="quantity" value="1" min="1" /></label>
       <div>Total: <span id="total-price">0.00</span> $</div>
@@ -47,7 +45,7 @@
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const params = new URLSearchParams(window.location.search);
-    let tableName = params.get('table')?.trim().toLowerCase();
+    const tableName = params.get('table')?.trim().toLowerCase();
 
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
@@ -66,32 +64,33 @@
       inventairetapisdesouris: "Tapis de souris"
     };
 
+    // Pour récupérer prix de base générique pour sous-verres
+    const baseNameMap = {
+      inventairesousverrerond: "Sous-verre sublimé (4 pack)",
+      inventairesousverrecarre: "Sous-verre sublimé (4 pack)"
+    };
+
     const noCheckboxTables = ['inventairesousverrerond', 'inventairesousverrecarre', 'inventairetapisdesouris'];
 
     let basePrice = 0;
-
     async function loadData() {
-      // Set title
       const title = nomsPropres[tableName] || 'Produit inconnu';
       document.getElementById('page-title').textContent = `Personnalisations pour ${title}`;
 
-      // Determine base price
-      if (['inventairesousverrerond', 'inventairesousverrecarre'].includes(tableName)) {
-        basePrice = 15; // prix fixe pour sous-verres
-      } else {
-        const { data: baseData, error: baseErr } = await supa
-          .from('inventaire')
-          .select('prix')
-          .ilike('nom', title)
-          .limit(1)
-          .single();
-        if (baseErr || !baseData) {
-          console.error('Erreur prix de base:', baseErr);
-          basePrice = 0;
-        } else basePrice = parseFloat(baseData.prix);
-      }
+      // Détermine nom pour le prix de base
+      const baseNom = baseNameMap[tableName] || title;
+      const { data: baseData, error: baseErr } = await supa
+        .from('inventaire')
+        .select('prix')
+        .ilike('nom', baseNom)
+        .limit(1)
+        .single();
+      if (baseErr || !baseData) {
+        console.error('Erreur prix de base:', baseErr);
+        basePrice = 0;
+      } else basePrice = parseFloat(baseData.prix);
 
-      // Load personnalizations
+      // Charge personnalisations
       const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
       const container = document.getElementById('custom-list');
       container.innerHTML = '';
@@ -106,28 +105,36 @@
 
       data.forEach((item, idx) => {
         const showCheckbox = !noCheckboxTables.includes(tableName);
-        const personalization = showCheckbox
+        const personalizationHTML = showCheckbox
           ? `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" /><label for="opt-${item.id}">Ajouter personnalisation</label></div>`
           : '';
         const card = document.createElement('div');
         card.className = 'card';
         card.style.animation = `fadeInUp 0.4s ease forwards ${idx * 0.05}s`;
-        card.innerHTML = `<div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div><div class="card-content"><h3>${item.nom}</h3><p><strong>Prix:</strong> ${item.prix}$</p>${personalization}</div>`;
+        card.innerHTML = `
+          <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
+          <div class="card-content">
+            <h3>${item.nom}</h3>
+            <p><strong>Prix:</strong> ${item.prix}$</p>
+            ${personalizationHTML}
+          </div>`;
         container.appendChild(card);
       });
 
-      // Update total logic
+      // Calcul du total
       const qtyInput = document.getElementById('quantity');
       const totalEl = document.getElementById('total-price');
       function updateTotal() {
         const qty = parseInt(qtyInput.value) || 1;
-        const extra = Array.from(document.querySelectorAll('.personalization-checkbox:checked')).reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
+        const extra = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+          .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
         totalEl.textContent = ((basePrice + extra) * qty).toFixed(2);
       }
       qtyInput.addEventListener('input', updateTotal);
-      container.addEventListener('change', e => { if (e.target.classList.contains('personalization-checkbox')) updateTotal(); });
+      document.getElementById('custom-list').addEventListener('change', e => {
+        if (e.target.classList.contains('personalization-checkbox')) updateTotal();
+      });
 
-      // Initial total
       updateTotal();
     }
     loadData();
