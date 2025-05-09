@@ -4,18 +4,17 @@
   <meta charset="UTF-8" />
   <title>Personnalisations</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Supabase JS via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; padding: 40px 20px; min-height: 100vh; }
     .container { max-width: 1300px; margin: 0 auto; }
-    .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; background-color: #000; color: #fff; padding: 10px 16px; border-radius: 8px; }
+    .back-link { display: inline-block; margin-bottom: 30px; text-decoration: none; background-color: #000; color: #fff; padding: 10px 16px; border-radius: 8px; }
     h1 { text-align: center; margin-bottom: 40px; font-size: 2rem; }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
     @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; padding-bottom: 10px; }
+    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden; display: flex; flex-direction: column; padding-bottom: 10px; }
     .card-image { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; padding: 30px; height: 220px; }
     .card-image img { max-height: 160px; object-fit: contain; }
     .card-content { padding: 20px; flex-grow: 1; }
@@ -32,30 +31,30 @@
 <body>
   <div class="container">
     <a href="inventaire.html" class="back-link">← Retour à l'inventaire</a>
-    <h1 id="page-title">Chargement...</h1>
-    <div id="custom-list" class="grid"><p>Chargement...</p></div>
+    <h1 id="page-title">Personnalisations</h1>
+    <div id="custom-list" class="grid">
+      <p>Chargement...</p>
+    </div>
     <div id="order-summary">
-      <div>
-        <label>Quantité: <input type="number" id="quantity" value="1" min="1" /></label>
-      </div>
+      <label>Quantité: <input type="number" id="quantity" value="1" min="1" /></label>
       <div>Total: <span id="total-price">0.00</span> $</div>
     </div>
   </div>
+
   <script>
     const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const params = new URLSearchParams(window.location.search);
-    let tableName = params.get('table');
-    tableName = tableName ? tableName.trim().toLowerCase() : null;
+    let tableName = params.get('table')?.trim().toLowerCase();
 
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
       inventairepolosport: "Polo Sport",
-      inventairesousverrecarre: "Sous-verre sublimé (4 pack) modèle carré",
       inventairesousverrerond: "Sous-verre sublimé (4 pack) modèle rond",
+      inventairesousverrecarre: "Sous-verre sublimé (4 pack) modèle carré",
       inventairetablier: "Tablier",
       inventairetotebag: "Tote Bag",
       inventairetshirtcroptop: "T-Shirt Crop top",
@@ -67,73 +66,69 @@
       inventairetapisdesouris: "Tapis de souris"
     };
 
-    const noCheckboxTables = ['inventairesousverrecarre', 'inventairesousverrerond', 'inventairetapisdesouris'];
+    const noCheckboxTables = ['inventairesousverrerond', 'inventairesousverrecarre', 'inventairetapisdesouris'];
 
     let basePrice = 0;
-    async function loadData() {
-      const titleEl = document.getElementById('page-title');
-      const container = document.getElementById('custom-list');
-      const qtyInput = document.getElementById('quantity');
-      const totalEl = document.getElementById('total-price');
 
-      if (!tableName || !nomsPropres[tableName]) {
-        titleEl.textContent = 'Erreur';
-        container.innerHTML = '<p>Produit inconnu.</p>';
+    async function loadData() {
+      // Set title
+      const title = nomsPropres[tableName] || 'Produit inconnu';
+      document.getElementById('page-title').textContent = `Personnalisations pour ${title}`;
+
+      // Determine base price
+      if (['inventairesousverrerond', 'inventairesousverrecarre'].includes(tableName)) {
+        basePrice = 15; // prix fixe pour sous-verres
+      } else {
+        const { data: baseData, error: baseErr } = await supa
+          .from('inventaire')
+          .select('prix')
+          .ilike('nom', title)
+          .limit(1)
+          .single();
+        if (baseErr || !baseData) {
+          console.error('Erreur prix de base:', baseErr);
+          basePrice = 0;
+        } else basePrice = parseFloat(baseData.prix);
+      }
+
+      // Load personnalizations
+      const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
+      const container = document.getElementById('custom-list');
+      container.innerHTML = '';
+      if (error) {
+        container.innerHTML = '<p>Erreur de chargement.</p>';
         return;
       }
-      titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
-
-      // Récupérer le prix de base avec recherche insensible à la casse
-      const { data: baseData, error: baseErr } = await supa
-        .from('inventaire')
-        .select('prix')
-        .ilike('nom', nomsPropres[tableName])
-        .limit(1)
-        .single();
-      if (baseErr || !baseData) {
-        console.error('Erreur prix de base', baseErr);
-        basePrice = 0;
-      } else {
-        basePrice = parseFloat(baseData.prix);
+      if (!data.length) {
+        container.innerHTML = '<p>Aucune personnalisation disponible.</p>';
+        return;
       }
 
-      // Récupérer personnalisations
-      const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
-      if (error) { console.error(error); container.innerHTML = '<p>Erreur de chargement.</p>'; return; }
-      if (!data || data.length === 0) { container.innerHTML = '<p>Aucune personnalisation disponible.</p>'; return; }
-
-      container.innerHTML = '';
-      data.forEach((item) => {
+      data.forEach((item, idx) => {
         const showCheckbox = !noCheckboxTables.includes(tableName);
-        const personalizationHTML = showCheckbox
-          ? `<div class="personalize">
-               <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" />
-               <label for="opt-${item.id}">Ajouter personnalisation</label>
-             </div>`
+        const personalization = showCheckbox
+          ? `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" /><label for="opt-${item.id}">Ajouter personnalisation</label></div>`
           : '';
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `
-          <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
-          <div class="card-content">
-            <h3>${item.nom}</h3>
-            <p><strong>Prix:</strong> ${item.prix}$</p>
-            ${personalizationHTML}
-          </div>`;
+        card.style.animation = `fadeInUp 0.4s ease forwards ${idx * 0.05}s`;
+        card.innerHTML = `<div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div><div class="card-content"><h3>${item.nom}</h3><p><strong>Prix:</strong> ${item.prix}$</p>${personalization}</div>`;
         container.appendChild(card);
       });
 
+      // Update total logic
+      const qtyInput = document.getElementById('quantity');
+      const totalEl = document.getElementById('total-price');
       function updateTotal() {
         const qty = parseInt(qtyInput.value) || 1;
-        const selected = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-          .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
-        const total = (basePrice + selected) * qty;
-        totalEl.textContent = total.toFixed(2);
+        const extra = Array.from(document.querySelectorAll('.personalization-checkbox:checked')).reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
+        totalEl.textContent = ((basePrice + extra) * qty).toFixed(2);
       }
-
-      updateTotal();
       qtyInput.addEventListener('input', updateTotal);
       container.addEventListener('change', e => { if (e.target.classList.contains('personalization-checkbox')) updateTotal(); });
+
+      // Initial total
+      updateTotal();
     }
     loadData();
   </script>
