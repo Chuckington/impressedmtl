@@ -53,8 +53,6 @@
       'crewneck': 'inventairecrewneck',
       'hoodie': 'inventairehoodie',
       'polo sport': 'inventairepolosport',
-      'sous-verre sublimé (4 pack) modèle rond': 'inventairesousverrerond',
-      'sous-verre sublimé (4 pack) modèle carré': 'inventairesousverrecarre',
       'tablier': 'inventairetablier',
       'tote bag': 'inventairetotebag',
       't-shirt crop top': 'inventairetshirtcroptop',
@@ -68,11 +66,7 @@
 
     async function loadInventaire() {
       const container = document.getElementById('inventaire');
-      const { data, error } = await supabase
-        .from('inventaire')
-        .select('*')
-        .order('nom', { ascending: true });
-
+      const { data, error } = await supabase.from('inventaire').select('*').order('nom', { ascending: true });
       container.innerHTML = '';
       if (error || !data || data.length === 0) {
         container.innerHTML = '<p style="text-align:center;">Erreur ou inventaire vide.</p>';
@@ -80,15 +74,23 @@
       }
 
       data.forEach(item => {
-        const key = item.nom.trim().toLowerCase();
-        const tableTarget = correspondanceTables[key];
+        const raw = item.nom.trim().toLowerCase();
+        // Détermine la table cible
+        let tableTarget = correspondanceTables[raw];
+        if (!tableTarget && raw.startsWith('sous-verre sublimé (4 pack)')) {
+          // Choix en fonction du modèle
+          const modele = (item.modèle || '').trim().toLowerCase();
+          if (modele.includes('rond')) tableTarget = 'inventairesousverrerond';
+          else if (modele.includes('carr') || modele.includes('carre')) tableTarget = 'inventairesousverrecarre';
+        }
         if (!tableTarget) return;
+
         const card = document.createElement('a');
         card.href = `produit.html?table=${tableTarget}`;
         card.className = 'card';
         card.innerHTML = `
           <div class="card-image">
-            <img src="${item.image_url}" alt="Image de ${item.nom}">
+            <img src="${item.image_url}" alt="${item.nom}">
           </div>
           <div class="card-content">
             <h3>${item.nom}</h3>
