@@ -14,7 +14,7 @@
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
     @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; }
+    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
     .card-image { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; padding: 30px; height: 220px; }
     .card-image img { max-height: 160px; object-fit: contain; }
     .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
@@ -40,12 +40,12 @@
   </div>
   <script>
     const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
+    const SUPABASE_KEY = 'YOUR_SUPABASE_KEY';
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     const params = new URLSearchParams(window.location.search);
     const tableName = params.get('table')?.trim().toLowerCase();
 
-    // Nom propres
     const nomsPropres = {
       inventairecrewneck: 'Crewneck',
       inventairehoodie: 'Hoodie',
@@ -63,8 +63,6 @@
       inventairetapisdesouris: 'Tapis de souris'
     };
 
-    const noCheckbox = ['inventairesousverrerond', 'inventairesousverrecarre', 'inventairetapisdesouris'];
-
     async function loadData() {
       const titleEl = document.getElementById('page-title');
       const listEl = document.getElementById('custom-list');
@@ -72,54 +70,40 @@
       const totalEl = document.getElementById('total-price');
 
       if (!tableName || !nomsPropres[tableName]) {
-        titleEl.textContent = 'Produit inconnu'; return;
+        titleEl.textContent = 'Produit inconnu';
+        return;
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
-      // Get base price from inventaire table
-      let { data: baseData, error: baseErr } = await supa
-        .from('inventaire')
-        .select('prix')
-        .eq('nom', nomsPropres[tableName]);
-      if (baseErr || !baseData.length) {
-        console.error('Base price error', baseErr);
-        baseData = [{ prix: 0 }];
-      }
-      const basePrice = parseFloat(baseData[0].prix);
+      // prix de base
+      const { data: baseData } = await supa.from('inventaire').select('prix').eq('nom', nomsPropres[tableName]).single();
+      const basePrice = baseData ? parseFloat(baseData.prix) : 0;
 
-      // Get customizations
-      let { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
-      if (error) { console.error('Load data error', error); return; }
+      // personnalisations
+      const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
+      if (error) { console.error(error); listEl.innerHTML = '<p>Erreur de chargement.</p>'; return; }
       if (!data.length) { listEl.innerHTML = '<p>Aucune personnalisation disponible.</p>'; return; }
 
       listEl.innerHTML = '';
       data.forEach((item, idx) => {
-        // Common content
-        let personalizationHTML = '';
-        // Show description
-        personalizationHTML += `<p><strong>Détail:</strong> ${item.personnalisation}</p>`;
-
-        // Checkbox logic
-        if (!noCheckbox.includes(tableName)) {
-          if (item.nom.toLowerCase().includes('gros design')) {
-            // Two checkboxes
-            personalizationHTML += `
-              <div class="personalize">
-                <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front" />
-                <label for="opt-${item.id}-front">Gros design devant (+${item.prix}$)</label>
-              </div>
-              <div class="personalize">
-                <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back" />
-                <label for="opt-${item.id}-back">Gros design derrière (+${item.prix}$)</label>
-              </div>`;
-          } else {
-            // Single checkbox
-            personalizationHTML += `
-              <div class="personalize">
-                <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" />
-                <label for="opt-${item.id}">Ajouter personnalisation (+${item.prix}$)</label>
-              </div>`;
-          }
+        let html = `<p><strong>Détail:</strong> ${item.personnalisation}</p>`;
+        // si détail contient gros design, deux cases
+        if (item.personnalisation.toLowerCase().includes('gros design')) {
+          html += `
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front" />
+              <label for="opt-${item.id}-front">Gros design devant (+${item.prix}$)</label>
+            </div>
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back" />
+              <label for="opt-${item.id}-back">Gros design derrière (+${item.prix}$)</label>
+            </div>`;
+        } else {
+          html += `
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}" />
+              <label for="opt-${item.id}">Ajouter personnalisation (+${item.prix}$)</label>
+            </div>`;
         }
 
         const card = document.createElement('div');
@@ -129,13 +113,12 @@
           <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div>
           <div class="card-content">
             <h3>${item.nom}</h3>
-            <p><strong>Prix de base:</strong> ${item.prix}$</p>
-            ${personalizationHTML}
+            <p><strong>Prix de base:</strong> ${basePrice}$</p>
+            ${html}
           </div>`;
         listEl.appendChild(card);
       });
 
-      // Total update
       function updateTotal() {
         const qty = parseInt(qtyEl.value) || 1;
         const extras = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
