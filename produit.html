@@ -14,7 +14,7 @@
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
     @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
+    .card { background-color: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; overflow: hidden; }
     .card-image { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; padding: 30px; height: 220px; }
     .card-image img { max-height: 160px; object-fit: contain; }
     .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
@@ -73,13 +73,14 @@
         titleEl.textContent = 'Produit inconnu';
         return;
       }
-      titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
+      const title = nomsPropres[tableName];
+      titleEl.textContent = `Personnalisations pour ${title}`;
 
-      // prix de base
-      const { data: baseData } = await supa.from('inventaire').select('prix').eq('nom', nomsPropres[tableName]).single();
+      // Prix de base depuis inventaire
+      const { data: baseData } = await supa.from('inventaire').select('prix').eq('nom', title).single();
       const basePrice = baseData ? parseFloat(baseData.prix) : 0;
 
-      // personnalisations
+      // Récupération des personnalisations
       const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
       if (error) { console.error(error); listEl.innerHTML = '<p>Erreur de chargement.</p>'; return; }
       if (!data.length) { listEl.innerHTML = '<p>Aucune personnalisation disponible.</p>'; return; }
@@ -87,8 +88,8 @@
       listEl.innerHTML = '';
       data.forEach((item, idx) => {
         let html = `<p><strong>Détail:</strong> ${item.personnalisation}</p>`;
-        // si détail contient gros design, deux cases
-        if (item.personnalisation.toLowerCase().includes('gros design')) {
+        const detail = item.personnalisation.toLowerCase();
+        if (detail.includes('gros design')) {
           html += `
             <div class="personalize">
               <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front" />
@@ -97,6 +98,16 @@
             <div class="personalize">
               <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back" />
               <label for="opt-${item.id}-back">Gros design derrière (+${item.prix}$)</label>
+            </div>`;
+        } else if (detail.includes('petit design poitrine')) {
+          html += `
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-left" />
+              <label for="opt-${item.id}-left">Petit design poitrine gauche (+${item.prix}$)</label>
+            </div>
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-right" />
+              <label for="opt-${item.id}-right">Petit design poitrine droite (+${item.prix}$)</label>
             </div>`;
         } else {
           html += `
