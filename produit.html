@@ -62,7 +62,7 @@
       <h1 id="page-title">Personnalisations</h1>
       <p id="page-subtitle">Choisissez vos options</p>
     </div>
-    <div style="width:140px;"></div>
+    <a href="panier.html" class="download-btn">Panier</a>
   </header>
 
   <div class="container">
@@ -75,7 +75,7 @@
 
   <script>
     const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGVtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const params = new URLSearchParams(window.location.search);
