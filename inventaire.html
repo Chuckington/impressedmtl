@@ -9,25 +9,13 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; min-height: 100%; }
     header {
-      position: sticky;
-      top: 0;
-      width: 100%;
-      background-color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 40px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-      z-index: 1000;
+      position: sticky; top: 0; width: 100%; background-color: white;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index: 1000;
     }
     .btn {
-      display: inline-block;
-      padding: 10px 14px;
-      background: #000;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background 0.2s;
+      display: inline-block; padding: 10px 14px; background: #000; color: #fff;
+      text-decoration: none; border-radius: 5px; transition: background 0.2s;
     }
     .btn:hover { background: #444; }
     .header-title { flex: 1; text-align: center; }
@@ -38,36 +26,20 @@
     @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     .card {
-      background-color: white;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
+      background-color: white; border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;
+      display: flex; flex-direction: column; cursor: pointer;
       transition: transform 0.2s;
     }
     .card:hover { transform: scale(1.02); }
     .card-image {
-      background-color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 30px;
-      height: 260px;
+      background-color: #f0f0f0; display: flex; justify-content: center;
+      align-items: center; padding: 30px; height: 260px;
     }
-    .card-image img {
-      max-height: 200px;
-      max-width: 100%;
-      object-fit: contain;
-    }
+    .card-image img { max-height: 200px; max-width: 100%; object-fit: contain; }
     .card-content {
-      padding: 20px;
-      text-align: left;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      padding: 20px; text-align: left; flex-grow: 1;
+      display: flex; flex-direction: column; justify-content: center;
     }
     .card-content h3 { margin: 0 0 10px; font-size: 1.2rem; }
     .card-content p { margin: 5px 0; font-size: 1rem; color: #444; }
@@ -80,17 +52,15 @@
       <h1>Inventaire Impressed</h1>
       <p>Vêtements disponibles pour personnalisation</p>
     </div>
-    <div style="display: flex; align-items: center; gap: 8px;">
+    <div style="display:flex; align-items:center; gap:8px;">
       <a href="panier.html" class="btn">Panier</a>
-      <span id="user-email" style="color: #333;"></span>
+      <span id="user-email" style="color:#333;"></span>
       <button id="auth-button" class="btn">Se connecter</button>
     </div>
   </header>
 
   <div class="container">
-    <div id="inventaire" class="grid">
-      <p>Chargement...</p>
-    </div>
+    <div id="inventaire" class="grid"><p>Chargement...</p></div>
   </div>
 
   <script>
@@ -99,7 +69,7 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    // Auth logic
+    // Auth UI
     const authBtn = document.getElementById('auth-button');
     const userEmail = document.getElementById('user-email');
     async function updateAuthUI() {
@@ -114,67 +84,51 @@
     }
     authBtn.addEventListener('click', async () => {
       const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        await supa.auth.signOut();
-      } else {
-        window.location.href = 'login.html';
-      }
+      if (user) await supa.auth.signOut(); else window.location.href = 'login.html';
       updateAuthUI();
     });
     supa.auth.onAuthStateChange(updateAuthUI);
     updateAuthUI();
 
-    // Load inventory
     async function loadInventaire() {
-      const { data, error } = await supa
-        .from('inventaire')
-        .select('*')
-        .order('nom', { ascending: true });
-
+      const { data, error } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
       const container = document.getElementById('inventaire');
       container.innerHTML = '';
-
-      if (error || !data || data.length === 0) {
-        container.innerHTML = '<p style="text-align: center;">Erreur ou inventaire vide.</p>';
+      if (error || !data.length) {
+        container.innerHTML = '<p style="text-align:center;">Erreur ou inventaire vide.</p>';
         return;
       }
 
-      const correspondanceTables = {
-        'crewneck': 'inventairecrewneck',
-        'hoodie': 'inventairehoodie',
-        'polo sport': 'inventairepolosport',
-        'sous-verre sublimé (4 pack)': 'inventairesousverre',
-        'tablier': 'inventairetablier',
-        'tote bag': 'inventairetotebag',
-        't-shirt crop top': 'inventairetshirtcroptop',
-        't-shirt de base': 'inventairetshirtdebase',
-        'long sleeve': 'inventairetshirtlongsleeve',
-        't-shirt premium - sport': 'inventairetshirtpremium',
-        'tuque': 'inventairetuque',
-        'veste': 'inventaireveste',
-        'tapis de souris': 'inventairetapisdesouris'
+      const baseMap = {
+        'crewneck':'inventairecrewneck','hoodie':'inventairehoodie','polo sport':'inventairepolosport',
+        'tablier':'inventairetablier','tote bag':'inventairetotebag','t-shirt crop top':'inventairetshirtcroptop',
+        't-shirt de base':'inventairetshirtdebase','long sleeve':'inventairetshirtlongsleeve',
+        't-shirt premium - sport':'inventairetshirtpremium','tuque':'inventairetuque',
+        'veste':'inventaireveste','tapis de souris':'inventairetapisdesouris'
       };
 
       data.forEach(item => {
-        const nomNettoye = item.nom.trim().toLowerCase();
-        const tableTarget = correspondanceTables[nomNettoye];
+        const nomKey = item.nom.trim().toLowerCase();
+        let tableTarget = null;
+        if (nomKey === 'sous-verre sublimé (4 pack)') {
+          const mod = item.modèle.trim().toLowerCase();
+          if (mod.includes('rond')) tableTarget = 'inventairesousverrerond';
+          else if (mod.includes('carr')||mod.includes('carre')) tableTarget = 'inventairesousverrecarre';
+        } else {
+          tableTarget = baseMap[nomKey];
+        }
         if (!tableTarget) return;
 
         const card = document.createElement('a');
         card.href = `produit.html?table=${tableTarget}`;
         card.className = 'card';
-
         card.innerHTML = `
-          <div class="card-image">
-            <img src="${item.image_url}" alt="Image de ${item.nom}">
-          </div>
+          <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div>
           <div class="card-content">
             <h3>${item.nom}</h3>
-            <p><strong>Modèle:</strong> ${item.modèle || 'Non spécifié'}</p>
+            <p><strong>Modèle:</strong> ${item.modèle||'—'}</p>
             <p><strong>Prix:</strong> ${item.prix}$</p>
-          </div>
-        `;
-
+          </div>`;
         container.appendChild(card);
       });
     }
