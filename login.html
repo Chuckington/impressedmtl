@@ -31,19 +31,15 @@
     </p>
   </div>
 
-  <!-- Charger le SDK Supabase UMD pour accéder à la variable globale `supabase` -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script>
-    // Initialiser le client Supabase avec la bonne clé anon
-    const supa = supabase.createClient(
+  <!-- Utiliser le SDK ESM Supabase -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supa = createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
+    console.log('Supabase client:', supa);
 
-    // Debug : vérifie que la clé est bien prise en compte
-    console.log('Supabase client api key:', supa.supabaseKey);
-
-    // Gestion de la soumission du formulaire de connexion
     document.getElementById('auth-form').addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -53,8 +49,6 @@
       if (error) return alert(error.message);
       window.location.href = 'inventaire.html';
     });
-
-    // Création de compte
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail');
@@ -65,14 +59,12 @@
       if (error) return alert(error.message);
       alert('Un e-mail de confirmation vous a été envoyé.');
     });
-
-    // Réinitialisation du mot de passe
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail pour réinitialiser votre mot de passe');
       if (!email) return;
       const { data, error } = await supa.auth.resetPasswordForEmail(email);
-      console.log('Reset password response:', data, error);
+      console.log('Reset response:', data, error);
       if (error) return alert(error.message);
       alert('Un e-mail de réinitialisation a été envoyé.');
     });
