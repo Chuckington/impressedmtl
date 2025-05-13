@@ -1,40 +1,90 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Inventaire Impressed</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; min-height: 100%; }
-    header { position: sticky; top: 0; width: 100%; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      background: #000;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #444; }
     .header-title { flex: 1; text-align: center; }
     .header-title h1 { font-size: 1.8rem; }
     .header-title p { font-size: 1rem; color: #555; margin-top: 4px; }
-    .download-btn { padding: 10px 14px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; transition: background 0.2s; }
-    .download-btn:hover { background: #444; }
     .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
-    @media (max-width:1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width:600px) { .grid { grid-template-columns: 1fr; } }
-    .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; cursor: pointer; transition: transform 0.2s; }
+    @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
     .card:hover { transform: scale(1.02); }
-    .card-image { background: #f0f0f0; display: flex; align-items: center; justify-content: center; padding: 30px; height: 260px; }
-    .card-image img { max-height: 200px; max-width: 100%; object-fit: contain; }
-    .card-content { padding: 20px; }
-    .card-content h3 { margin-bottom: 10px; font-size: 1.2rem; }
-    .card-content p { margin: 5px 0; color: #444; }
+    .card-image {
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+      height: 260px;
+    }
+    .card-image img {
+      max-height: 200px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .card-content {
+      padding: 20px;
+      text-align: left;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .card-content h3 { margin: 0 0 10px; font-size: 1.2rem; }
+    .card-content p { margin: 5px 0; font-size: 1rem; color: #444; }
   </style>
 </head>
 <body>
   <header>
-    <a href="index.html" class="download-btn">← Retour à l’accueil</a>
+    <a href="index.html" class="btn">← Accueil</a>
     <div class="header-title">
       <h1>Inventaire Impressed</h1>
       <p>Vêtements disponibles pour personnalisation</p>
     </div>
-    <div style="width:140px;"></div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <a href="panier.html" class="btn">Panier</a>
+      <span id="user-email" style="color: #333;"></span>
+      <button id="auth-button" class="btn">Se connecter</button>
+    </div>
   </header>
 
   <div class="container">
@@ -44,59 +94,87 @@
   </div>
 
   <script>
-    const supabase = window.supabase.createClient(
+    const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    const correspondanceTables = {
-      'crewneck': 'inventairecrewneck',
-      'hoodie': 'inventairehoodie',
-      'polo sport': 'inventairepolosport',
-      'tablier': 'inventairetablier',
-      'tote bag': 'inventairetotebag',
-      't-shirt crop top': 'inventairetshirtcroptop',
-      't-shirt de base': 'inventairetshirtdebase',
-      'long sleeve': 'inventairetshirtlongsleeve',
-      't-shirt premium - sport': 'inventairetshirtpremium',
-      'tuque': 'inventairetuque',
-      'veste': 'inventaireveste',
-      'tapis de souris': 'inventairetapisdesouris'
-    };
+    // Auth logic
+    const authBtn = document.getElementById('auth-button');
+    const userEmail = document.getElementById('user-email');
+    async function updateAuthUI() {
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        userEmail.textContent = user.email;
+        authBtn.textContent = 'Se déconnecter';
+      } else {
+        userEmail.textContent = '';
+        authBtn.textContent = 'Se connecter';
+      }
+    }
+    authBtn.addEventListener('click', async () => {
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        await supa.auth.signOut();
+      } else {
+        window.location.href = 'login.html';
+      }
+      updateAuthUI();
+    });
+    supa.auth.onAuthStateChange(updateAuthUI);
+    updateAuthUI();
 
+    // Load inventory
     async function loadInventaire() {
+      const { data, error } = await supa
+        .from('inventaire')
+        .select('*')
+        .order('nom', { ascending: true });
+
       const container = document.getElementById('inventaire');
-      const { data, error } = await supabase.from('inventaire').select('*').order('nom', { ascending: true });
       container.innerHTML = '';
+
       if (error || !data || data.length === 0) {
-        container.innerHTML = '<p style="text-align:center;">Erreur ou inventaire vide.</p>';
+        container.innerHTML = '<p style="text-align: center;">Erreur ou inventaire vide.</p>';
         return;
       }
 
+      const correspondanceTables = {
+        'crewneck': 'inventairecrewneck',
+        'hoodie': 'inventairehoodie',
+        'polo sport': 'inventairepolosport',
+        'sous-verre sublimé (4 pack)': 'inventairesousverre',
+        'tablier': 'inventairetablier',
+        'tote bag': 'inventairetotebag',
+        't-shirt crop top': 'inventairetshirtcroptop',
+        't-shirt de base': 'inventairetshirtdebase',
+        'long sleeve': 'inventairetshirtlongsleeve',
+        't-shirt premium - sport': 'inventairetshirtpremium',
+        'tuque': 'inventairetuque',
+        'veste': 'inventaireveste',
+        'tapis de souris': 'inventairetapisdesouris'
+      };
+
       data.forEach(item => {
-        const raw = item.nom.trim().toLowerCase();
-        // Détermine la table cible
-        let tableTarget = correspondanceTables[raw];
-        if (!tableTarget && raw.startsWith('sous-verre sublimé (4 pack)')) {
-          // Choix en fonction du modèle
-          const modele = (item.modèle || '').trim().toLowerCase();
-          if (modele.includes('rond')) tableTarget = 'inventairesousverrerond';
-          else if (modele.includes('carr') || modele.includes('carre')) tableTarget = 'inventairesousverrecarre';
-        }
+        const nomNettoye = item.nom.trim().toLowerCase();
+        const tableTarget = correspondanceTables[nomNettoye];
         if (!tableTarget) return;
 
         const card = document.createElement('a');
         card.href = `produit.html?table=${tableTarget}`;
         card.className = 'card';
+
         card.innerHTML = `
           <div class="card-image">
-            <img src="${item.image_url}" alt="${item.nom}">
+            <img src="${item.image_url}" alt="Image de ${item.nom}">
           </div>
           <div class="card-content">
             <h3>${item.nom}</h3>
             <p><strong>Modèle:</strong> ${item.modèle || 'Non spécifié'}</p>
             <p><strong>Prix:</strong> ${item.prix}$</p>
-          </div>`;
+          </div>
+        `;
+
         container.appendChild(card);
       });
     }
