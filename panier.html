@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panier</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Supabase JS UMD via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: 'Fredoka', sans-serif; background: #f7f7f7; min-height: 100vh; }
+    header {
+      position: sticky; top: 0; width: 100%; background: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      z-index: 1000;
+    }
+    .btn { padding: 10px 14px; background: #000; color: #fff; text-decoration: none; border-radius:5px; }
+    .btn:hover { background: #444; }
+    .header-title { flex: 1; text-align: center; }
+    .header-title h1 { font-size:1.8rem; }
+    .header-title p { font-size:1rem; color:#555; margin-top:4px; }
+    .container { max-width:1300px; margin:0 auto; padding:40px 20px; }
+    table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    th, td { padding:12px; border-bottom:1px solid #ddd; text-align:left; }
+    th { background:#f0f0f0; }
+    .total { text-align:right; font-size:1.2rem; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="inventaire.html" class="btn">← Inventaire</a>
+    <div class="header-title">
+      <h1>Votre Panier</h1>
+      <p>Revoyez vos articles avant paiement</p>
+    </div>
+    <a href="index.html" class="btn">Accueil</a>
+  </header>
+  <div class="container">
+    <table id="cart-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Quantité</th>
+          <th>Options</th>
+          <th>Sous-total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4">Chargement...</td></tr>
+      </tbody>
+    </table>
+    <div class="total">
+      Total général : <span id="grand-total">0.00</span> $
+    </div>
+    <a href="checkout.html" class="btn">Passer au paiement</a>
+  </div>
+  <script>
+    const supa = supabase.createClient(
+      'https://vwvvbtcatamszncjuiso.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
+    );
+
+    async function loadCart() {
+      // Récupère l'utilisateur connecté
+      const { data: { user } } = await supa.auth.getUser();
+      if (!user) {
+        document.querySelector('#cart-table tbody').innerHTML =
+          '<tr><td colspan="4">Veuillez vous connecter pour voir votre panier.</td></tr>';
+        return;
+      }
+
+      // Récupère les articles du panier avec jointure sur inventaire
+      const { data, error } = await supa
+        .from('cart_items')
+        .select('product_id,quantity,personalizations, inventaire(nom,prix)')
+        .eq('user_id', user.id);
+
+      const tbody = document.querySelector('#cart-table tbody');
+      tbody.innerHTML = '';
+
+      if (error || !data.length) {
+        tbody.innerHTML = '<tr><td colspan="4">Panier vide.</td></tr>';
+        return;
+      }
+
+      let grandTotal = 0;
+      data.forEach(item => {
+        const base = parseFloat(item.inventaire.prix);
+        // Somme des personnalisations (prix identique au prix de base)
+        const extras = item.personalizations.length * base;
+        const subtotal = (base + extras) * item.quantity;
+        grandTotal += subtotal;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.inventaire.nom}</td>
+          <td>${item.quantity}</td>
+          <td>${item.personalizations.join(', ') || '—'}</td>
+          <td>${subtotal.toFixed(2)} $</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+    }
+
+    loadCart();
+  </script>
+</body>
+</html>
