@@ -64,6 +64,27 @@
       'https://vwvvbtcatamszncjuiso.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
+// Auth logic – à placer dans <script> après la création du client supa:
+    const authBtn = document.getElementById('auth-button');
+const userEmail = document.getElementById('user-email');
+async function updateAuthUI() {
+  const { data: { user } } = await supa.auth.getUser();
+  if (user) {
+    userEmail.textContent = user.email;
+    authBtn.textContent = 'Se déconnecter';
+  } else {
+    userEmail.textContent = '';
+    authBtn.textContent = 'Se connecter';
+  }
+}
+authBtn.addEventListener('click', async () => {
+  const { data: { user } } = await supa.auth.getUser();
+  if (user) await supa.auth.signOut();
+  else window.location.href = 'login.html';
+  updateAuthUI();
+});
+supa.auth.onAuthStateChange(updateAuthUI);
+updateAuthUI();
 
     async function loadCart() {
       // Récupère l'utilisateur connecté
