@@ -9,26 +9,26 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; min-height: 100vh; }
-    header { position: sticky; top: 0; width: 100%; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index: 1000; }
-    .btn { padding: 10px 14px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; transition: background 0.2s; }
+    header { position: sticky; top: 0; width: 100%; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index:1000; }
+    .btn { padding: 10px 14px; background: #000; color: #fff; text-decoration: none; border-radius:5px; transition: background 0.2s; }
     .btn:hover { background: #444; }
     .header-title { flex: 1; text-align: center; }
     .header-title h1 { font-size: 1.8rem; }
-    .header-title p { font-size: 1rem; color: #555; margin-top: 4px; }
-    .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
-    .grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 30px; }
-    @media (max-width:1000px) { .grid { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width:600px) { .grid { grid-template-columns: 1fr; } }
-    .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.4s ease forwards; }
-    @keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
-    .card-image { background: #f0f0f0; display: flex; justify-content: center; align-items: center; padding: 30px; height: 220px; }
-    .card-image img { max-height: 160px; object-fit: contain; }
-    .card-content { padding: 20px; }
-    .card-content h3 { margin-bottom: 10px; font-size:1.2rem; }
+    .header-title p { font-size: 1rem; color: #555; margin-top:4px; }
+    .container { max-width: 1300px; margin:0 auto; padding:40px 20px; }
+    .grid { display: grid; grid-template-columns: repeat(3,1fr); gap:30px; }
+    @media(max-width:1000px){ .grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:600px){ .grid { grid-template-columns: 1fr; } }
+    .card { background:#fff; border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; display:flex; flex-direction:column; opacity:0; transform: translateY(20px); animation: fadeInUp 0.4s ease forwards; }
+    @keyframes fadeInUp { to { opacity:1; transform: translateY(0); } }
+    .card-image { background:#f0f0f0; display:flex; justify-content:center; align-items:center; padding:30px; height:220px; }
+    .card-image img { max-height:160px; object-fit:contain; }
+    .card-content { padding:20px; }
+    .card-content h3 { margin-bottom:10px; font-size:1.2rem; }
     .card-content p { margin:5px 0; font-size:0.95rem; color:#333; }
     .personalize { display:flex; align-items:center; margin-top:10px; }
     .personalize input { margin-right:8px; }
-    #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content: space-between; align-items:center; margin-top:40px; }
+    #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; }
     #order-summary .left { display:flex; align-items:center; gap:16px; }
     #order-summary label { display:flex; align-items:center; }
     #quantity { width:60px; margin-left:10px; padding:5px; border:1px solid #ccc; border-radius:4px; }
@@ -48,6 +48,7 @@
       <button id="auth-button" class="btn">Se connecter</button>
     </div>
   </header>
+
   <div class="container">
     <div id="custom-list" class="grid"><p>Chargement...</p></div>
     <div id="order-summary">
@@ -58,10 +59,12 @@
       <div>Total: <span id="total-price">0.00</span> $</div>
     </div>
   </div>
+
   <script>
+    // Initialise Supabase client une seule fois
     const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGVtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
-    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGVtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Auth logic
     const authBtn = document.getElementById('auth-button');
@@ -84,15 +87,25 @@
     supa.auth.onAuthStateChange(updateAuthUI);
     updateAuthUI();
 
+    // Lecture du paramètre table
     const params = new URLSearchParams(window.location.search);
     const tableName = params.get('table')?.trim().toLowerCase();
+
     const nomsPropres = {
-      inventairecrewneck:'Crewneck', inventairehoodie:'Hoodie', inventairepolosport:'Polo Sport',
-      inventairesousverrerond:'Sous-verre sublimé (4 pack) modèle rond', inventairesousverrecarre:'Sous-verre sublimé (4 pack) modèle carré',
-      inventairetablier:'Tablier', inventairetotebag:'Tote Bag', inventairetshirtcroptop:'T-Shirt Crop top',
-      inventairetshirtdebase:'T-Shirt de base', inventairetshirtlongsleeve:'Long Sleeve',
-      inventairetshirtpremium:'T-Shirt Premium - Sport', inventairetuque:'Tuque', inventaireveste:'Veste',
-      inventairetapisdesouris:'Tapis de souris'
+      inventairecrewneck: 'Crewneck',
+      inventairehoodie: 'Hoodie',
+      inventairepolosport: 'Polo Sport',
+      inventairesousverrerond: 'Sous-verre sublimé (4 pack) modèle rond',
+      inventairesousverrecarre: 'Sous-verre sublimé (4 pack) modèle carré',
+      inventairetablier: 'Tablier',
+      inventairetotebag: 'Tote Bag',
+      inventairetshirtcroptop: 'T-Shirt Crop top',
+      inventairetshirtdebase: 'T-Shirt de base',
+      inventairetshirtlongsleeve: 'Long Sleeve',
+      inventairetshirtpremium: 'T-Shirt Premium - Sport',
+      inventairetuque: 'Tuque',
+      inventaireveste: 'Veste',
+      inventairetapisdesouris: 'Tapis de souris'
     };
     const noCheckbox = ['inventairesousverrecarre','inventairesousverrerond','inventairetapisdesouris'];
 
@@ -103,52 +116,108 @@
       const qtyInput = document.getElementById('quantity');
       const totalEl = document.getElementById('total-price');
 
-      if (!nomsPropres[tableName]) {
-        titleEl.textContent="Erreur"; container.innerHTML='<p>Produit inconnu.</p>'; return;
+      // Vérification table
+      if (!tableName || !nomsPropres[tableName]) {
+        titleEl.textContent = 'Erreur';
+        container.innerHTML = '<p>Produit inconnu.</p>';
+        return;
       }
-      titleEl.textContent=`Personnalisations pour ${nomsPropres[tableName]}`;
-      subtitleEl.textContent='Choisissez vos options';
+      titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
+      subtitleEl.textContent = 'Choisissez vos options';
 
-      // Prix de base
-      const { data: baseData } = await supa.from('inventaire').select('prix').eq('nom', nomsPropres[tableName]).single();
-      const basePrice = baseData ? parseFloat(baseData.prix) : 0;
+      // Récupérer prix de base
+      const { data: baseData, error: baseErr } = await supa
+        .from('inventaire')
+        .select('prix')
+        .eq('nom', nomsPropres[tableName])
+        .single();
+      const basePrice = (!baseErr && baseData) ? parseFloat(baseData.prix) : 0;
 
-      // Chargement personnalisations
-      const { data, error } = await supa.from(tableName).select('*').order('nom', {ascending:true});
-      if (error) { console.error(error); container.innerHTML='<p>Erreur chargement.</p>'; return; }
-      container.innerHTML='';
+      // Récupérer personnalisations
+      const { data, error } = await supa
+        .from(tableName)
+        .select('*')
+        .order('nom', { ascending: true });
+      if (error) {
+        console.error('Supabase error:', error);
+        container.innerHTML = '<p>Erreur chargement.</p>';
+        return;
+      }
+      container.innerHTML = '';
 
       data.forEach((item, idx) => {
-        const card=document.createElement('div'); card.className='card'; card.style.animationDelay=`${idx*0.05}s`;
-        let html=`<div class="card-image"><img src="${item.image_url}" alt="${item.nom}"/></div><div class="card-content"><h3>${item.nom}</h3><p><strong>Prix de base:</strong> ${basePrice}$</p><p><strong>Prix modif.:</strong> ${item.prix}$</p>`;
-        const desc=item.personnalisation?.toLowerCase()||'';
-        if(desc.includes('gros design')){
-          html+=`<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Gros design devant</label></div><div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Gros design derrière</label></div>`;
-        } else if(desc.includes('petit design poitrine')){
-          html+=`<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Petit design poitrine gauche</label></div><div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Petit design poitrine droite</label></div>`;
-        } else if(item.personnalisation && !noCheckbox.includes(tableName)){
-          html+=`<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}"><label for="opt-${item.id}">${item.personnalisation}</label></div>`;
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.animationDelay = `${idx * 0.05}s`;
+
+        let html = `
+          <div class="card-image">
+            <img src="${item.image_url}" alt="${item.nom}">
+          </div>
+          <div class="card-content">
+            <h3>${item.nom}</h3>
+            <p><strong>Prix de base:</strong> ${basePrice}$</p>
+            <p><strong>Prix modification:</strong> ${item.prix}$</p>
+        `;
+
+        const desc = item.personnalisation?.toLowerCase() || '';
+        if (desc.includes('gros design')) {
+          html += `
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front">
+              <label for="opt-${item.id}-front">Gros design devant</label>
+            </div>
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back">
+              <label for="opt-${item.id}-back">Gros design derrière</label>
+            </div>
+          `;
+        } else if (desc.includes('petit design poitrine')) {
+          html += `
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-left">
+              <label for="opt-${item.id}-left">Petit design poitrine gauche</label>
+            </div>
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-right">
+              <label for="opt-${item.id}-right">Petit design poitrine droite</label>
+            </div>
+          `;
+        } else if (item.personnalisation && !noCheckbox.includes(tableName)) {
+          html += `
+            <div class="personalize">
+              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}">
+              <label for="opt-${item.id}">${item.personnalisation}</label>
+            </div>
+          `;
         }
-        html+='</div>';
-        card.innerHTML=html; container.appendChild(card);
+        html += '</div>';
+        card.innerHTML = html;
+        container.appendChild(card);
       });
 
-      // Mise à jour du total
-      const updateTotal=()=>{
-        const qty=parseInt(qtyInput.value)||1; const extraCost=Array.from(document.querySelectorAll('.personalization-checkbox:checked')).reduce((s,cb)=>s+parseFloat(cb.dataset.price),0);
-        totalEl.textContent=((basePrice+extraCost)*qty).toFixed(2);
-      };
-      qtyInput.addEventListener('input',updateTotal);
-      container.addEventListener('change',e=>{if(e.target.classList.contains('personalization-checkbox'))updateTotal();});
+      // Calcul du total
+      function updateTotal() {
+        const qty = parseInt(qtyInput.value) || 1;
+        const extraCost = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+          .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
+        totalEl.textContent = ((basePrice + extraCost) * qty).toFixed(2);
+      }
+      qtyInput.addEventListener('input', updateTotal);
+      container.addEventListener('change', e => {
+        if (e.target.classList.contains('personalization-checkbox')) updateTotal();
+      });
       updateTotal();
 
       // Ajouter au panier
-      document.getElementById('add-to-cart').addEventListener('click',async()=>{
-        const { data:{user} }=await supa.auth.getUser(); if(!user) return alert('Veuillez vous connecter');
-        const qty=parseInt(qtyInput.value)||1;
-        const selections=Array.from(document.querySelectorAll('.personalization-checkbox:checked')).map(cb=>cb.id);
-        await supa.from('cart_items').insert({ user_id:user.id, product_id:tableName, quantity:qty, personalizations:selections });
-        window.location.href='panier.html';
+      document.getElementById('add-to-cart').addEventListener('click', async () => {
+        const { data: { user } } = await supa.auth.getUser();
+        if (!user) return alert('Veuillez vous connecter.');
+        const qty = parseInt(qtyInput.value) || 1;
+        const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+          .map(cb => cb.id);
+        await supa.from('cart_items').insert({ user_id: user.id, product_id: tableName, quantity: qty, personalizations: selections });
+        window.location.href = 'panier.html';
       });
     }
     loadData();
