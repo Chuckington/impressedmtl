@@ -31,15 +31,21 @@
     </p>
   </div>
 
-  <!-- Utiliser le SDK ESM Supabase -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supa = createClient(
-      'https://vwvvbtcatamszncjuiso.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
-    );
-    console.log('Supabase client:', supa);
+  <!-- Charger le SDK Supabase UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    // Debug import
+    console.log('window.supabase:', window.supabase);
 
+    // Initialise Supabase avec la clef ANON
+    const supa = supabase.createClient(
+      'https://vwvvbtcatamszncjuiso.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhZ
+mFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
+    );
+    console.log('supa.supabaseKey:', supa.supabaseKey);
+
+    // Connexion
     document.getElementById('auth-form').addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -49,6 +55,8 @@
       if (error) return alert(error.message);
       window.location.href = 'inventaire.html';
     });
+
+    // Sign-up
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail');
@@ -59,6 +67,8 @@
       if (error) return alert(error.message);
       alert('Un e-mail de confirmation vous a été envoyé.');
     });
+
+    // Reset password
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail pour réinitialiser votre mot de passe');
