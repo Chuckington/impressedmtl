@@ -60,7 +60,7 @@
     <div class="header-title">
       <h1 id="page-title">Chargement...</h1>
       <p id="page-subtitle"></p>
-    </div>
+    <//div>
     <a href="panier.html" class="btn">Panier</a>
   </header>
   <div class="container">
@@ -79,7 +79,6 @@
     // Lecture des paramètres
     const params = new URLSearchParams(window.location.search);
     const tableName = params.get('table')?.trim().toLowerCase() || '';
-
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
@@ -104,15 +103,22 @@
       const qtyInput = document.getElementById('quantity');
       const totalEl = document.getElementById('total-price');
 
-      // Titre et sous-titre
+      // Vérifier table valide
       if (!nomsPropres[tableName]) {
-        titleEl.textContent = 'Erreur';
-        subtitleEl.textContent = '';
-        container.innerHTML = '<p>Erreur : produit inconnu.</p>';
-        return;
+        titleEl.textContent = 'Erreur'; subtitleEl.textContent = '';
+        container.innerHTML = '<p>Erreur : produit inconnu.</p>'; return;
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
       subtitleEl.textContent = 'Choisissez vos options';
+
+      // Récupérer prix de base depuis table inventaire
+      let basePrice = 0;
+      const { data: baseData, error: baseErr } = await supa
+        .from('inventaire')
+        .select('prix')
+        .eq('nom', nomsPropres[tableName])
+        .single();
+      if (!baseErr && baseData) basePrice = parseFloat(baseData.prix);
 
       // Récupération des personnalisations
       const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
@@ -124,38 +130,39 @@
       container.innerHTML = '';
       data.forEach((item, idx) => {
         const card = document.createElement('div');
-        card.className = 'card';
-        card.style.animationDelay = `${idx * 0.05}s`;
-
+        card.className = 'card'; card.style.animationDelay = `${idx * 0.05}s`;
         let content = `
           <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div>
           <div class="card-content">
             <h3>${item.nom}</h3>
-            <p><strong>Prix:</strong> ${item.prix}$</p>
+            <p><strong>Prix de base:</strong> ${basePrice}$</p>
+            <p><strong>Prix modif.:</strong> ${item.prix}$</p>
         `;
         if (item.personnalisation) {
           content += `<p><strong>Détail:</strong> ${item.personnalisation}</p>`;
+          // cases personnalisées...
           const d = item.personnalisation.toLowerCase();
           if (d.includes('gros design')) {
-            content += `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Gros design devant (+${item.prix}$)</label></div>
-                        <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Gros design derrière (+${item.prix}$)</label></div>`;
+            content += `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Gros design devant</label></div>
+                        <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Gros design derrière</label></div>`;
           } else if (d.includes('petit design poitrine')) {
-            content += `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Petit design poitrine gauche (+${item.prix}$)</label></div>
-                        <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Petit design poitrine droite (+${item.prix}$)</label></div>`;
+            content += `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Petit design poitrine gauche</label></div>
+                        <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Petit design poitrine droite</label></div>`;
           } else {
-            content += `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}"><label for="opt-${item.id}">Ajouter personnalisation (+${item.prix}$)</label></div>`;
+            content += `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}"><label for="opt-${item.id}">Ajouter personnalisation</label></div>`;
           }
         }
         content += '</div>';
-        card.innerHTML = content;
-        container.appendChild(card);
+        card.innerHTML = content; container.appendChild(card);
       });
 
-      // Calcul du total
+      // Calcul du total incluant prix de base + modifs
       function updateTotal() {
         const qty = parseInt(qtyInput.value) || 1;
-        const extra = Array.from(document.querySelectorAll('.personalization-checkbox:checked')).reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
-        totalEl.textContent = ((extra) * qty).toFixed(2);
+        const extras = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+          .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
+        const total = (basePrice + extras) * qty;
+        totalEl.textContent = total.toFixed(2);
       }
       qtyInput.addEventListener('input', updateTotal);
       container.addEventListener('change', e => {
