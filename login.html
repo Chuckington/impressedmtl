@@ -1,43 +1,73 @@
-<form id="auth-form" style="max-width:400px;margin:auto;text-align:left">
-    <h2>Connexion</h2>
-    <label>
-      Adresse e-mail
-      <input type="email" id="email" required />
-    </label><br/><br/>
-    <label>
-      Mot de passe
-      <input type="password" id="password" required />
-    </label><br/><br/>
-    <button type="submit" class="btn">Se connecter</button>
-    <p style="margin-top:12px">
-      Pas encore inscrit ? <a href="#" id="sign-up">Créer un compte</a>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container" style="max-width:400px; margin:80px auto;">
+    <div style="text-align:center; margin-bottom:30px;">
+      <img src="assets/logo.png" alt="Logo Impressed" class="logo" style="max-width:150px;">
+      <h1 style="font-size:1.8rem; margin-top:20px;">Se connecter</h1>
+    </div>
+    <form id="auth-form" style="display:flex; flex-direction:column; gap:20px;">
+      <div style="display:flex; flex-direction:column;">
+        <label for="email" style="margin-bottom:8px; font-weight:bold;">Adresse e-mail</label>
+        <input type="email" id="email" required placeholder="exemple@mail.com" style="padding:12px; border:1px solid #ccc; border-radius:4px; font-size:1rem;">
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <label for="password" style="margin-bottom:8px; font-weight:bold;">Mot de passe</label>
+        <input type="password" id="password" required placeholder="Votre mot de passe" style="padding:12px; border:1px solid #ccc; border-radius:4px; font-size:1rem;">
+      </div>
+      <button type="submit" class="btn" style="width:100%;">Se connecter</button>
+    </form>
+    <p style="text-align:center; margin-top:20px; font-size:0.9rem; color:#555;">
+      Pas encore de compte ? <a href="#" id="sign-up">Créer un compte</a>
     </p>
-  </form>
-  
+    <p style="text-align:center; margin-top:10px; font-size:0.9rem; color:#555;">
+      <a href="#" id="reset-password">Mot de passe oublié ?</a>
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
-      'ton_anon_key_ici'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
-  
+
+    // Gestion du formulaire de connexion
     document.getElementById('auth-form').addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const { data, error } = await supa.auth.signInWithPassword({ email, password });
       if (error) return alert(error.message);
-      // redirige après connexion réussie
       window.location.href = 'inventaire.html';
     });
-  
-    // Sign-up simple
+
+    // Création de compte rapide
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
-      const email = prompt('Ton e-mail ?');
-      const password = prompt('Ton mot de passe ?');
+      const email = prompt('Entrez votre e-mail');
+      const password = prompt('Choisissez un mot de passe');
+      if (!email || !password) return;
       const { data, error } = await supa.auth.signUp({ email, password });
       if (error) return alert(error.message);
-      alert('Un mail de confirmation vient de t’être envoyé !');
+      alert('Un e-mail de confirmation vous a été envoyé.');
+    });
+
+    // Réinitialisation de mot de passe
+    document.getElementById('reset-password').addEventListener('click', async e => {
+      e.preventDefault();
+      const email = prompt('Entrez votre e-mail pour réinitialiser votre mot de passe');
+      if (!email) return;
+      const { data, error } = await supa.auth.resetPasswordForEmail(email);
+      if (error) return alert(error.message);
+      alert('Un e-mail de réinitialisation a été envoyé.');
     });
   </script>
-  
+</body>
+</html>
