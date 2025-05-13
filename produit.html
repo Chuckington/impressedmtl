@@ -69,19 +69,27 @@
   </div>
   <script>
     const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Récupérer paramètre table
     const params = new URLSearchParams(window.location.search);
     const tableName = params.get('table')?.trim().toLowerCase();
     const nomsPropres = {
-      inventairecrewneck:"Crewneck", inventairehoodie:"Hoodie", inventairepolosport:"Polo Sport",
-      inventairesousverrerond:"Sous-verre sublimé (4 pack) modèle rond", inventairesousverrecarre:"Sous-verre sublimé (4 pack) modèle carré",
-      inventairetablier:"Tablier", inventairetotebag:"Tote Bag", inventairetshirtcroptop:"T-Shirt Crop top",
-      inventairetshirtdebase:"T-Shirt de base", inventairetshirtlongsleeve:"Long Sleeve",
-      inventairetshirtpremium:"T-Shirt Premium - Sport", inventairetuque:"Tuque",
-      inventaireveste:"Veste", inventairetapisdesouris:"Tapis de souris"
+      inventairecrewneck: "Crewneck",
+      inventairehoodie: "Hoodie",
+      inventairepolosport: "Polo Sport",
+      inventairesousverrerond: "Sous-verre sublimé (4 pack) modèle rond",
+      inventairesousverrecarre: "Sous-verre sublimé (4 pack) modèle carré",
+      inventairetablier: "Tablier",
+      inventairetotebag: "Tote Bag",
+      inventairetshirtcroptop: "T-Shirt Crop top",
+      inventairetshirtdebase: "T-Shirt de base",
+      inventairetshirtlongsleeve: "Long Sleeve",
+      inventairetshirtpremium: "T-Shirt Premium - Sport",
+      inventairetuque: "Tuque",
+      inventaireveste: "Veste",
+      inventairetapisdesouris: "Tapis de souris"
     };
     const noCheckbox = ['inventairesousverrecarre','inventairesousverrerond','inventairetapisdesouris'];
 
@@ -94,48 +102,55 @@
 
       // Vérifier table
       if (!nomsPropres[tableName]) {
-        titleEl.textContent = 'Erreur'; container.innerHTML='<p>Produit inconnu.</p>'; return;
+        titleEl.textContent = 'Erreur'; container.innerHTML = '<p>Produit inconnu.</p>'; return;
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
       subtitleEl.textContent = 'Choisissez vos options';
 
       // Prix de base
-      let basePrice=0;
-      const { data:baseData } = await supa.from('inventaire').select('prix').eq('nom',nomsPropres[tableName]).single();
-      if(baseData) basePrice=parseFloat(baseData.prix);
+      let basePrice = 0;
+      const { data: baseData, error: baseErr } = await supa
+        .from('inventaire')
+        .select('prix')
+        .eq('nom', nomsPropres[tableName])
+        .single();
+      if (!baseErr && baseData) basePrice = parseFloat(baseData.prix);
 
       // Fetch personnalisations
-      const { data, error } = await supa.from(tableName).select('*').order('nom', {ascending:true});
-      if(error) { container.innerHTML='<p>Erreur chargement.</p>'; return; }
-      container.innerHTML='';
+      const { data, error } = await supa.from(tableName).select('*').order('nom', { ascending: true });
+      if (error) { console.error(error); container.innerHTML = '<p>Erreur chargement.</p>'; return; }
+      container.innerHTML = '';
 
-      data.forEach((item,idx)=>{
-        const card=document.createElement('div'); card.className='card'; card.style.animationDelay=`${idx*0.05}s`;
-        let html=`<div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div><div class="card-content"><h3>${item.nom}</h3><p><strong>Base:</strong> ${basePrice}$</p><p><strong>Modif:</strong> ${item.prix}$</p>`;
+      data.forEach((item, idx) => {
+        const card = document.createElement('div'); card.className = 'card'; card.style.animationDelay = `${idx * 0.05}s`;
+        let html = `<div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div><div class="card-content"><h3>${item.nom}</h3><p><strong>Base:</strong> ${basePrice}$</p><p><strong>Modif:</strong> ${item.prix}$</p>`;
         const showCheckbox = !noCheckbox.includes(tableName);
-        if(item.personnalisation && showCheckbox){ html+=`<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}"><label for="opt-${item.id}">${item.personnalisation}</label></div>`; }
-        html+='</div>';
-        card.innerHTML=html; container.appendChild(card);
+        if (item.personnalisation && showCheckbox) {
+          html += `<div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}"><label for="opt-${item.id}">${item.personnalisation}</label></div>`;
+        }
+        html += '</div>';
+        card.innerHTML = html; container.appendChild(card);
       });
 
       // Total
-      function updateTotal(){
-        const qty=parseInt(qtyInput.value)||1;
-        const extras=Array.from(document.querySelectorAll('.personalization-checkbox:checked')).reduce((s,cb)=>s+parseFloat(cb.dataset.price),0);
-        totalEl.textContent=((basePrice+extras)*qty).toFixed(2);
+      function updateTotal() {
+        const qty = parseInt(qtyInput.value) || 1;
+        const extras = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+          .reduce((s, cb) => s + parseFloat(cb.dataset.price), 0);
+        totalEl.textContent = ((basePrice + extras) * qty).toFixed(2);
       }
-      qtyInput.addEventListener('input',updateTotal);
-      container.addEventListener('change',e=>{if(e.target.classList.contains('personalization-checkbox'))updateTotal();});
+      qtyInput.addEventListener('input', updateTotal);
+      container.addEventListener('change', e => { if (e.target.classList.contains('personalization-checkbox')) updateTotal(); });
       updateTotal();
 
       // Ajouter au panier
-      document.getElementById('add-to-cart').addEventListener('click',async()=>{
-        const { data:{user} }=await supa.auth.getUser();
-        if(!user) return alert('Connectez-vous.');
-        const qty=parseInt(qtyInput.value)||1;
-        const selected=Array.from(document.querySelectorAll('.personalization-checkbox:checked')).map(cb=>cb.id);
-        await supa.from('cart_items').insert({ user_id:user.id,product_id:tableName,quantity:qty,personalizations:selected });
-        location.href='panier.html';
+      document.getElementById('add-to-cart').addEventListener('click', async () => {
+        const { data: { user } } = await supa.auth.getUser();
+        if (!user) return alert('Connectez-vous.');
+        const qty = parseInt(qtyInput.value) || 1;
+        const selected = Array.from(document.querySelectorAll('.personalization-checkbox:checked')).map(cb => cb.id);
+        await supa.from('cart_items').insert({ user_id: user.id, product_id: tableName, quantity: qty, personalizations: selected });
+        location.href = 'panier.html';
       });
     }
     loadData();
