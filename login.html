@@ -9,7 +9,7 @@
 <body>
   <div class="container" style="max-width:400px; margin:80px auto;">
     <div style="text-align:center; margin-bottom:30px;">
-      <img src="assets/logo.png" alt="Logo Impressed" class="logo" style="max-width:150px;">
+      <img src="assets/logo.png" alt="Logo Impressed" style="max-width:150px;">
       <h1 style="font-size:1.8rem; margin-top:20px;">Se connecter</h1>
     </div>
     <form id="auth-form" style="display:flex; flex-direction:column; gap:20px;">
@@ -31,7 +31,7 @@
     </p>
   </div>
 
-  <!-- Charger le SDK Supabase (version UMD) -->
+  <!-- Charger le SDK Supabase (UMD) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     // Vérifier que la lib UMD est chargée
@@ -39,18 +39,14 @@
       console.error("Supabase UMD n'est pas chargé");
     } else {
       console.log('Supabase UMD chargé ✔️');
-      console.log('Objet Supabase:', supa);
-      console.log('supa.auth endpoint:', supa.auth);
     }
 
-    // Initialise Supabase
+    // Initialise Supabase client
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
-    // Debug : inspecte la config du client et la clé utilisée
-    console.log('Supabase client config', supa._config);
-
+    console.log('Supabase client config:', supa._config);
 
     // Gestion du login
     document.getElementById('auth-form').addEventListener('submit', async e => {
@@ -58,6 +54,7 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const { data, error } = await supa.auth.signInWithPassword({ email, password });
+      console.log('Login response:', data, error);
       if (error) return alert(error.message);
       window.location.href = 'inventaire.html';
     });
@@ -69,6 +66,7 @@
       const password = prompt('Choisissez un mot de passe');
       if (!email || !password) return;
       const { data, error } = await supa.auth.signUp({ email, password });
+      console.log('Signup response:', data, error);
       if (error) return alert(error.message);
       alert('Un e-mail de confirmation vous a été envoyé.');
     });
@@ -79,6 +77,7 @@
       const email = prompt('Entrez votre e-mail pour réinitialiser votre mot de passe');
       if (!email) return;
       const { data, error } = await supa.auth.resetPasswordForEmail(email);
+      console.log('Reset password response:', data, error);
       if (error) return alert(error.message);
       alert('Un e-mail de réinitialisation a été envoyé.');
     });
