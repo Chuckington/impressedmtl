@@ -64,7 +64,7 @@
     <div class="header-title">
       <h1 id="page-title">Personnalisations</h1>
       <p id="page-subtitle">Choisissez vos options</p>
-    <//div>
+    </div>
     <a href="panier.html" class="btn">Panier</a>
   </header>
 
@@ -109,7 +109,7 @@
 
       if (!tableName || !nomsPropres[tableName]) {
         titleEl.textContent = 'Erreur'; subtitleEl.textContent = '';
-        container.innerHTML = '<p>Erreur : produit inconnu.</p>'; return;
+        container.innerHTML = '<p>Erreur : produit inconnu.</p>'; return;
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
 
@@ -117,7 +117,7 @@
       container.innerHTML = '';
       if (error || !data.length) {
         console.error(error);
-        container.innerHTML = '<p>Erreur ou personnalisations indisponibles.</p>';
+        container.innerHTML = '<p>Erreur ou personnalisations indisponibles.</p>';
       } else {
         data.forEach((item, idx) => {
           const card = document.createElement('div');
