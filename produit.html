@@ -15,15 +15,16 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index: 1000;
     }
+    .btn {
+      padding: 10px 14px; background-color: #000; color: #fff;
+      text-decoration: none; border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+    .btn:hover { background-color: #444; }
     .header-title { flex: 1; text-align: center; }
     .header-title h1 { font-size: 1.8rem; }
     .header-title p { font-size: 1rem; color: #555; margin-top: 4px; }
-    .btn {
-      padding: 10px 14px; background: #000; color: #fff;
-      text-decoration: none; border-radius: 5px;
-      transition: background 0.2s;
-    }
-    .btn:hover { background: #444; }
+
     /* Contenu */
     .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
@@ -63,7 +64,7 @@
     <div class="header-title">
       <h1 id="page-title">Personnalisations</h1>
       <p id="page-subtitle">Choisissez vos options</p>
-    </div>
+    <//div>
     <a href="panier.html" class="btn">Panier</a>
   </header>
 
@@ -76,17 +77,12 @@
   </div>
 
   <script>
-    // Initialise supabase avec headers explicites pour l'API key
     const SUPABASE_URL = 'https://vwvvbtcatamszncjuiso.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGVtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA';
-    const supa = supabase.createClient(
-      SUPABASE_URL, SUPABASE_KEY,
-      { global: { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } } }
-    );
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const params = new URLSearchParams(window.location.search);
     const tableName = params.get('table')?.trim().toLowerCase();
-
     const nomsPropres = {
       inventairecrewneck: "Crewneck",
       inventairehoodie: "Hoodie",
@@ -146,8 +142,7 @@
             }
           }
           inner += '</div>';
-          card.innerHTML = inner;
-          container.appendChild(card);
+          card.innerHTML = inner; container.appendChild(card);
         });
       }
 
