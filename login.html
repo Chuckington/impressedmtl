@@ -31,14 +31,16 @@
     </p>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Charger le SDK Supabase (version UMD) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Initialise Supabase
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    // Gestion du formulaire de connexion
+    // Gestion du login
     document.getElementById('auth-form').addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -48,7 +50,7 @@
       window.location.href = 'inventaire.html';
     });
 
-    // Création de compte rapide
+    // Création de compte
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail');
@@ -59,7 +61,7 @@
       alert('Un e-mail de confirmation vous a été envoyé.');
     });
 
-    // Réinitialisation de mot de passe
+    // Réinitialisation du mot de passe
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail pour réinitialiser votre mot de passe');
