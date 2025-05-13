@@ -33,12 +33,14 @@
 
   <!-- Charger le SDK Supabase (version UMD) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <!-- Debug: vérifier que supabase est bien chargé -->
   <script>
-    if (!window.supabase) console.error('Supabase UMD n'est pas chargé'); else console.log('Supabase UMD chargé', supabase);
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
+    // Vérifier que la lib UMD est chargée
+    if (!window.supabase) {
+      console.error("Supabase UMD n'est pas chargé");
+    } else {
+      console.log('Supabase UMD chargé ✔️');
+    }
+
     // Initialise Supabase
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
