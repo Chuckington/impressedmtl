@@ -49,16 +49,19 @@
   </div>
 
   <script>
+    // Initialise Supabase client
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhZmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    // Auth UI: Se connecter / Se déconnecter
+    // Auth UI: mettre à jour état de connexion
     const authBtn = document.getElementById('auth-button');
     const userEmail = document.getElementById('user-email');
     async function updateAuthUI() {
-      const { data: { user } } = await supa.auth.getUser();
+      const {
+        data: { user }
+      } = await supa.auth.getUser();
       if (user) {
         userEmail.textContent = user.email;
         authBtn.textContent = 'Se déconnecter';
@@ -67,13 +70,29 @@
         authBtn.textContent = 'Se connecter';
       }
     }
+
+    // Click Se connecter / Se déconnecter
     authBtn.addEventListener('click', async () => {
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) await supa.auth.signOut();
-      else window.location.href = 'login.html';
+      const {
+        data: { user }
+      } = await supa.auth.getUser();
+      if (user) {
+        console.log('Déconnexion...');
+        await supa.auth.signOut();
+        console.log('Déconnecté');
+        updateAuthUI();
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Écoute des changements d'auth (logout, login)
+    supa.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event);
       updateAuthUI();
     });
-    supa.auth.onAuthStateChange(() => updateAuthUI());
+
+    // Affiche initialement l'état auth
     updateAuthUI();
 
     // Charger l'inventaire pour tous
@@ -92,7 +111,6 @@
       container.innerHTML = '';
       data.forEach(item => {
         const card = document.createElement('a');
-        // Construction du paramètre table en fonction du nom
         card.href = `produit.html?table=${encodeURIComponent(item.nom.trim().toLowerCase().replace(/\s+/g, ''))}`;
         card.className = 'card';
         card.innerHTML = `
@@ -107,7 +125,7 @@
       });
     }
 
-    // Appel initial sans redirection
+    // Charger inventaire
     loadInventaire();
   </script>
 </body>
