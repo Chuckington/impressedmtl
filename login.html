@@ -6,26 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
-    /* Styles identiques à la version précédente */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; min-height: 100%; }
-    header { position: sticky; top: 0; width: 100%; background: white; display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); z-index: 1000; }
+    header { position: sticky; top: 0; width: 100%; background: white; display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index: 1000; }
     .btn { display: inline-block; padding: 10px 14px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; transition: background 0.2s; }
     .btn:hover { background: #444; }
     .header-title { flex: 1; text-align: center; }
     .header-title h1 { font-size: 1.8rem; }
     .header-title p { font-size: 1rem; color: #555; margin-top: 4px; }
     .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
-    @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-    .card { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s; }
-    .card:hover { transform: scale(1.02); }
-    .card-image { background: #f0f0f0; display: flex; justify-content: center; align-items: center; padding: 30px; height: 260px; }
-    .card-image img { max-height: 200px; max-width: 100%; object-fit: contain; }
-    .card-content { padding: 20px; text-align: left; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-    .card-content h3 { margin: 0 0 10px; font-size: 1.2rem; }
-    .card-content p { margin: 5px 0; font-size: 1rem; color: #444; }
+    .grid { display: grid; grid-template-columns: repeat(3,1fr); gap:40px; }
+    @media(max-width:1000px){ .grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:600px){ .grid { grid-template-columns: 1fr; } }
+    .card { background:white; border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; display:flex; flex-direction:column; cursor:pointer; transition:transform 0.2s; }
+    .card:hover { transform:scale(1.02); }
+    .card-image { background:#f0f0f0; display:flex; justify-content:center; align-items:center; padding:30px; height:260px; }
+    .card-image img { max-height:200px; max-width:100%; object-fit:contain; }
+    .card-content { padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content:center; }
+    .card-content h3 { margin:0 0 10px; font-size:1.2rem; }
+    .card-content p { margin:5px 0; font-size:1rem; color:#444; }
   </style>
 </head>
 <body>
@@ -35,8 +34,8 @@
       <h1>Inventaire Impressed</h1>
       <p>Vêtements disponibles pour personnalisation</p>
     </div>
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <span id="user-email" style="color: #333;"></span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span id="user-email" style="color:#333;"></span>
       <button id="auth-button" class="btn">Se connecter</button>
       <a href="panier.html" class="btn">Panier</a>
     </div>
@@ -44,26 +43,25 @@
 
   <div class="container">
     <div id="inventaire" class="grid">
-      <p style="grid-column:1/-1; text-align:center;">Chargement...</p>
+      <p style="grid-column:1/-1;text-align:center;">Chargement...</p>
     </div>
   </div>
 
   <script>
-    // Initialise Supabase client
+    // Initialise Supabase
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhZmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    // Auth UI: mettre à jour état de connexion
     const authBtn = document.getElementById('auth-button');
     const userEmail = document.getElementById('user-email');
+
+    // Met à jour le bouton selon la session
     async function updateAuthUI() {
-      const {
-        data: { user }
-      } = await supa.auth.getUser();
-      if (user) {
-        userEmail.textContent = user.email;
+      const { data: { session } } = await supa.auth.getSession();
+      if (session && session.user) {
+        userEmail.textContent = session.user.email;
         authBtn.textContent = 'Se déconnecter';
       } else {
         userEmail.textContent = '';
@@ -71,47 +69,39 @@
       }
     }
 
-    // Click Se connecter / Se déconnecter
+    // Gestion du clic login/logout
     authBtn.addEventListener('click', async () => {
-      const {
-        data: { user }
-      } = await supa.auth.getUser();
-      if (user) {
-        console.log('Déconnexion...');
+      const { data: { session } } = await supa.auth.getSession();
+      if (session && session.user) {
         await supa.auth.signOut();
-        console.log('Déconnecté');
-        updateAuthUI();
       } else {
-        window.location.href = 'login.html';
+        location.href = 'login.html';
       }
     });
 
-    // Écoute des changements d'auth (logout, login)
-    supa.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state change:', event);
+    // Écoute des changements de session
+    supa.auth.onAuthStateChange(() => {
       updateAuthUI();
     });
 
-    // Affiche initialement l'état auth
-    updateAuthUI();
-
-    // Charger l'inventaire pour tous
+    // Charge l'inventaire
     async function loadInventaire() {
       const { data, error } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
       const container = document.getElementById('inventaire');
       if (error) {
-        container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement.</p>';
+        container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:red;">Erreur de chargement.</p>';
         console.error(error);
         return;
       }
       if (!data || data.length === 0) {
-        container.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Aucun produit disponible.</p>';
+        container.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Aucun produit disponible.</p>';
         return;
       }
       container.innerHTML = '';
       data.forEach(item => {
+        const slug = item.nom.trim().toLowerCase().replace(/\s+/g, '');
         const card = document.createElement('a');
-        card.href = `produit.html?table=${encodeURIComponent(item.nom.trim().toLowerCase().replace(/\s+/g, ''))}`;
+        card.href = `produit.html?table=${encodeURIComponent(slug)}`;
         card.className = 'card';
         card.innerHTML = `
           <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div>
@@ -125,7 +115,8 @@
       });
     }
 
-    // Charger inventaire
+    // Initialisation
+    updateAuthUI();
     loadInventaire();
   </script>
 </body>
