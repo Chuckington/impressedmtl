@@ -5,9 +5,42 @@
   <title>Votre compte – Impressed</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <style>
+    header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      z-index: 1000;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      background: #000;
+      color: #fff;
+      text-decoration: none;
+      border-radius:5px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #444; }
+    .header-title {
+      flex: 1;
+      text-align: center;
+    }
+    .header-title h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+    /* Disable any fade-in on buttons/text */
+    .btn, .header-title h1 { animation: none !important; }
+  </style>
 </head>
 <body>
-  <!-- Header commun -->
   <header>
     <a href="index.html" class="btn">← Accueil</a>
     <div class="header-title">
@@ -16,25 +49,22 @@
     <a href="panier.html" class="btn">Panier</a>
   </header>
 
-  <div class="container" style="max-width:400px; margin:80px auto; padding: 20px;">
-    <div style="text-align:center; margin-bottom:30px;">
-      <img src="assets/logo.png" alt="Logo Impressed" style="max-width:120px;" loading="lazy">
-    </div>
+  <div class="container" style="max-width:400px; margin:80px auto; padding:20px;">
     <form id="auth-form" style="display:flex; flex-direction:column; gap:16px;">
       <div class="form-group">
-        <label for="email" class="label">Adresse e‑mail</label>
-        <input type="email" id="email" required placeholder="exemple@mail.com" class="input">
+        <label for="email">Adresse e-mail</label>
+        <input type="email" id="email" required placeholder="exemple@mail.com" style="padding:10px; border:1px solid #ccc; border-radius:4px;">
       </div>
       <div class="form-group">
-        <label for="password" class="label">Mot de passe</label>
-        <input type="password" id="password" required placeholder="Votre mot de passe" class="input">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" required placeholder="Votre mot de passe" style="padding:10px; border:1px solid #ccc; border-radius:4px;">
       </div>
       <button type="submit" class="btn">Se connecter</button>
     </form>
-    <p style="text-align:center; margin-top:16px; font-size:0.9rem; color:#555;">
+    <p style="text-align:center; margin-top:16px;">
       Pas encore de compte ? <a href="#" id="sign-up">Créer un compte</a>
     </p>
-    <p style="text-align:center; margin-top:8px; font-size:0.9rem; color:#555;">
+    <p style="text-align:center; margin-top:8px;">
       <a href="#" id="reset-password">Mot de passe oublié ?</a>
     </p>
   </div>
@@ -56,25 +86,25 @@
       window.location.href = 'inventaire.html';
     });
 
-    // Sign-up (popup)
+    // Sign-up
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
-      const email = prompt('Entrez votre e‑mail');
+      const email = prompt('Entrez votre e-mail');
       const password = prompt('Choisissez un mot de passe');
       if (!email || !password) return;
       const { data, error } = await supa.auth.signUp({ email, password });
       if (error) return alert(error.message);
-      alert('Un e‑mail de confirmation vous a été envoyé.');
+      alert('Un e-mail de confirmation vous a été envoyé.');
     });
 
-    // Reset password (popup)
+    // Reset password
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
-      const email = prompt('Entrez votre e‑mail pour réinitialiser le mot de passe');
+      const email = prompt('Entrez votre e-mail pour réinitialiser le mot de passe');
       if (!email) return;
       const { data, error } = await supa.auth.resetPasswordForEmail(email);
       if (error) return alert(error.message);
-      alert('Un e‑mail de réinitialisation a été envoyé.');
+      alert('Un e-mail de réinitialisation a été envoyé.');
     });
   </script>
 </body>
