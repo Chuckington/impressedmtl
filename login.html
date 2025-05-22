@@ -7,31 +7,38 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container" style="max-width:400px; margin:80px auto;">
-    <div style="text-align:center; margin-bottom:30px;">
-      <img src="assets/logo.png" alt="Logo Impressed" style="max-width:150px;">
-      <h1 style="font-size:1.8rem; margin-top:20px;">Se connecter</h1>
+  <div class="container">
+    <div class="header">
+      <img src="assets/logo.png" alt="Logo Impressed" style="max-width:150px;" loading="lazy">
+      <h1 class="title">Se connecter</h1>
     </div>
-    <form id="auth-form" style="display:flex; flex-direction:column; gap:20px;">
-      <div style="display:flex; flex-direction:column;">
-        <label for="email" style="margin-bottom:8px; font-weight:bold;">Adresse e-mail</label>
-        <input type="email" id="email" required placeholder="exemple@mail.com" style="padding:12px; border:1px solid #ccc; border-radius:4px; font-size:1rem;">
+    <form id="auth-form" class="form">
+      <div class="form-group">
+        <label for="email" class="label">Adresse e-mail</label>
+        <input type="email" id="email" required placeholder="exemple@mail.com" class="input">
       </div>
-      <div style="display:flex; flex-direction:column;">
-        <label for="password" style="margin-bottom:8px; font-weight:bold;">Mot de passe</label>
-        <input type="password" id="password" required placeholder="Votre mot de passe" style="padding:12px; border:1px solid #ccc; border-radius:4px; font-size:1rem;">
+      <div class="form-group">
+        <label for="password" class="label">Mot de passe</label>
+        <input type="password" id="password" required placeholder="Votre mot de passe" class="input">
       </div>
-      <button type="submit" class="btn" style="width:100%;">Se connecter</button>
+      <button type="submit" class="btn">Se connecter</button>
     </form>
-    <p style="text-align:center; margin-top:20px; font-size:0.9rem; color:#555;">
+    <p class="footer-text">
       Pas encore de compte ? <a href="#" id="sign-up">Créer un compte</a>
     </p>
-    <p style="text-align:center; margin-top:10px; font-size:0.9rem; color:#555;">
+    <p class="footer-text">
       <a href="#" id="reset-password">Mot de passe oublié ?</a>
     </p>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/supabase.min.js"></script>
+  <script>
+    if (typeof supabase === 'undefined') {
+      const script = document.createElement('script');
+      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js";
+      document.head.appendChild(script);
+    }
+  </script>
   <script>
     // Initialise Supabase
     const supa = supabase.createClient(
@@ -46,7 +53,11 @@
       const password = document.getElementById('password').value;
       const { data, error } = await supa.auth.signInWithPassword({ email, password });
       if (error) return alert(error.message);
-      window.location.href = 'inventaire.html';
+      if (data) {
+        window.location.href = 'inventaire.html';
+      } else {
+        alert('Une erreur inattendue s\'est produite. Veuillez réessayer.');
+      }
     });
 
     // Sign-up (popup)
@@ -63,7 +74,7 @@
     // Reset password (popup)
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
-      const email = prompt('Entrez votre e-mail pour réinitialiser votre mot de passe');
+      const email = prompt('Entrez votre e-mail pour réinitialiser le mot de passe');
       if (!email) return;
       const { data, error } = await supa.auth.resetPasswordForEmail(email);
       if (error) return alert(error.message);
