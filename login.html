@@ -7,12 +7,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
+  <div class="container" style="max-width:400px; margin:80px auto;">
+    <div class="header" style="text-align:center; margin-bottom:30px;">
       <img src="assets/logo.png" alt="Logo Impressed" style="max-width:150px;" loading="lazy">
-      <h1 class="title">Se connecter</h1>
+      <h1 id="page-title" class="title" style="font-size:1.8rem; margin-top:20px;">Se connecter</h1>
     </div>
-    <form id="auth-form" class="form">
+    <button id="logout-button" class="btn" style="display:none; width:100%; margin-bottom:20px;">Se déconnecter</button>
+    <form id="auth-form" class="form" style="display:flex; flex-direction:column; gap:20px;">
       <div class="form-group">
         <label for="email" class="label">Adresse e-mail</label>
         <input type="email" id="email" required placeholder="exemple@mail.com" class="input">
@@ -21,7 +22,7 @@
         <label for="password" class="label">Mot de passe</label>
         <input type="password" id="password" required placeholder="Votre mot de passe" class="input">
       </div>
-      <button type="submit" class="btn">Se connecter</button>
+      <button type="submit" id="login-button" class="btn">Se connecter</button>
     </form>
     <p class="footer-text">
       Pas encore de compte ? <a href="#" id="sign-up">Créer un compte</a>
@@ -31,33 +32,61 @@
     </p>
   </div>
 
-  <script src="assets/supabase.min.js"></script>
-  <script>
-    if (typeof supabase === 'undefined') {
-      const script = document.createElement('script');
-      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js";
-      document.head.appendChild(script);
-    }
-  </script>
+  <!-- Supabase UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     // Initialise Supabase
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhZmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
+    const authForm = document.getElementById('auth-form');
+    const logoutBtn = document.getElementById('logout-button');
+    const pageTitle = document.getElementById('page-title');
+
+    // Met à jour l'UI en fonction de la session
+    async function updateAuthUI() {
+      const { data: { session } } = await supa.auth.getSession();
+      if (session && session.user) {
+        // Utilisateur connecté
+        pageTitle.textContent = `Connecté en tant que ${session.user.email}`;
+        authForm.style.display = 'none';
+        logoutBtn.style.display = 'block';
+        document.getElementById('sign-up').style.display = 'none';
+        document.getElementById('reset-password').style.display = 'none';
+      } else {
+        // Pas connecté
+        pageTitle.textContent = 'Se connecter';
+        authForm.style.display = 'flex';
+        logoutBtn.style.display = 'none';
+        document.getElementById('sign-up').style.display = 'inline';
+        document.getElementById('reset-password').style.display = 'block';
+      }
+    }
+
+    // Écoute des changements de session
+    supa.auth.onAuthStateChange((event, session) => {
+      updateAuthUI();
+    });
+
+    // Initialisation UI
+    updateAuthUI();
+
     // Connexion
-    document.getElementById('auth-form').addEventListener('submit', async e => {
+    authForm.addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const { data, error } = await supa.auth.signInWithPassword({ email, password });
       if (error) return alert(error.message);
-      if (data) {
-        window.location.href = 'inventaire.html';
-      } else {
-        alert('Une erreur inattendue s\'est produite. Veuillez réessayer.');
-      }
+      window.location.href = 'inventaire.html';
+    });
+
+    // Déconnexion
+    logoutBtn.addEventListener('click', async () => {
+      await supa.auth.signOut();
+      updateAuthUI();
     });
 
     // Sign-up (popup)
