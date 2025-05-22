@@ -36,8 +36,8 @@
       font-size: 1.8rem;
       margin: 0;
     }
-    /* Disable any fade-in on buttons/text */
-    .btn, .header-title h1 { animation: none !important; }
+    /* Disable fade animations */
+    .btn, .header-title h1, h2 { animation: none !important; }
   </style>
 </head>
 <body>
@@ -49,7 +49,8 @@
     <a href="panier.html" class="btn">Panier</a>
   </header>
 
-  <div class="container" style="max-width:400px; margin:80px auto; padding:20px;">
+  <div class="container" style="max-width:400px; margin:60px auto; padding:20px;">
+    <h2 style="text-align:center; font-size:1.4rem; margin-bottom:24px;">Se connecter</h2>
     <form id="auth-form" style="display:flex; flex-direction:column; gap:16px;">
       <div class="form-group">
         <label for="email">Adresse e-mail</label>
@@ -61,11 +62,11 @@
       </div>
       <button type="submit" class="btn">Se connecter</button>
     </form>
-    <p style="text-align:center; margin-top:16px;">
+    <p style="text-align:center; margin-top:20px; font-size:0.9rem; color:#555;">
       Pas encore de compte ? <a href="#" id="sign-up">Créer un compte</a>
     </p>
-    <p style="text-align:center; margin-top:8px;">
-      <a href="#" id="reset-password">Mot de passe oublié ?</a>
+    <p style="text-align:center; margin-top:8px; font-size:0.9rem; color:#555;">
+      <a href="#" id="reset-password">Mot de passe oublié ?</a>
     </p>
   </div>
 
@@ -86,7 +87,7 @@
       window.location.href = 'inventaire.html';
     });
 
-    // Sign-up
+    // Inscription popup
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail');
@@ -97,7 +98,7 @@
       alert('Un e-mail de confirmation vous a été envoyé.');
     });
 
-    // Reset password
+    // Mot de passe oublié popup
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e-mail pour réinitialiser le mot de passe');
