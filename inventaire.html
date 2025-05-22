@@ -37,8 +37,7 @@
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
       <a href="panier.html" class="btn">Panier</a>
-      <span id="user-email" style="color:#333;"></span>
-      <button id="auth-button" class="btn">Se connecter</button>
+      <button id="auth-button" class="btn">Compte</button>
     </div>
   </header>
 
@@ -52,44 +51,25 @@
     // Initialise Supabase client
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhZnBhcyIsInJlZiI6InZ3dnZidGNhdGFtc3puY2pXSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    const authBtn = document.getElementById('auth-button');
-    const userEmail = document.getElementById('user-email');
-    const container = document.getElementById('inventaire');
-
-    // Met à jour l'affichage du bouton compte selon l'auth
-    async function updateAuthUI() {
-      const { data:{ session } } = await supa.auth.getSession();
-      if (session?.user) {
-        userEmail.textContent = session.user.email;
-        authBtn.textContent = 'Compte';
-      } else {
-        userEmail.textContent = '';
-        authBtn.textContent = 'Se connecter';
-      }
-    }
-
-    // Handler click: toujours rediriger vers login.html
-    authBtn.addEventListener('click', () => {
+    // Bouton Compte => page login
+    document.getElementById('auth-button').addEventListener('click', () => {
       window.location.href = 'login.html';
     });
 
-    // Écoute des changements de session (mise à jour UI)
-    supa.auth.onAuthStateChange(() => updateAuthUI());
-    updateAuthUI();
-
-    // Charge l'inventaire
+    // Chargement de l'inventaire
     async function loadInventaire() {
-      const { data, error } = await supa.from('inventaire').select('*').order('nom',{ascending:true});
+      const { data, error } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
+      const container = document.getElementById('inventaire');
       if (error) {
-        container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:red;">Erreur de chargement.</p>';
-        console.error(error);
+        container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement.</p>';
+        console.error('Erreur Supabase:', error);
         return;
       }
-      if (!data.length) {
-        container.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Aucun produit disponible.</p>';
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Aucun produit disponible.</p>';
         return;
       }
       container.innerHTML = '';
@@ -119,13 +99,14 @@
           <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div>
           <div class="card-content">
             <h3>${item.nom}</h3>
-            <p><strong>Modèle:</strong> ${item.modèle||'—'}</p>
+            <p><strong>Modèle:</strong> ${item.modèle || '—'}</p>
             <p><strong>Prix:</strong> ${item.prix}$</p>
           </div>`;
         container.appendChild(card);
       });
     }
 
+    // Lancer le chargement
     loadInventaire();
   </script>
 </body>
