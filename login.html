@@ -15,27 +15,20 @@
       padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index:1000;
     }
     .btn {
-      display: inline-block; padding: 10px 14px;
-      background: #000; color: #fff; text-decoration: none;
-      border-radius:5px; transition: background 0.2s; animation: none !important;
+      display: inline-block; padding: 10px 14px; background: #000; color: #fff;
+      text-decoration: none; border-radius:5px; transition: background 0.2s;
     }
     .btn:hover { background: #444; }
     .header-title { flex: 1; text-align: center; }
-    .header-title h1 { margin: 0; font-size: 1.8rem; color: #000; animation: none !important; }
+    .header-title h1 { margin: 0; font-size: 1.8rem; color: #000; }
     .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
-    .login-box {
-      max-width: 400px; margin: 40px auto; padding: 20px;
-      background: white; border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      animation: none !important;
+    .login-box { max-width: 400px; margin: 40px auto; padding: 20px;
+      background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    h2 { text-align: center; font-size: 1.4rem; margin-bottom: 24px; color: #000; animation: none !important; }
+    h2 { text-align: center; font-size: 1.4rem; margin-bottom: 24px; color: #000; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #000; }
-    .form-group input {
-      width: 100%; padding: 10px;
-      border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;
-    }
+    .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
     .footer-text { text-align: center; margin-top: 16px; font-size: 0.9rem; color: #555; }
     .footer-text a { color: #007BFF; text-decoration: none; }
     .footer-text a:hover { text-decoration: underline; }
@@ -45,10 +38,7 @@
   <header>
     <a href="index.html" class="btn">← Accueil</a>
     <div class="header-title"><h1>Votre compte</h1></div>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <a href="panier.html" class="btn">Panier</a>
-      <button id="auth-button" class="btn">Se connecter</button>
-    </div>
+    <a href="panier.html" class="btn">Panier</a>
   </header>
 
   <div class="container">
@@ -76,7 +66,6 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    // Auth UI and logic
     const authBtn = document.getElementById('auth-button');
     const formTitle = document.getElementById('form-title');
     const formButton = document.getElementById('form-button');
@@ -84,6 +73,7 @@
     const resetText = document.getElementById('reset-text');
     const authForm = document.getElementById('auth-form');
 
+    // Met à jour le UI selon l'état auth
     async function updateAuthUI() {
       const { data: { user } } = await supa.auth.getUser();
       if (user) {
@@ -101,20 +91,26 @@
       }
     }
 
+    // Bouton header
     authBtn.addEventListener('click', async () => {
       const { data: { user } } = await supa.auth.getUser();
       if (user) {
         await supa.auth.signOut();
-        location.reload();
+        updateAuthUI();
+      } else {
+        // redirige vers login si on est ailleurs
+        window.location.href = 'login.html';
       }
     });
 
+    // Soumission formulaire
     authForm.addEventListener('submit', async e => {
       e.preventDefault();
       const { data: { user } } = await supa.auth.getUser();
       if (user) {
+        // déconnexion via form
         await supa.auth.signOut();
-        location.reload();
+        updateAuthUI();
       } else {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -124,6 +120,7 @@
       }
     });
 
+    // Inscription
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
       const email = prompt('Entrez votre e‑mail');
@@ -134,9 +131,10 @@
       alert('Un e‑mail de confirmation a été envoyé.');
     });
 
+    // Réinitialisation
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
-      const email = prompt('Entrez votre e‑mail pour réinitialiser le mot de passe');
+      const email = prompt('Entrez votre e‑mail');
       if (!email) return;
       const { error } = await supa.auth.resetPasswordForEmail(email);
       if (error) return alert(error.message);
