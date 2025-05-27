@@ -73,8 +73,13 @@
     const resetText = document.getElementById('reset-text');
     const authForm = document.getElementById('auth-form');
 
+    let isUpdatingAuthUI = false;
+
     // Met à jour le UI selon l'état auth
     async function updateAuthUI() {
+      if (isUpdatingAuthUI) return; // Empêche les appels multiples
+      isUpdatingAuthUI = true;
+
       try {
         const { data: { user } } = await supa.auth.getUser();
         if (user) {
@@ -92,6 +97,8 @@
         }
       } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'interface utilisateur :', error);
+      } finally {
+        isUpdatingAuthUI = false;
       }
     }
 
@@ -163,10 +170,15 @@
 
     // Encapsulation pour éviter les conflits
     (function initializeAuthStateListener() {
-      supa.auth.onAuthStateChange((event, session) => {
-        console.log('Changement d\'état d\'authentification détecté :', event);
-        updateAuthUI();
-      });
+      let listenerInitialized = false;
+
+      if (!listenerInitialized) {
+        supa.auth.onAuthStateChange((event, session) => {
+          console.log('Changement d\'état d\'authentification détecté :', event);
+          updateAuthUI();
+        });
+        listenerInitialized = true;
+      }
     })();
 
     updateAuthUI();

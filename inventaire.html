@@ -59,6 +59,16 @@
       window.location.href = 'login.html';
     });
 
+    // Test de connexion à Supabase
+    (async function testSupabaseConnection() {
+      const { data, error } = await supa.from('inventaire').select('*');
+      if (error) {
+        console.error('Erreur de connexion à Supabase :', error);
+      } else {
+        console.log('Données récupérées avec succès :', data);
+      }
+    })();
+
     // Chargement de l'inventaire
     async function loadInventaire() {
       const { data, error } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
