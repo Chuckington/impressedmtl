@@ -100,9 +100,10 @@
       let total = 0;
 
       if (user) {
+        // Charger les articles depuis Supabase pour les utilisateurs connectés
         const { data, error } = await supa
           .from('cart_items')
-          .select('id, quantity, base_price, personalizations, product_name:nom') // Inclure "nom" comme "product_name"
+          .select('id, quantity, base_price, personalizations, product_name') // Inclure "product_name"
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
@@ -111,7 +112,8 @@
         }
         data.forEach(item => {
           const row = document.createElement('tr');
-          const subtotal = item.quantity * item.base_price;
+          const extraCost = item.personalizations.length * 5; // Exemple : chaque option coûte 5$
+          const subtotal = (item.quantity * (item.base_price + extraCost));
           total += subtotal;
           row.innerHTML = `
             <td>${item.product_name || 'Produit inconnu'}</td>
@@ -123,6 +125,7 @@
           cartTable.appendChild(row);
         });
       } else {
+        // Charger les articles depuis LocalStorage pour les utilisateurs non connectés
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         if (cart.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
@@ -130,9 +133,10 @@
           return;
         }
         cart.forEach((item, index) => {
-          const row = document.createElement('tr');
-          const subtotal = item.quantity * item.base_price;
+          const extraCost = item.personalizations.length * 5; // Exemple : chaque option coûte 5$
+          const subtotal = (item.quantity * (item.base_price + extraCost));
           total += subtotal;
+          const row = document.createElement('tr');
           row.innerHTML = `
             <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
