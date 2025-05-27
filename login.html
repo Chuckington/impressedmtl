@@ -83,13 +83,13 @@
       try {
         const { data: { user } } = await supa.auth.getUser();
         if (user) {
-          authBtn.textContent = 'Se déconnecter';
+          authBtn && (authBtn.textContent = 'Se déconnecter');
           formTitle.textContent = 'Connecté : ' + user.email;
           formButton.textContent = 'Se déconnecter';
           signupText.style.display = 'none';
           resetText.style.display = 'none';
         } else {
-          authBtn.textContent = 'Se connecter';
+          authBtn && (authBtn.textContent = 'Se connecter');
           formTitle.textContent = 'Se connecter';
           formButton.textContent = 'Se connecter';
           signupText.style.display = '';
@@ -102,21 +102,23 @@
       }
     }
 
-    // Bouton header
-    authBtn.addEventListener('click', async () => {
-      try {
-        const { data: { user } } = await supa.auth.getUser();
-        if (user) {
-          await supa.auth.signOut();
-          updateAuthUI();
-        } else {
-          // redirige vers login si on est ailleurs
-          window.location.href = 'login.html';
+    // Vérifie si l'élément authBtn existe avant d'ajouter un gestionnaire d'événements
+    if (authBtn) {
+      authBtn.addEventListener('click', async () => {
+        try {
+          const { data: { user } } = await supa.auth.getUser();
+          if (user) {
+            await supa.auth.signOut();
+            updateAuthUI();
+          } else {
+            // redirige vers login si on est ailleurs
+            window.location.href = 'login.html';
+          }
+        } catch (error) {
+          console.error('Erreur lors de la gestion du bouton d\'authentification :', error);
         }
-      } catch (error) {
-        console.error('Erreur lors de la gestion du bouton d\'authentification :', error);
-      }
-    });
+      });
+    }
 
     // Soumission formulaire
     authForm.addEventListener('submit', async e => {
