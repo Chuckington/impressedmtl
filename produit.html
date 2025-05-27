@@ -212,13 +212,35 @@
 
       // Ajouter au panier
       document.getElementById('add-to-cart').addEventListener('click', async () => {
-        const { data: { user } } = await supa.auth.getUser();
-        if (!user) return alert('Veuillez vous connecter.');
         const qty = parseInt(qtyInput.value) || 1;
         const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
           .map(cb => cb.id);
-        await supa.from('cart_items').insert({ user_id: user.id, product_id: tableName, quantity: qty, personalizations: selections });
-        window.location.href = 'panier.html';
+
+        // Vérifier si l'utilisateur est connecté
+        const { data: { user } } = await supa.auth.getUser();
+        if (user) {
+          // Utilisateur connecté : ajouter au panier dans la base de données
+          await supa.from('cart_items').insert({
+            user_id: user.id,
+            product_id: tableName,
+            quantity: qty,
+            personalizations: selections
+          });
+          alert('Article ajouté au panier !');
+          window.location.href = 'panier.html';
+        } else {
+          // Utilisateur non connecté : ajouter au panier dans LocalStorage
+          const cart = JSON.parse(localStorage.getItem('cart')) || [];
+          cart.push({
+            product_id: tableName,
+            quantity: qty,
+            personalizations: selections,
+            base_price: basePrice
+          });
+          localStorage.setItem('cart', JSON.stringify(cart));
+          alert('Article ajouté au panier (non connecté) !');
+          window.location.href = 'panier.html';
+        }
       });
     }
     loadData();

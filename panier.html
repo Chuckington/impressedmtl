@@ -93,110 +93,48 @@
     updateAuthUI();
 
     async function loadCart() {
+      // Vérifier si l'utilisateur est connecté
       const { data: { user } } = await supa.auth.getUser();
       const cartTable = document.querySelector('#cart-table tbody');
-      const grandTotal = document.getElementById('grand-total');
       cartTable.innerHTML = '';
-      let total = 0;
 
       if (user) {
+        // Utilisateur connecté : charger les articles depuis la base de données
         const { data, error } = await supa
           .from('cart_items')
-          .select('id, quantity, base_price, personalizations, product_name:nom') // Inclure "nom" comme "product_name"
+          .select('*')
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
-          cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
-          grandTotal.textContent = '0.00';
+          cartTable.innerHTML = '<tr><td colspan="4">Votre panier est vide.</td></tr>';
           return;
         }
         data.forEach(item => {
           const row = document.createElement('tr');
-          const subtotal = item.quantity * item.base_price;
-          total += subtotal;
           row.innerHTML = `
-            <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
             <td>${item.personalizations.join(', ') || 'Aucune'}</td>
-            <td>${subtotal.toFixed(2)} $</td>
-            <td><span class="remove-btn" data-id="${item.id}">X</span></td>
+            <td>${(item.quantity * item.base_price).toFixed(2)} $</td>
           `;
           cartTable.appendChild(row);
         });
       } else {
+        // Utilisateur non connecté : charger les articles depuis LocalStorage
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         if (cart.length === 0) {
-          cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
-          grandTotal.textContent = '0.00';
+          cartTable.innerHTML = '<tr><td colspan="4">Votre panier est vide.</td></tr>';
           return;
         }
-        cart.forEach((item, index) => {
+        cart.forEach(item => {
           const row = document.createElement('tr');
-          const subtotal = item.quantity * item.base_price;
-          total += subtotal;
           row.innerHTML = `
-            <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
             <td>${item.personalizations.join(', ') || 'Aucune'}</td>
-            <td>${subtotal.toFixed(2)} $</td>
-            <td><span class="remove-btn" data-index="${index}">X</span></td>
+            <td>${(item.quantity * item.base_price).toFixed(2)} $</td>
           `;
           cartTable.appendChild(row);
         });
       }
-      grandTotal.textContent = total.toFixed(2);
     }
-
-    document.addEventListener('click', async (e) => {
-      if (e.target.classList.contains('remove-btn')) {
-        const { data: { user } } = await supa.auth.getUser();
-        if (user) {
-          const itemId = e.target.getAttribute('data-id');
-          await supa.from('cart_items').delete().eq('id', itemId);
-        } else {
-          const cart = JSON.parse(localStorage.getItem('cart')) || [];
-          const itemIndex = e.target.getAttribute('data-index');
-          cart.splice(itemIndex, 1);
-          localStorage.setItem('cart', JSON.stringify(cart));
-        }
-        loadCart();
-      }
-    });
-
-    document.getElementById('add-to-cart').addEventListener('click', async () => {
-      const qty = parseInt(qtyInput.value) || 1;
-      const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-        .map(cb => cb.id);
-
-      const productName = document.getElementById('page-title').textContent; // Récupérer le nom du produit
-      const basePrice = parseFloat(document.getElementById('base-price').textContent); // Récupérer le prix de base
-
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        // Ajouter au panier dans la base de données
-        await supa.from('cart_items').insert({
-          user_id: user.id,
-          product_name: productName,
-          quantity: qty,
-          personalizations: selections,
-          base_price: basePrice
-        });
-        alert('Article ajouté au panier !');
-        window.location.href = 'panier.html';
-      } else {
-        // Ajouter au panier dans LocalStorage
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        cart.push({
-          product_name: productName,
-          quantity: qty,
-          personalizations: selections,
-          base_price: basePrice
-        });
-        localStorage.setItem('cart', JSON.stringify(cart));
-        alert('Article ajouté au panier (non connecté) !');
-        window.location.href = 'panier.html';
-      }
-    });
-
     loadCart();
   </script>
 </body>
