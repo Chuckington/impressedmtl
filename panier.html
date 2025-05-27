@@ -87,49 +87,48 @@ supa.auth.onAuthStateChange(updateAuthUI);
 updateAuthUI();
 
     async function loadCart() {
-      // Récupère l'utilisateur connecté
+      // Vérifier si l'utilisateur est connecté
       const { data: { user } } = await supa.auth.getUser();
-      if (!user) {
-        document.querySelector('#cart-table tbody').innerHTML =
-          '<tr><td colspan="4">Veuillez vous connecter pour voir votre panier.</td></tr>';
-        return;
+      const cartTable = document.querySelector('#cart-table tbody');
+      cartTable.innerHTML = '';
+
+      if (user) {
+        // Utilisateur connecté : charger les articles depuis la base de données
+        const { data, error } = await supa
+          .from('cart_items')
+          .select('*')
+          .eq('user_id', user.id);
+        if (error || !data || data.length === 0) {
+          cartTable.innerHTML = '<tr><td colspan="4">Votre panier est vide.</td></tr>';
+          return;
+        }
+        data.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${item.quantity}</td>
+            <td>${item.personalizations.join(', ') || 'Aucune'}</td>
+            <td>${(item.quantity * item.base_price).toFixed(2)} $</td>
+          `;
+          cartTable.appendChild(row);
+        });
+      } else {
+        // Utilisateur non connecté : charger les articles depuis LocalStorage
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart.length === 0) {
+          cartTable.innerHTML = '<tr><td colspan="4">Votre panier est vide.</td></tr>';
+          return;
+        }
+        cart.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${item.quantity}</td>
+            <td>${item.personalizations.join(', ') || 'Aucune'}</td>
+            <td>${(item.quantity * item.base_price).toFixed(2)} $</td>
+          `;
+          cartTable.appendChild(row);
+        });
       }
-
-      // Récupère les articles du panier avec jointure sur inventaire
-      const { data, error } = await supa
-        .from('cart_items')
-        .select('product_id,quantity,personalizations, inventaire(nom,prix)')
-        .eq('user_id', user.id);
-
-      const tbody = document.querySelector('#cart-table tbody');
-      tbody.innerHTML = '';
-
-      if (error || !data.length) {
-        tbody.innerHTML = '<tr><td colspan="4">Panier vide.</td></tr>';
-        return;
-      }
-
-      let grandTotal = 0;
-      data.forEach(item => {
-        const base = parseFloat(item.inventaire.prix);
-        // Somme des personnalisations (prix identique au prix de base)
-        const extras = item.personalizations.length * base;
-        const subtotal = (base + extras) * item.quantity;
-        grandTotal += subtotal;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${item.inventaire.nom}</td>
-          <td>${item.quantity}</td>
-          <td>${item.personalizations.join(', ') || '—'}</td>
-          <td>${subtotal.toFixed(2)} $</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
     }
-
     loadCart();
   </script>
 </body>
