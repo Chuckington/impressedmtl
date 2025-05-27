@@ -69,19 +69,25 @@
     const qtyInput = document.getElementById('quantity');
     const addToCartBtn = document.getElementById('add-to-cart');
 
-    // Récupérer les informations du produit depuis Supabase
+    // Charger les informations du produit
     async function loadProduct() {
       const urlParams = new URLSearchParams(window.location.search);
       const tableName = urlParams.get('table');
+      if (!tableName) {
+        console.error('Table non spécifiée dans l\'URL.');
+        return;
+      }
+
       const { data, error } = await supa.from(tableName).select('*').limit(1).single();
       if (error) {
         console.error('Erreur lors du chargement du produit :', error);
         return;
       }
-      document.getElementById('page-title').textContent = data.nom;
-      document.getElementById('page-subtitle').textContent = `Prix : ${data.prix} $`;
-      addToCartBtn.dataset.productName = data.nom; // Stocker le nom du produit
-      addToCartBtn.dataset.basePrice = data.prix; // Stocker le prix de base
+
+      document.getElementById('page-title').textContent = data.nom || 'Produit inconnu';
+      document.getElementById('page-subtitle').textContent = `Prix : ${data.prix || 0} $`;
+      addToCartBtn.dataset.productName = data.nom || 'Produit inconnu';
+      addToCartBtn.dataset.basePrice = data.prix || 0;
     }
 
     // Ajouter au panier
