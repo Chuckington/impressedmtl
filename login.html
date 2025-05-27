@@ -75,73 +75,100 @@
 
     // Met à jour le UI selon l'état auth
     async function updateAuthUI() {
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        authBtn.textContent = 'Se déconnecter';
-        formTitle.textContent = 'Connecté : ' + user.email;
-        formButton.textContent = 'Se déconnecter';
-        signupText.style.display = 'none';
-        resetText.style.display = 'none';
-      } else {
-        authBtn.textContent = 'Se connecter';
-        formTitle.textContent = 'Se connecter';
-        formButton.textContent = 'Se connecter';
-        signupText.style.display = '';
-        resetText.style.display = '';
+      try {
+        const { data: { user } } = await supa.auth.getUser();
+        if (user) {
+          authBtn.textContent = 'Se déconnecter';
+          formTitle.textContent = 'Connecté : ' + user.email;
+          formButton.textContent = 'Se déconnecter';
+          signupText.style.display = 'none';
+          resetText.style.display = 'none';
+        } else {
+          authBtn.textContent = 'Se connecter';
+          formTitle.textContent = 'Se connecter';
+          formButton.textContent = 'Se connecter';
+          signupText.style.display = '';
+          resetText.style.display = '';
+        }
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'interface utilisateur :', error);
       }
     }
 
     // Bouton header
     authBtn.addEventListener('click', async () => {
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        await supa.auth.signOut();
-        updateAuthUI();
-      } else {
-        // redirige vers login si on est ailleurs
-        window.location.href = 'login.html';
+      try {
+        const { data: { user } } = await supa.auth.getUser();
+        if (user) {
+          await supa.auth.signOut();
+          updateAuthUI();
+        } else {
+          // redirige vers login si on est ailleurs
+          window.location.href = 'login.html';
+        }
+      } catch (error) {
+        console.error('Erreur lors de la gestion du bouton d\'authentification :', error);
       }
     });
 
     // Soumission formulaire
     authForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        // déconnexion via form
-        await supa.auth.signOut();
-        updateAuthUI();
-      } else {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { data, error } = await supa.auth.signInWithPassword({ email, password });
-        if (error) return alert(error.message);
-        window.location.href = 'inventaire.html';
+      try {
+        const { data: { user } } = await supa.auth.getUser();
+        if (user) {
+          // déconnexion via form
+          await supa.auth.signOut();
+          updateAuthUI();
+        } else {
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const { data, error } = await supa.auth.signInWithPassword({ email, password });
+          if (error) return alert(error.message);
+          window.location.href = 'inventaire.html';
+        }
+      } catch (error) {
+        console.error('Erreur lors de la soumission du formulaire :', error);
       }
     });
 
     // Inscription
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
-      const email = prompt('Entrez votre e‑mail');
-      const password = prompt('Choisissez un mot de passe');
-      if (!email || !password) return;
-      const { error } = await supa.auth.signUp({ email, password });
-      if (error) return alert(error.message);
-      alert('Un e‑mail de confirmation a été envoyé.');
+      try {
+        const email = prompt('Entrez votre e‑mail');
+        const password = prompt('Choisissez un mot de passe');
+        if (!email || !password) return;
+        const { error } = await supa.auth.signUp({ email, password });
+        if (error) return alert(error.message);
+        alert('Un e‑mail de confirmation a été envoyé.');
+      } catch (error) {
+        console.error('Erreur lors de l\'inscription :', error);
+      }
     });
 
     // Réinitialisation
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
-      const email = prompt('Entrez votre e‑mail');
-      if (!email) return;
-      const { error } = await supa.auth.resetPasswordForEmail(email);
-      if (error) return alert(error.message);
-      alert('Un e‑mail de réinitialisation a été envoyé.');
+      try {
+        const email = prompt('Entrez votre e‑mail');
+        if (!email) return;
+        const { error } = await supa.auth.resetPasswordForEmail(email);
+        if (error) return alert(error.message);
+        alert('Un e‑mail de réinitialisation a été envoyé.');
+      } catch (error) {
+        console.error('Erreur lors de la réinitialisation du mot de passe :', error);
+      }
     });
 
-    supa.auth.onAuthStateChange(updateAuthUI);
+    // Encapsulation pour éviter les conflits
+    (function initializeAuthStateListener() {
+      supa.auth.onAuthStateChange((event, session) => {
+        console.log('Changement d\'état d\'authentification détecté :', event);
+        updateAuthUI();
+      });
+    })();
+
     updateAuthUI();
   </script>
 </body>
