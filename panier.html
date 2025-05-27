@@ -102,7 +102,7 @@
       if (user) {
         const { data, error } = await supa
           .from('cart_items')
-          .select('*')
+          .select('id, quantity, base_price, personalizations, product_name:nom') // Inclure "nom" comme "product_name"
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
