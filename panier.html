@@ -100,10 +100,9 @@
       let total = 0;
 
       if (user) {
-        // Charger les articles depuis Supabase pour les utilisateurs connectés
         const { data, error } = await supa
           .from('cart_items')
-          .select('id, quantity, base_price, personalizations, product_name') // Inclure "product_name"
+          .select('id, quantity, base_price, personalizations, product_name:nom') // Inclure "nom" comme "product_name"
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
@@ -124,7 +123,6 @@
           cartTable.appendChild(row);
         });
       } else {
-        // Charger les articles depuis LocalStorage pour les utilisateurs non connectés
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         if (cart.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
@@ -138,7 +136,7 @@
           row.innerHTML = `
             <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
-            <td>Aucune</td>
+            <td>${item.personalizations.join(', ') || 'Aucune'}</td>
             <td>${subtotal.toFixed(2)} $</td>
             <td><span class="remove-btn" data-index="${index}">X</span></td>
           `;
@@ -161,6 +159,41 @@
           localStorage.setItem('cart', JSON.stringify(cart));
         }
         loadCart();
+      }
+    });
+
+    document.getElementById('add-to-cart').addEventListener('click', async () => {
+      const qty = parseInt(qtyInput.value) || 1;
+      const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+        .map(cb => cb.id);
+
+      const productName = document.getElementById('page-title').textContent; // Récupérer le nom du produit
+      const basePrice = parseFloat(document.getElementById('base-price').textContent); // Récupérer le prix de base
+
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        // Ajouter au panier dans la base de données
+        await supa.from('cart_items').insert({
+          user_id: user.id,
+          product_name: productName,
+          quantity: qty,
+          personalizations: selections,
+          base_price: basePrice
+        });
+        alert('Article ajouté au panier !');
+        window.location.href = 'panier.html';
+      } else {
+        // Ajouter au panier dans LocalStorage
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart.push({
+          product_name: productName,
+          quantity: qty,
+          personalizations: selections,
+          base_price: basePrice
+        });
+        localStorage.setItem('cart', JSON.stringify(cart));
+        alert('Article ajouté au panier (non connecté) !');
+        window.location.href = 'panier.html';
       }
     });
 
