@@ -126,13 +126,22 @@
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
       subtitleEl.textContent = 'Choisissez vos options';
 
-      // Récupérer prix de base
-      const { data: baseData, error: baseErr } = await supa
+      // Récupérer prix de base depuis la table 'inventaire'
+      const { data: baseDataInv, error: baseErrInv } = await supa
         .from('inventaire')
         .select('prix')
         .eq('nom', nomsPropres[tableName])
         .single();
-      const basePrice = (!baseErr && baseData) ? parseFloat(baseData.prix) : 0;
+      // Ce prix sera utilisé comme base, sauf s'il est surchargé (ex: pour noCheckbox items)
+      let effectiveBasePrice = (!baseErrInv && baseDataInv) ? parseFloat(baseDataInv.prix) : 0;
+
+      // Pour débogage du point 3 (Polo Sport)
+      if (tableName === 'inventairepolosport') {
+        console.log(`Polo Sport: Prix initial récupéré de la table 'inventaire' (clé: '${nomsPropres[tableName]}'): ${effectiveBasePrice}`);
+        if (effectiveBasePrice === 0) {
+            console.warn("Polo Sport: Le prix de base est 0. Vérifiez l'entrée correspondante dans la table 'inventaire'. Elle devrait avoir un prix (ex: 25$).");
+        }
+      }
 
       // Récupérer personnalisations
       const { data, error } = await supa
@@ -146,6 +155,12 @@
       }
       container.innerHTML = '';
 
+      // Point 1: Pour les produits sans case à cocher, leur propre prix devient le prix de base effectif.
+      if (noCheckbox.includes(tableName) && data && data.length > 0) {
+        // On suppose qu'il y a un seul "item" pour ces produits dans leur table dédiée
+        effectiveBasePrice = parseFloat(data[0].prix);
+      }
+
       data.forEach((item, idx) => {
         const card = document.createElement('div');
         card.className = 'card';
@@ -153,41 +168,63 @@
 
         let html = `
           <div class="card-image">
-            <img src="${item.image_url}" alt="${item.nom}">
+            <img src="${item.image_url || 'placeholder.png'}" alt="${item.nom}">
           </div>
           <div class="card-content">
             <h3>${item.nom}</h3>
-            <p><strong>Prix de base:</strong> ${basePrice}$</p>
-            <p><strong>Prix modification:</strong> ${item.prix}$</p>
+        `;
+
+        let displayedItemBasePrice = effectiveBasePrice;
+        let modificationPriceForCheckbox = parseFloat(item.prix); // Coût de cette option spécifique
+        let displayedModificationPrice = modificationPriceForCheckbox;
+
+        // Point 1: Ajustement pour les produits sans case à cocher
+        if (noCheckbox.includes(tableName)) {
+          displayedItemBasePrice = effectiveBasePrice; // Déjà défini comme item.prix
+          displayedModificationPrice = 0; // La modification est de 0$
+          modificationPriceForCheckbox = 0; // Les "options" (inexistantes) coûteraient 0
+        }
+
+        html += `
+          <p><strong>Prix de base:</strong> ${displayedItemBasePrice.toFixed(2)}$</p>
+          <p><strong>Prix modification:</strong> ${displayedModificationPrice.toFixed(2)}$</p>
         `;
 
         const desc = item.personnalisation?.toLowerCase() || '';
         if (desc.includes('gros design')) {
-          html += `
-            <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front">
-              <label for="opt-${item.id}-front">Gros design devant</label>
-            </div>
-            <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back">
-              <label for="opt-${item.id}-back">Gros design derrière</label>
-            </div>
-          `;
+          // Point 4: Veste - pas de "Gros design devant"
+          if (tableName !== 'inventaireveste') {
+            html += `
+              <div class="personalize">
+                <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-front">
+                <label for="opt-${item.id}-front">Gros design devant</label>
+              </div>
+            `;
+          }
+          // Point 2: Tablier - pas de "Gros design derrière"
+          if (tableName !== 'inventairetablier') {
+            html += `
+              <div class="personalize">
+                <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-back">
+                <label for="opt-${item.id}-back">Gros design derrière</label>
+              </div>
+            `;
+          }
         } else if (desc.includes('petit design poitrine')) {
           html += `
             <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-left">
+              <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-left">
               <label for="opt-${item.id}-left">Petit design poitrine gauche</label>
             </div>
             <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-right">
+              <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-right">
               <label for="opt-${item.id}-right">Petit design poitrine droite</label>
             </div>
           `;
         } else if (item.personnalisation && !noCheckbox.includes(tableName)) {
           html += `
             <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}">
+              <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}">
               <label for="opt-${item.id}">${item.personnalisation}</label>
             </div>
           `;
@@ -202,7 +239,8 @@
         const qty = parseInt(qtyInput.value) || 1;
         const extraCost = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
           .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
-        totalEl.textContent = ((basePrice + extraCost) * qty).toFixed(2);
+        // Utilise effectiveBasePrice qui a été ajusté pour les noCheckbox items
+        totalEl.textContent = ((effectiveBasePrice + extraCost) * qty).toFixed(2);
       }
       qtyInput.addEventListener('input', updateTotal);
       container.addEventListener('change', e => {
@@ -216,7 +254,7 @@
         const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
           .map(cb => {
             const label = cb.labels[0].textContent.trim();
-            const price = parseFloat(cb.dataset.price) || 0;
+            const price = parseFloat(cb.dataset.price) || 0; // cb.dataset.price est modificationPriceForCheckbox
             return `${label}::${price}`; // Encoder "label::prix"
           });
 
@@ -232,7 +270,7 @@
             product_name: displayName, // ex: Crewneck
             quantity: qty,
             personalizations: selections,
-            base_price: basePrice // Assurer que le prix de base est aussi sauvegardé
+            base_price: effectiveBasePrice // Utilise le prix de base effectif
           });
           alert('Article ajouté au panier !');
           window.location.href = 'panier.html';
@@ -244,7 +282,7 @@
             product_name: displayName, // ex: Crewneck
             quantity: qty,
             personalizations: selections,
-            base_price: basePrice
+            base_price: effectiveBasePrice // Utilise le prix de base effectif
           });
           localStorage.setItem('cart', JSON.stringify(cart));
           alert('Article ajouté au panier (non connecté) !');
