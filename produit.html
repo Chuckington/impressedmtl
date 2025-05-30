@@ -214,7 +214,9 @@
       document.getElementById('add-to-cart').addEventListener('click', async () => {
         const qty = parseInt(qtyInput.value) || 1;
         const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-          .map(cb => cb.id);
+          .map(cb => cb.labels[0].textContent.trim()); // Stocker le label de la personnalisation
+
+        const displayName = nomsPropres[tableName]; // Obtenir le nom lisible du produit
 
         // Vérifier si l'utilisateur est connecté
         const { data: { user } } = await supa.auth.getUser();
@@ -222,9 +224,11 @@
           // Utilisateur connecté : ajouter au panier dans la base de données
           await supa.from('cart_items').insert({
             user_id: user.id,
-            product_id: tableName,
+            product_id: tableName, // ex: inventairecrewneck
+            product_name: displayName, // ex: Crewneck
             quantity: qty,
-            personalizations: selections
+            personalizations: selections,
+            base_price: basePrice // Assurer que le prix de base est aussi sauvegardé
           });
           alert('Article ajouté au panier !');
           window.location.href = 'panier.html';
@@ -232,7 +236,8 @@
           // Utilisateur non connecté : ajouter au panier dans LocalStorage
           const cart = JSON.parse(localStorage.getItem('cart')) || [];
           cart.push({
-            product_id: tableName,
+            product_id: tableName, // ex: inventairecrewneck
+            product_name: displayName, // ex: Crewneck
             quantity: qty,
             personalizations: selections,
             base_price: basePrice
