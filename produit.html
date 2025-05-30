@@ -214,7 +214,11 @@
       document.getElementById('add-to-cart').addEventListener('click', async () => {
         const qty = parseInt(qtyInput.value) || 1;
         const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-          .map(cb => cb.labels[0].textContent.trim()); // Stocker le label de la personnalisation
+          .map(cb => {
+            const label = cb.labels[0].textContent.trim();
+            const price = parseFloat(cb.dataset.price) || 0;
+            return `${label}::${price}`; // Encoder "label::prix"
+          });
 
         const displayName = nomsPropres[tableName]; // Obtenir le nom lisible du produit
 

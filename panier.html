@@ -112,13 +112,21 @@
         }
         data.forEach(item => {
           const row = document.createElement('tr');
-          const extraCost = item.personalizations.length * 5; // Exemple : chaque option coûte 5$
+          // Décoder les personnalisations pour calculer extraCost et obtenir les labels
+          let extraCost = 0;
+          const personalizationLabels = (item.personalizations || []).map(pString => {
+            const parts = pString.split('::');
+            extraCost += parts.length > 1 ? parseFloat(parts[1]) : 0;
+            return parts[0]; // Garder seulement le label pour l'affichage
+          });
+
           const subtotal = (item.quantity * (item.base_price + extraCost));
           total += subtotal;
+
           row.innerHTML = `
             <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
-            <td>${item.personalizations.join(', ') || 'Aucune'}</td>
+            <td>${personalizationLabels.join(', ') || 'Aucune'}</td>
             <td>${subtotal.toFixed(2)} $</td>
             <td><span class="remove-btn" data-id="${item.id}">X</span></td>
           `;
@@ -133,14 +141,22 @@
           return;
         }
         cart.forEach((item, index) => {
-          const extraCost = item.personalizations.length * 5; // Exemple : chaque option coûte 5$
+          // Décoder les personnalisations pour calculer extraCost et obtenir les labels
+          let extraCost = 0;
+          const personalizationLabels = (item.personalizations || []).map(pString => {
+            const parts = pString.split('::');
+            extraCost += parts.length > 1 ? parseFloat(parts[1]) : 0;
+            return parts[0]; // Garder seulement le label pour l'affichage
+          });
+
           const subtotal = (item.quantity * (item.base_price + extraCost));
           total += subtotal;
           const row = document.createElement('tr');
+
           row.innerHTML = `
             <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
-            <td>${item.personalizations.join(', ') || 'Aucune'}</td>
+            <td>${personalizationLabels.join(', ') || 'Aucune'}</td>
             <td>${subtotal.toFixed(2)} $</td>
             <td><span class="remove-btn" data-index="${index}">X</span></td>
           `;
