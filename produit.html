@@ -126,12 +126,22 @@
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
       subtitleEl.textContent = 'Choisissez vos options';
 
-      // Récupérer prix de base depuis la table 'inventaire'
-      const { data: baseDataInv, error: baseErrInv } = await supa
-        .from('inventaire')
-        .select('prix')
-        .eq('nom', nomsPropres[tableName])
-        .single();
+      // Construire la requête pour le prix de base depuis la table 'inventaire'
+      let basePriceQuery = supa.from('inventaire').select('prix');
+
+      if (tableName === 'inventairesousverrerond') {
+        basePriceQuery = basePriceQuery
+          .eq('nom', 'Sous-verre sublimé (4 pack)')
+          .eq('modèle', 'Rond'); // Assurez-vous que 'Rond' correspond exactement à la valeur dans votre DB
+      } else if (tableName === 'inventairesousverrecarre') {
+        basePriceQuery = basePriceQuery
+          .eq('nom', 'Sous-verre sublimé (4 pack)')
+          .eq('modèle', 'Carré'); // Assurez-vous que 'Carré' correspond exactement à la valeur dans votre DB
+      } else {
+        basePriceQuery = basePriceQuery.eq('nom', nomsPropres[tableName]);
+      }
+      const { data: baseDataInv, error: baseErrInv } = await basePriceQuery.single();
+
       // Ce prix sera utilisé comme base, sauf s'il est surchargé (ex: pour noCheckbox items)
       let effectiveBasePrice = (!baseErrInv && baseDataInv) ? parseFloat(baseDataInv.prix) : 0;
 
