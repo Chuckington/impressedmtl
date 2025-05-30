@@ -250,8 +250,24 @@
         const qty = parseInt(qtyInput.value) || 1;
         const extraCost = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
           .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
-        // Utilise effectiveBasePrice qui a été ajusté pour les noCheckbox items
-        totalEl.textContent = ((effectiveBasePrice + extraCost) * qty).toFixed(2);
+        
+        const newTotalValue = (effectiveBasePrice + extraCost) * qty;
+        const newTotalString = newTotalValue.toFixed(2);
+
+        // Log de débogage pour vérifier les valeurs
+        console.log('[DEBUG] Appel de updateTotal:');
+        console.log('  - Prix de base effectif (effectiveBasePrice):', effectiveBasePrice);
+        console.log('  - Coût supplémentaire (extraCost):', extraCost);
+        console.log('  - Quantité (qty):', qty);
+        console.log('  - Valeur totale calculée (newTotalValue):', newTotalValue);
+        console.log('  - Chaîne à afficher (newTotalString):', newTotalString);
+
+        // Reporter la mise à jour du DOM au prochain "animation frame"
+        // Cela peut aider à résoudre les problèmes d'affichage initiaux
+        requestAnimationFrame(() => {
+          totalEl.textContent = newTotalString;
+          console.log('[DEBUG] totalEl.textContent mis à jour à:', newTotalString);
+        });
       }
       qtyInput.addEventListener('input', updateTotal);
       container.addEventListener('change', e => {
