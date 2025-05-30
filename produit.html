@@ -155,10 +155,11 @@
       }
       container.innerHTML = '';
 
-      // Point 1: Pour les produits sans case à cocher, leur propre prix devient le prix de base effectif.
+      // Pour les produits sans case à cocher, le effectiveBasePrice (de la table 'inventaire') est déjà correct.
+      // Nous nous assurons simplement que leur prix de modification est 0.
       if (noCheckbox.includes(tableName) && data && data.length > 0) {
-        // On suppose qu'il y a un seul "item" pour ces produits dans leur table dédiée
-        effectiveBasePrice = parseFloat(data[0].prix);
+        // L'effectiveBasePrice est déjà celui de la table 'inventaire'.
+        // data[0].prix de la table spécifique (ex: inventairesousverrerond.prix) n'est pas utilisé pour le prix de base ici.
       }
 
       data.forEach((item, idx) => {
