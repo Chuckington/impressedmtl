@@ -30,9 +30,19 @@
     .personalize input { margin-right:8px; }
     #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; }
     #order-summary .left { display:flex; align-items:center; gap:16px; }
-    #order-summary label { display:flex; align-items:center; }
+    #order-summary .option-group { display:flex; align-items:center; gap: 8px; }
+    #order-summary label { font-size: 0.9rem; color: #333; }
     #quantity { width:60px; margin-left:10px; padding:5px; border:1px solid #ccc; border-radius:4px; }
+    #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; }
     #total-price { font-weight:bold; font-size:1.2rem; }
+    #color-preview {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -53,7 +63,27 @@
     <div id="custom-list" class="grid"><p>Chargement...</p></div>
     <div id="order-summary">
       <div class="left">
-        <label>Quantité: <input type="number" id="quantity" value="1" min="1"></label>
+        <div class="option-group">
+          <label for="quantity">Quantité:</label>
+          <input type="number" id="quantity" value="1" min="1">
+        </div>
+
+        <div class="option-group" id="color-option-group" style="display:none;">
+          <label for="color-select">Couleur:</label>
+          <select id="color-select"><option value="">Choisir...</option></select>
+          <span id="color-preview"></span>
+        </div>
+
+        <div class="option-group" id="size-option-group" style="display:none;">
+          <label for="size-select">Taille:</label>
+          <select id="size-select"><option value="">Choisir...</option></select>
+        </div>
+
+        <div class="option-group" id="gender-option-group" style="display:none;">
+          <label for="gender-select">Sexe:</label>
+          <select id="gender-select"><option value="">Choisir...</option></select>
+        </div>
+
         <button id="add-to-cart" class="btn">Ajouter au panier</button>
       </div>
       <div>Total: <span id="total-price">0.00</span> $</div>
@@ -116,6 +146,10 @@
       const container = document.getElementById('custom-list');
       const qtyInput = document.getElementById('quantity');
       const totalEl = document.getElementById('total-price');
+      const colorSelect = document.getElementById('color-select');
+      const sizeSelect = document.getElementById('size-select');
+      const genderSelect = document.getElementById('gender-select');
+      const colorPreview = document.getElementById('color-preview');
 
       // Vérification table
       if (!tableName || !nomsPropres[tableName]) {
@@ -171,6 +205,69 @@
         // L'effectiveBasePrice est déjà celui de la table 'inventaire'.
         // data[0].prix de la table spécifique (ex: inventairesousverrerond.prix) n'est pas utilisé pour le prix de base ici.
       }
+
+      // Charger et peupler les options de couleur
+      const { data: availableColorsData, error: colorsError } = await supa
+        .from('product_available_colors')
+        .select(`colors (id, name, hex_code)`) // Jointure pour obtenir les détails de la couleur
+        .eq('product_table_ref', tableName);
+
+      if (!colorsError && availableColorsData && availableColorsData.length > 0) {
+        document.getElementById('color-option-group').style.display = 'flex';
+        availableColorsData.forEach(item => {
+          const color = item.colors; // Accéder à l'objet couleur joint
+          if (color) {
+            const option = document.createElement('option');
+            option.value = color.id;
+            option.textContent = color.name;
+            option.dataset.hex = color.hex_code;
+            colorSelect.appendChild(option);
+          }
+        });
+        colorSelect.addEventListener('change', (event) => {
+          const selectedOption = event.target.selectedOptions[0];
+          colorPreview.style.backgroundColor = selectedOption.dataset.hex || 'transparent';
+        });
+      }
+
+      // Charger et peupler les options de taille
+      const { data: availableSizesData, error: sizesError } = await supa
+        .from('product_available_sizes')
+        .select(`sizes (id, name)`)
+        .eq('product_table_ref', tableName);
+
+      if (!sizesError && availableSizesData && availableSizesData.length > 0) {
+        document.getElementById('size-option-group').style.display = 'flex';
+        availableSizesData.forEach(item => {
+          const size = item.sizes;
+          if (size) {
+            const option = document.createElement('option');
+            option.value = size.id;
+            option.textContent = size.name;
+            sizeSelect.appendChild(option);
+          }
+        });
+      }
+
+      // Charger et peupler les options de sexe
+      const { data: availableGendersData, error: gendersError } = await supa
+        .from('product_available_genders')
+        .select(`genders (id, name)`)
+        .eq('product_table_ref', tableName);
+
+      if (!gendersError && availableGendersData && availableGendersData.length > 0) {
+        document.getElementById('gender-option-group').style.display = 'flex';
+        availableGendersData.forEach(item => {
+          const gender = item.genders;
+          if (gender) {
+            const option = document.createElement('option');
+            option.value = gender.id;
+            option.textContent = gender.name;
+            genderSelect.appendChild(option);
+          }
+        });
+      }
+
 
       data.forEach((item, idx) => {
         const card = document.createElement('div');
@@ -287,6 +384,19 @@
 
         const displayName = nomsPropres[tableName]; // Obtenir le nom lisible du produit
 
+        // Récupérer les sélections des nouvelles listes déroulantes
+        const selectedColorOption = colorSelect.selectedOptions[0];
+        const selectedColor = selectedColorOption && selectedColorOption.value ? 
+                              { id: selectedColorOption.value, name: selectedColorOption.textContent, hex: selectedColorOption.dataset.hex } : null;
+
+        const selectedSizeOption = sizeSelect.selectedOptions[0];
+        const selectedSize = selectedSizeOption && selectedSizeOption.value ?
+                             { id: selectedSizeOption.value, name: selectedSizeOption.textContent } : null;
+
+        const selectedGenderOption = genderSelect.selectedOptions[0];
+        const selectedGender = selectedGenderOption && selectedGenderOption.value ?
+                               { id: selectedGenderOption.value, name: selectedGenderOption.textContent } : null;
+
         // Vérifier si l'utilisateur est connecté
         const { data: { user } } = await supa.auth.getUser();
         if (user) {
@@ -297,7 +407,10 @@
             product_name: displayName, // ex: Crewneck
             quantity: qty,
             personalizations: selections,
-            base_price: effectiveBasePrice // Utilise le prix de base effectif
+            base_price: effectiveBasePrice, // Utilise le prix de base effectif
+            selected_color_name: selectedColor ? selectedColor.name : null,
+            selected_size_name: selectedSize ? selectedSize.name : null,
+            selected_gender_name: selectedGender ? selectedGender.name : null
           });
           alert('Article ajouté au panier !');
           window.location.href = 'panier.html';
@@ -309,7 +422,10 @@
             product_name: displayName, // ex: Crewneck
             quantity: qty,
             personalizations: selections,
-            base_price: effectiveBasePrice // Utilise le prix de base effectif
+            base_price: effectiveBasePrice, // Utilise le prix de base effectif
+            selected_color_name: selectedColor ? selectedColor.name : null,
+            selected_size_name: selectedSize ? selectedSize.name : null,
+            selected_gender_name: selectedGender ? selectedGender.name : null
           });
           localStorage.setItem('cart', JSON.stringify(cart));
           alert('Article ajouté au panier (non connecté) !');
