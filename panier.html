@@ -103,7 +103,7 @@
         // Charger les articles depuis Supabase pour les utilisateurs connectés
         const { data, error } = await supa
           .from('cart_items')
-          .select('id, quantity, base_price, personalizations, product_name') // Inclure "product_name"
+          .select('id, quantity, base_price, personalizations, product_name, selected_color_name, selected_size_name, selected_gender_name')
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
@@ -123,10 +123,25 @@
           const subtotal = (item.quantity * (item.base_price + extraCost));
           total += subtotal;
 
+          let optionsDisplay = [];
+          if (personalizationLabels.length > 0) {
+            optionsDisplay.push(personalizationLabels.join(', '));
+          }
+          if (item.selected_color_name) {
+            optionsDisplay.push(`Couleur: ${item.selected_color_name}`);
+          }
+          if (item.selected_size_name) {
+            optionsDisplay.push(`Taille: ${item.selected_size_name}`);
+          }
+          if (item.selected_gender_name) {
+            optionsDisplay.push(`Sexe: ${item.selected_gender_name}`);
+          }
+          const optionsText = optionsDisplay.length > 0 ? optionsDisplay.join('<br>') : 'Aucune';
+
           row.innerHTML = `
             <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
-            <td>${personalizationLabels.join(', ') || 'Aucune'}</td>
+            <td>${optionsText}</td>
             <td>${subtotal.toFixed(2)} $</td>
             <td><span class="remove-btn" data-id="${item.id}">X</span></td>
           `;
@@ -153,10 +168,25 @@
           total += subtotal;
           const row = document.createElement('tr');
 
+          let optionsDisplay = [];
+          if (personalizationLabels.length > 0) {
+            optionsDisplay.push(personalizationLabels.join(', '));
+          }
+          if (item.selected_color_name) {
+            optionsDisplay.push(`Couleur: ${item.selected_color_name}`);
+          }
+          if (item.selected_size_name) {
+            optionsDisplay.push(`Taille: ${item.selected_size_name}`);
+          }
+          if (item.selected_gender_name) {
+            optionsDisplay.push(`Sexe: ${item.selected_gender_name}`);
+          }
+          const optionsText = optionsDisplay.length > 0 ? optionsDisplay.join('<br>') : 'Aucune';
+
           row.innerHTML = `
             <td>${item.product_name || 'Produit inconnu'}</td>
             <td>${item.quantity}</td>
-            <td>${personalizationLabels.join(', ') || 'Aucune'}</td>
+            <td>${optionsText}</td>
             <td>${subtotal.toFixed(2)} $</td>
             <td><span class="remove-btn" data-index="${index}">X</span></td>
           `;
