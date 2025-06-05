@@ -30,12 +30,15 @@
     .personalize input { margin-right:8px; }
     #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 15px; /* Ajout de flex-wrap et gap global */}
     #order-summary .left { display:flex; align-items:center; gap:16px; flex-wrap: wrap; /* Permettre le retour à la ligne des options */}
-    #order-summary .option-group { display:flex; align-items:center; gap: 8px; }
+    #order-summary .option-group {
+      display:flex; align-items:center; gap: 8px;
+      flex-shrink: 0; /* Empêche le groupe de trop rétrécir */
+    }
     #order-summary label { font-size: 0.9rem; color: #333; }
     #quantity { width:60px; margin-left:10px; padding:5px; border:1px solid #ccc; border-radius:4px; }
-    #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; }
+    #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; /* Donne une largeur minimale aux selects */}
     #total-price { font-weight:bold; font-size:1.2rem; }
-    #order-summary .btn { margin-top: 10px; /* Ajoute un peu d'espace si le bouton passe à la ligne */ }
+    #order-summary .btn { margin-top: 10px; flex-shrink: 0; /* Empêche le bouton de rétrécir et garde la marge si enroulé */ }
     #color-preview {
       display: inline-block;
       width: 24px; /* Augmentation de la taille */
