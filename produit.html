@@ -257,6 +257,13 @@
         .select(`genders (id, name)`)
         .eq('product_table_ref', tableName);
 
+      // Debugging for gender options
+      console.log('[DEBUG] Requête pour les sexes (genders) pour tableName:', tableName);
+      console.log('[DEBUG] Données des sexes (availableGendersData):', JSON.stringify(availableGendersData, null, 2));
+      if (gendersError) {
+        console.error('[DEBUG] Erreur lors de la récupération des sexes (gendersError):', JSON.stringify(gendersError, null, 2));
+      }
+
       if (!gendersError && availableGendersData && availableGendersData.length > 0) {
         document.getElementById('gender-option-group').style.display = 'flex';
         availableGendersData.forEach(item => {
