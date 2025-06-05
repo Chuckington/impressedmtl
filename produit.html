@@ -28,20 +28,22 @@
     .card-content p { margin:5px 0; font-size:0.95rem; color:#333; }
     .personalize { display:flex; align-items:center; margin-top:10px; }
     .personalize input { margin-right:8px; }
-    #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; }
-    #order-summary .left { display:flex; align-items:center; gap:16px; }
+    #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 15px; /* Ajout de flex-wrap et gap global */}
+    #order-summary .left { display:flex; align-items:center; gap:16px; flex-wrap: wrap; /* Permettre le retour à la ligne des options */}
     #order-summary .option-group { display:flex; align-items:center; gap: 8px; }
     #order-summary label { font-size: 0.9rem; color: #333; }
     #quantity { width:60px; margin-left:10px; padding:5px; border:1px solid #ccc; border-radius:4px; }
     #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; }
     #total-price { font-weight:bold; font-size:1.2rem; }
+    #order-summary .btn { margin-top: 10px; /* Ajoute un peu d'espace si le bouton passe à la ligne */ }
     #color-preview {
       display: inline-block;
-      width: 20px;
-      height: 20px;
+      width: 24px; /* Augmentation de la taille */
+      height: 24px; /* Augmentation de la taille */
       border: 1px solid #ccc;
       border-radius: 4px;
       vertical-align: middle;
+      margin-left: 4px; /* Petit espace entre le select et le preview */
     }
   </style>
 </head>
@@ -83,10 +85,10 @@
           <label for="gender-select">Sexe:</label>
           <select id="gender-select"><option value="">Choisir...</option></select>
         </div>
-
-        <button id="add-to-cart" class="btn">Ajouter au panier</button>
+        <!-- Le bouton est sorti du div .left pour mieux gérer le flux avec flex-wrap sur #order-summary -->
       </div>
-      <div>Total: <span id="total-price">0.00</span> $</div>
+      <button id="add-to-cart" class="btn">Ajouter au panier</button> 
+      <div style="text-align: right; min-width: 120px;">Total: <span id="total-price">0.00</span> $</div> <!-- Assurer que le total a de la place -->
     </div>
   </div>
 
