@@ -30,11 +30,26 @@
     .personalize input[type="checkbox"] { margin-right:8px; }
     .upload-section {
       margin-left: 28px; /* Aligner avec le texte après la checkbox */
-      margin-top: 8px;
+      margin-top: 20px; /* Augmenté pour plus d'espace sous la checkbox/label */
       display: none; /* Caché par défaut */
     }
-    .upload-section input[type="file"] { margin-bottom: 5px; font-size: 0.9rem; }
-    .upload-section img { max-width: 100px; max-height: 100px; border: 1px solid #eee; display: block; margin-top: 5px; }
+    /* Style pour le bouton "Choisir fichier" dans la section d'upload */
+    .upload-section .btn { /* Cible le label qui a la classe .btn */
+      margin-bottom: 15px; /* Espace entre le bouton et l'aperçu de l'image */
+      /* Si .btn-small doit avoir une taille spécifique, vous pouvez l'ajouter ici */
+      /* Par exemple: padding: 6px 10px; font-size: 0.85rem; */
+    }
+    .upload-section input[type="file"] {
+      /* Déjà display:none via style en ligne, donc margin-bottom ici a peu d'effet visuel */
+      font-size: 0.9rem;
+    }
+    .upload-section img {
+      max-width: 200px; /* Augmenté pour un aperçu plus grand */
+      max-height: 200px; /* Augmenté pour un aperçu plus grand */
+      border: 1px solid #eee; display: block;
+      margin-top: 0; /* L'espace est maintenant géré par margin-bottom du bouton au-dessus */
+      margin-bottom: 10px; /* Espace sous l'image dans la carte */
+    }
     #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 15px; /* Ajout de flex-wrap et gap global */}
     #order-summary .left { display:flex; align-items:center; gap:16px; flex-wrap: wrap; /* Permettre le retour à la ligne des options */}
     #order-summary .option-group {
