@@ -322,40 +322,58 @@
           // Point 4: Veste - pas de "Gros design devant"
           if (tableName !== 'inventaireveste') {
             html += `
-              <div class="personalize">
-                <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-front">
-                <label for="opt-${item.id}-front">Gros design devant</label>
-              </div>
-              <div class="upload-section" id="upload-section-${item.id}-front">
-                <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
-                <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
-                <img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;">
+              <div class="personalize-option-group">
+                <div class="personalize">
+                  <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-front">
+                  <label for="opt-${item.id}-front">Gros design devant</label>
+                </div>
+                <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
+                  <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
+                  <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
+                  <img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;">
+                </div>
               </div>
             `;
           }
           // Point 2: Tablier - pas de "Gros design derrière"
           if (tableName !== 'inventairetablier') {
             html += `
-              <div class="personalize">
-                <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-back">
-                <label for="opt-${item.id}-back">Gros design derrière</label>
-              </div>
-              <div class="upload-section" id="upload-section-${item.id}-back">
-                 <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
-                <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
-                <img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;">
+              <div class="personalize-option-group">
+                <div class="personalize">
+                  <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-back">
+                  <label for="opt-${item.id}-back">Gros design derrière</label>
+                </div>
+                <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
+                  <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
+                  <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
+                  <img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;">
+                </div>
               </div>
             `;
           }
         } else if (desc.includes('petit design poitrine')) {
           html += `
-            <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-left">
-              <label for="opt-${item.id}-left">Petit design poitrine gauche</label>
+            <div class="personalize-option-group">
+              <div class="personalize">
+                <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-left">
+                <label for="opt-${item.id}-left">Petit design poitrine gauche</label>
+              </div>
+              <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
+                <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
+                <input type="file" id="file-input-${item.id}-left" accept="image/*" style="display:none;">
+                <img id="preview-${item.id}-left" src="#" alt="Aperçu" style="display:none;">
+              </div>
             </div>
-            <div class="personalize">
-              <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-right">
-              <label for="opt-${item.id}-right">Petit design poitrine droite</label>
+            <div class="personalize-option-group">
+              <div class="personalize">
+                <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-right">
+                <label for="opt-${item.id}-right">Petit design poitrine droite</label>
+              </div>
+              <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
+                <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
+                <input type="file" id="file-input-${item.id}-right" accept="image/*" style="display:none;">
+                <img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;">
+              </div>
             </div>
           `;
         } else if (item.personnalisation && !noCheckbox.includes(tableName)) {
@@ -363,6 +381,11 @@
             <div class="personalize">
               <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}">
               <label for="opt-${item.id}">${item.personnalisation}</label>
+            </div>
+            <div class="upload-section" id="upload-section-${item.id}" style="display:none;">
+              <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.personnalisation})</label>
+              <input type="file" id="file-input-${item.id}" accept="image/*" style="display:none;">
+              <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
             </div>
           `;
         }
@@ -473,89 +496,88 @@
 
       // Ajouter au panier
       document.getElementById('add-to-cart').addEventListener('click', async () => {
-        const qty = parseInt(qtyInput.value) || 1;
-        
-        // Nouvelle logique pour construire `selections` avec les URLs d'images
-        const personalizationsData = [];
-        const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
+        try {
+            const qty = parseInt(qtyInput.value) || 1;
+            
+            const personalizationsData = [];
+            const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
 
-        for (const cb of checkedPersonalizations) {
-          const baseId = cb.id.replace('opt-', ''); // ex: ITEMID-front
-          const fileInput = document.getElementById(`file-input-${baseId}`);
-          // Pour l'instant, on ne gère pas l'upload réel ici, on prépare la structure
-          // L'URL de l'image sera ajoutée après l'upload réussi (prochaines étapes)
-          
-          // ANCIENNE LOGIQUE A REMPLACER :
-          // const label = cb.labels[0].textContent.trim();
-          // const price = parseFloat(cb.dataset.price) || 0;
-          // personalizationsData.push({
-          //   spot_label: label,
-          //   spot_price: price,
-          //   image_url: cb.dataset.imageUrl || null // Sera rempli après l'upload
-          // });
+            for (const cbCheckbox of checkedPersonalizations) {
+              const labelElement = cbCheckbox.labels[0];
+              // S'assurer que labelElement existe avant d'accéder à textContent
+              const label = labelElement ? labelElement.textContent.trim() : `Option ${cbCheckbox.id}`; 
+              const price = parseFloat(cbCheckbox.dataset.price) || 0;
+              personalizationsData.push({
+                spot_label: label,
+                spot_price: price,
+                image_url: cbCheckbox.dataset.imageUrl || null
+              });
+            }
+            const selections = personalizationsData; 
 
-          // Temporairement, on garde l'ancienne structure pour que le reste fonctionne
-          // On la modifiera une fois l'upload fonctionnel
-          const label = cb.labels[0].textContent.trim();
-          const price = parseFloat(cb.dataset.price) || 0;
-          personalizationsData.push(`${label}::${price}`);
-        }
-        const selections = personalizationsData; // Sera remplacé par la nouvelle structure
+            const displayName = nomsPropres[tableName];
 
-        // const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-        //   .map(cb => {
-            const label = cb.labels[0].textContent.trim();
-            const price = parseFloat(cb.dataset.price) || 0; // cb.dataset.price est modificationPriceForCheckbox
-            return `${label}::${price}`; // Encoder "label::prix"
+            const selectedColorOption = colorSelect.selectedOptions[0];
+            const selectedColor = selectedColorOption && selectedColorOption.value ? 
+                                  { id: selectedColorOption.value, name: selectedColorOption.textContent, hex: selectedColorOption.dataset.hex } : null;
 
-        const displayName = nomsPropres[tableName]; // Obtenir le nom lisible du produit
+            const selectedSizeOption = sizeSelect.selectedOptions[0];
+            const selectedSize = selectedSizeOption && selectedSizeOption.value ?
+                                 { id: selectedSizeOption.value, name: selectedSizeOption.textContent } : null;
 
-        // Récupérer les sélections des nouvelles listes déroulantes
-        const selectedColorOption = colorSelect.selectedOptions[0];
-        const selectedColor = selectedColorOption && selectedColorOption.value ? 
-                              { id: selectedColorOption.value, name: selectedColorOption.textContent, hex: selectedColorOption.dataset.hex } : null;
+            const selectedGenderOption = genderSelect.selectedOptions[0];
+            const selectedGender = selectedGenderOption && selectedGenderOption.value ?
+                                   { id: selectedGenderOption.value, name: selectedGenderOption.textContent } : null;
 
-        const selectedSizeOption = sizeSelect.selectedOptions[0];
-        const selectedSize = selectedSizeOption && selectedSizeOption.value ?
-                             { id: selectedSizeOption.value, name: selectedSizeOption.textContent } : null;
+            const { data: { user } } = await supa.auth.getUser();
+            
+            // Logs pour débogage
+            console.log('Tentative d\'ajout au panier. Utilisateur:', user ? user.id : 'Invité');
+            console.log('Produit:', displayName, `(ID: ${tableName})`);
+            console.log('Quantité:', qty);
+            console.log('Prix de base effectif:', effectiveBasePrice);
+            console.log('Sélections (personnalisations):', JSON.stringify(selections, null, 2));
+            console.log('Couleur:', selectedColor, 'Taille:', selectedSize, 'Sexe:', selectedGender);
 
-        const selectedGenderOption = genderSelect.selectedOptions[0];
-        const selectedGender = selectedGenderOption && selectedGenderOption.value ?
-                               { id: selectedGenderOption.value, name: selectedGenderOption.textContent } : null;
+            if (user) {
+              const { data: insertData, error: insertError } = await supa.from('cart_items').insert({
+                user_id: user.id,
+                product_id: tableName, 
+                product_name: displayName, 
+                quantity: qty,
+                personalizations: selections, 
+                base_price: effectiveBasePrice, 
+                selected_color_name: selectedColor ? selectedColor.name : null,
+                selected_size_name: selectedSize ? selectedSize.name : null,
+                selected_gender_name: selectedGender ? selectedGender.name : null
+              });
 
-        // Vérifier si l'utilisateur est connecté
-        const { data: { user } } = await supa.auth.getUser();
-        if (user) {
-          // Utilisateur connecté : ajouter au panier dans la base de données
-          await supa.from('cart_items').insert({
-            user_id: user.id,
-            product_id: tableName, // ex: inventairecrewneck
-            product_name: displayName, // ex: Crewneck
-            quantity: qty,
-            personalizations: selections, // Sera un JSONB d'objets
-            base_price: effectiveBasePrice, // Utilise le prix de base effectif
-            selected_color_name: selectedColor ? selectedColor.name : null,
-            selected_size_name: selectedSize ? selectedSize.name : null,
-            selected_gender_name: selectedGender ? selectedGender.name : null
-          });
-          alert('Article ajouté au panier !');
-          window.location.href = 'panier.html';
-        } else {
-          // Utilisateur non connecté : ajouter au panier dans LocalStorage
-          const cart = JSON.parse(localStorage.getItem('cart')) || [];
-          cart.push({
-            product_id: tableName, // ex: inventairecrewneck
-            product_name: displayName, // ex: Crewneck
-            quantity: qty,
-            personalizations: selections, // Sera un JSONB d'objets
-            base_price: effectiveBasePrice, // Utilise le prix de base effectif
-            selected_color_name: selectedColor ? selectedColor.name : null,
-            selected_size_name: selectedSize ? selectedSize.name : null,
-            selected_gender_name: selectedGender ? selectedGender.name : null
-          });
-          localStorage.setItem('cart', JSON.stringify(cart));
-          alert('Article ajouté au panier (non connecté) !');
-          window.location.href = 'panier.html';
+              if (insertError) {
+                console.error("Erreur lors de l'ajout au panier (Supabase):", insertError);
+                alert(`Erreur lors de l'ajout au panier: ${insertError.message}. Détails en console.`);
+                return; 
+              }
+              alert('Article ajouté au panier !');
+              window.location.href = 'panier.html';
+            } else {
+              const cart = JSON.parse(localStorage.getItem('cart')) || [];
+              cart.push({
+                product_id: tableName, 
+                product_name: displayName, 
+                quantity: qty,
+                personalizations: selections, 
+                base_price: effectiveBasePrice, 
+                selected_color_name: selectedColor ? selectedColor.name : null,
+                selected_size_name: selectedSize ? selectedSize.name : null,
+                selected_gender_name: selectedGender ? selectedGender.name : null
+              });
+              localStorage.setItem('cart', JSON.stringify(cart));
+              alert('Article ajouté au panier (non connecté) !');
+              window.location.href = 'panier.html';
+            }
+        } catch (error) {
+            console.error("Erreur inattendue dans la fonction d'ajout au panier:", error);
+            alert("Une erreur inattendue est survenue lors de l'ajout au panier. Veuillez vérifier la console pour plus de détails.");
         }
       });
     }
