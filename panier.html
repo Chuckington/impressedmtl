@@ -25,6 +25,7 @@
     th, td { padding:12px; border-bottom:1px solid #ddd; text-align:left; }
     th { background:#f0f0f0; }
     .total { text-align:right; font-size:1.2rem; font-weight:bold; }
+    .cart-item-image-preview { max-width: 50px; max-height: 50px; margin-top: 5px; border: 1px solid #eee;}
     .remove-btn { color: red; cursor: pointer; font-weight: bold; }
     .remove-btn:hover { text-decoration: underline; }
   </style>
@@ -113,20 +114,29 @@
         data.forEach(item => {
           const row = document.createElement('tr');
           // Décoder les personnalisations pour calculer extraCost et obtenir les labels
+          // La structure de item.personalizations est maintenant un tableau d'objets
           let extraCost = 0;
-          const personalizationLabels = (item.personalizations || []).map(pString => {
-            const parts = pString.split('::');
-            extraCost += parts.length > 1 ? parseFloat(parts[1]) : 0;
-            return parts[0]; // Garder seulement le label pour l'affichage
+          const personalizationDetails = (item.personalizations || []).map(pObj => {
+            extraCost += pObj.spot_price || 0;
+            let detailString = pObj.spot_label;
+            if (pObj.image_url) {
+              detailString += ` <img src="${pObj.image_url}" alt="Design" class="cart-item-image-preview">`;
+            }
+            return detailString;
           });
 
           const subtotal = (item.quantity * (item.base_price + extraCost));
           total += subtotal;
 
           let optionsDisplay = [];
-          if (personalizationLabels.length > 0) {
-            optionsDisplay.push(personalizationLabels.join(', '));
+          // if (personalizationLabels.length > 0) { // Ancienne logique
+          //   optionsDisplay.push(personalizationLabels.join(', '));
+          // }
+          if (personalizationDetails.length > 0) {
+            optionsDisplay.push(personalizationDetails.join('<br>')); // Chaque personnalisation sur une nouvelle ligne
           }
+
+          // Ajouter Couleur, Taille, Sexe
           if (item.selected_color_name) {
             optionsDisplay.push(`Couleur: ${item.selected_color_name}`);
           }
@@ -157,11 +167,17 @@
         }
         cart.forEach((item, index) => {
           // Décoder les personnalisations pour calculer extraCost et obtenir les labels
+          // La structure de item.personalizations est maintenant un tableau d'objets
           let extraCost = 0;
-          const personalizationLabels = (item.personalizations || []).map(pString => {
-            const parts = pString.split('::');
-            extraCost += parts.length > 1 ? parseFloat(parts[1]) : 0;
-            return parts[0]; // Garder seulement le label pour l'affichage
+          const personalizationDetails = (item.personalizations || []).map(pObj => {
+            extraCost += pObj.spot_price || 0;
+            let detailString = pObj.spot_label;
+            if (pObj.image_url) {
+              // Pour LocalStorage, l'image ne s'affichera pas directement ici sans plus de logique,
+              // mais on peut indiquer qu'un design a été uploadé.
+              detailString += ` (Design perso: ${pObj.image_url.substring(pObj.image_url.lastIndexOf('/') + 1)})`;
+            }
+            return detailString;
           });
 
           const subtotal = (item.quantity * (item.base_price + extraCost));
@@ -169,9 +185,13 @@
           const row = document.createElement('tr');
 
           let optionsDisplay = [];
-          if (personalizationLabels.length > 0) {
-            optionsDisplay.push(personalizationLabels.join(', '));
+          // if (personalizationLabels.length > 0) { // Ancienne logique
+          //   optionsDisplay.push(personalizationLabels.join(', '));
+          // }
+          if (personalizationDetails.length > 0) {
+            optionsDisplay.push(personalizationDetails.join('<br>'));
           }
+          // Ajouter Couleur, Taille, Sexe
           if (item.selected_color_name) {
             optionsDisplay.push(`Couleur: ${item.selected_color_name}`);
           }

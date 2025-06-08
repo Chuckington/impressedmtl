@@ -27,7 +27,14 @@
     .card-content h3 { margin-bottom:10px; font-size:1.2rem; }
     .card-content p { margin:5px 0; font-size:0.95rem; color:#333; }
     .personalize { display:flex; align-items:center; margin-top:10px; }
-    .personalize input { margin-right:8px; }
+    .personalize input[type="checkbox"] { margin-right:8px; }
+    .upload-section {
+      margin-left: 28px; /* Aligner avec le texte après la checkbox */
+      margin-top: 8px;
+      display: none; /* Caché par défaut */
+    }
+    .upload-section input[type="file"] { margin-bottom: 5px; font-size: 0.9rem; }
+    .upload-section img { max-width: 100px; max-height: 100px; border: 1px solid #eee; display: block; margin-top: 5px; }
     #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 15px; /* Ajout de flex-wrap et gap global */}
     #order-summary .left { display:flex; align-items:center; gap:16px; flex-wrap: wrap; /* Permettre le retour à la ligne des options */}
     #order-summary .option-group {
@@ -319,6 +326,11 @@
                 <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-front">
                 <label for="opt-${item.id}-front">Gros design devant</label>
               </div>
+              <div class="upload-section" id="upload-section-${item.id}-front">
+                <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
+                <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
+                <img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;">
+              </div>
             `;
           }
           // Point 2: Tablier - pas de "Gros design derrière"
@@ -327,6 +339,11 @@
               <div class="personalize">
                 <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForCheckbox}" id="opt-${item.id}-back">
                 <label for="opt-${item.id}-back">Gros design derrière</label>
+              </div>
+              <div class="upload-section" id="upload-section-${item.id}-back">
+                 <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
+                <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
+                <img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;">
               </div>
             `;
           }
@@ -358,6 +375,8 @@
       function updateTotal() {
         const qty = parseInt(qtyInput.value) || 1;
         const extraCost = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+          // On ne somme que les data-price des checkboxes, pas d'autres inputs qui pourraient avoir data-price
+          .filter(cb => cb.type === 'checkbox') 
           .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
         
         const newTotalValue = (effectiveBasePrice + extraCost) * qty;
@@ -379,20 +398,115 @@
         });
       }
       qtyInput.addEventListener('input', updateTotal);
-      container.addEventListener('change', e => {
-        if (e.target.classList.contains('personalization-checkbox')) updateTotal();
+      container.addEventListener('change', async e => { // Ajout de async ici
+        if (e.target.classList.contains('personalization-checkbox')) {
+          updateTotal();
+          // Afficher/cacher la section d'upload correspondante
+          const checkboxId = e.target.id; // ex: opt-ITEMID-front
+          const baseId = checkboxId.replace('opt-', ''); // ex: ITEMID-front
+          const uploadSection = document.getElementById(`upload-section-${baseId}`);
+          if (uploadSection) {
+            uploadSection.style.display = e.target.checked ? 'block' : 'none';
+            if (!e.target.checked) {
+              // Optionnel: Réinitialiser l'input fichier et la prévisualisation si décoché
+              const fileInput = document.getElementById(`file-input-${baseId}`);
+              const preview = document.getElementById(`preview-${baseId}`);
+              if (fileInput) fileInput.value = ''; // Réinitialise le champ fichier
+              if (preview) {
+                preview.style.display = 'none';
+                preview.src = '#';
+                // Supprimer l'URL stockée si vous la stockez sur la checkbox
+                delete e.target.dataset.imageUrl;
+              }
+            }
+          }
+        }
+        // Gérer la sélection de fichier pour l'upload
+        if (e.target.type === 'file' && e.target.id.startsWith('file-input-')) {
+          const file = e.target.files[0];
+          const fileInput = e.target;
+          const baseId = fileInput.id.replace('file-input-', ''); // ex: ITEMID-front
+          const previewElement = document.getElementById(`preview-${baseId}`);
+          const checkboxElement = document.getElementById(`opt-${baseId}`); // La checkbox associée
+          const uploadLabel = fileInput.previousElementSibling; // Le <label> qui sert de bouton
+
+          if (file && previewElement && checkboxElement && uploadLabel) {
+            // Prévisualisation
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              previewElement.src = event.target.result;
+              previewElement.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+
+            // Upload vers Supabase Storage
+            uploadLabel.textContent = 'Chargement...'; // Indiquer l'upload en cours
+            fileInput.disabled = true;
+
+            const uniqueFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`; // Nom de fichier unique
+            // Optionnel: Organiser par utilisateur si connecté
+            const { data: { user } } = await supa.auth.getUser();
+            const filePath = user ? `${user.id}/${uniqueFileName}` : `public/${uniqueFileName}`;
+
+            const { data: uploadData, error: uploadError } = await supa.storage
+              .from('designs-clients') // Nom de votre bucket
+              .upload(filePath, file);
+
+            if (uploadError) {
+              console.error("Erreur d'upload Supabase:", uploadError);
+              alert("Erreur lors de l'upload de l'image.");
+              uploadLabel.textContent = 'Choisir fichier';
+              fileInput.disabled = false;
+            } else {
+              console.log('Upload Supabase réussi:', uploadData);
+              const { data: publicURLData } = supa.storage
+                .from('designs-clients')
+                .getPublicUrl(uploadData.path);
+              checkboxElement.dataset.imageUrl = publicURLData.publicUrl; // Stocker l'URL sur la checkbox
+              uploadLabel.textContent = 'Fichier chargé ✓';
+              fileInput.disabled = false;
+            }
+          }
+        }
       });
       updateTotal();
 
       // Ajouter au panier
       document.getElementById('add-to-cart').addEventListener('click', async () => {
         const qty = parseInt(qtyInput.value) || 1;
-        const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-          .map(cb => {
+        
+        // Nouvelle logique pour construire `selections` avec les URLs d'images
+        const personalizationsData = [];
+        const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
+
+        for (const cb of checkedPersonalizations) {
+          const baseId = cb.id.replace('opt-', ''); // ex: ITEMID-front
+          const fileInput = document.getElementById(`file-input-${baseId}`);
+          // Pour l'instant, on ne gère pas l'upload réel ici, on prépare la structure
+          // L'URL de l'image sera ajoutée après l'upload réussi (prochaines étapes)
+          
+          // ANCIENNE LOGIQUE A REMPLACER :
+          // const label = cb.labels[0].textContent.trim();
+          // const price = parseFloat(cb.dataset.price) || 0;
+          // personalizationsData.push({
+          //   spot_label: label,
+          //   spot_price: price,
+          //   image_url: cb.dataset.imageUrl || null // Sera rempli après l'upload
+          // });
+
+          // Temporairement, on garde l'ancienne structure pour que le reste fonctionne
+          // On la modifiera une fois l'upload fonctionnel
+          const label = cb.labels[0].textContent.trim();
+          const price = parseFloat(cb.dataset.price) || 0;
+          personalizationsData.push(`${label}::${price}`);
+        }
+        const selections = personalizationsData; // Sera remplacé par la nouvelle structure
+
+        // const selections = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
+        //   .map(cb => {
             const label = cb.labels[0].textContent.trim();
             const price = parseFloat(cb.dataset.price) || 0; // cb.dataset.price est modificationPriceForCheckbox
             return `${label}::${price}`; // Encoder "label::prix"
-          });
 
         const displayName = nomsPropres[tableName]; // Obtenir le nom lisible du produit
 
@@ -418,7 +532,7 @@
             product_id: tableName, // ex: inventairecrewneck
             product_name: displayName, // ex: Crewneck
             quantity: qty,
-            personalizations: selections,
+            personalizations: selections, // Sera un JSONB d'objets
             base_price: effectiveBasePrice, // Utilise le prix de base effectif
             selected_color_name: selectedColor ? selectedColor.name : null,
             selected_size_name: selectedSize ? selectedSize.name : null,
@@ -433,7 +547,7 @@
             product_id: tableName, // ex: inventairecrewneck
             product_name: displayName, // ex: Crewneck
             quantity: qty,
-            personalizations: selections,
+            personalizations: selections, // Sera un JSONB d'objets
             base_price: effectiveBasePrice, // Utilise le prix de base effectif
             selected_color_name: selectedColor ? selectedColor.name : null,
             selected_size_name: selectedSize ? selectedSize.name : null,
