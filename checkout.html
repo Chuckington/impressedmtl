@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Paiement</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Supabase JS UMD via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Square Web Payments SDK -->
+  <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: 'Fredoka', sans-serif; background: #f7f7f7; min-height: 100vh; }
+    header {
+      position: sticky; top: 0; width: 100%; background: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      z-index: 1000;
+    }
+    .btn { padding: 10px 14px; background: #000; color: #fff; text-decoration: none; border-radius:5px; cursor:pointer; border:none; font-family: inherit; font-size: 1rem;}
+    .btn:hover { background: #444; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .header-title { flex: 1; text-align: center; }
+    .header-title h1 { font-size:1.8rem; }
+    .container { max-width:700px; margin:40px auto; padding:20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { margin-bottom: 20px; text-align: center; }
+    .order-summary, .payment-form { margin-bottom: 30px; }
+    .order-summary h3, .payment-form h3 { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+    .order-summary p { margin-bottom: 8px; }
+    #card-container { border: 1px solid #ccc; padding: 10px; border-radius: 4px; min-height: 50px; }
+    .error-message { color: red; margin-top: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="panier.html" class="btn">← Panier</a>
+    <div class="header-title">
+      <h1>Finaliser la commande</h1>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="user-email" style="color: #333;"></span>
+        <button id="auth-button" class="btn">Se connecter</button>
+      </div>
+  </header>
+
+  <div class="container">
+    <div class="order-summary">
+      <h3>Récapitulatif de la commande</h3>
+      <div id="summary-items">
+        <p>Chargement du récapitulatif...</p>
+      </div>
+      <p><strong>Total à payer: <span id="total-amount">0.00</span> $</strong></p>
+    </div>
+
+    <div class="payment-form">
+      <h3>Informations de paiement</h3>
+      <form id="payment-form-square">
+        <div id="card-container"></div>
+        <button id="card-button" type="button" class="btn" style="width:100%; margin-top:20px;">Payer</button>
+      </form>
+      <div id="payment-status-container" class="error-message"></div>
+    </div>
+  </div>
+
+  <script>
+    const supa = supabase.createClient(
+      'https://vwvvbtcatamszncjuiso.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
+    );
+
+    // --- AUTH LOGIC (similar to other pages) ---
+    const authBtn = document.getElementById('auth-button');
+    const userEmailEl = document.getElementById('user-email');
+    async function updateAuthUI() {
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        userEmailEl.textContent = user.email;
+        authBtn.textContent = 'Se déconnecter';
+      } else {
+        userEmailEl.textContent = '';
+        authBtn.textContent = 'Se connecter';
+      }
+    }
+    authBtn.addEventListener('click', async () => {
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) await supa.auth.signOut();
+      else window.location.href = 'login2.html';
+      updateAuthUI();
+    });
+    supa.auth.onAuthStateChange(updateAuthUI);
+    updateAuthUI();
+
+    // --- CHECKOUT LOGIC ---
+    const summaryItemsEl = document.getElementById('summary-items');
+    const totalAmountEl = document.getElementById('total-amount');
+    let currentCartForPayment = [];
+    let currentTotalForPayment = 0;
+
+    async function loadOrderSummary() {
+      const { data: { user } } = await supa.auth.getUser();
+      let cartItems = [];
+      let total = 0;
+
+      if (user) {
+        const { data, error } = await supa.from('cart_items').select('*').eq('user_id', user.id);
+        if (error || !data) {
+          summaryItemsEl.innerHTML = '<p>Erreur lors du chargement du panier.</p>';
+          return;
+        }
+        cartItems = data;
+      } else {
+        cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+      }
+
+      if (cartItems.length === 0) {
+        summaryItemsEl.innerHTML = '<p>Votre panier est vide.</p>';
+        totalAmountEl.textContent = '0.00';
+        document.getElementById('card-button').disabled = true;
+        return;
+      }
+
+      currentCartForPayment = cartItems; // Store for payment processing
+      summaryItemsEl.innerHTML = ''; // Clear loading message
+
+      cartItems.forEach(item => {
+        let extraCost = 0;
+        (item.personalizations || []).forEach(p => extraCost += (p.spot_price || 0));
+        const subtotal = (item.quantity * (item.base_price + extraCost));
+        total += subtotal;
+        const p = document.createElement('p');
+        p.textContent = `${item.product_name} x ${item.quantity} - ${subtotal.toFixed(2)}$`;
+        summaryItemsEl.appendChild(p);
+      });
+      currentTotalForPayment = total;
+      totalAmountEl.textContent = total.toFixed(2);
+    }
+
+    async function initializeSquarePaymentForm() {
+      // TODO: Remplacez par votre ID d'application Square (Sandbox ou Production)
+      const SQUARE_APPLICATION_ID = 'sandbox-sq0idb-DtydjOvTXB4djNYJJP6vdg';
+      // TODO: Remplacez par votre ID de localisation Square
+      const SQUARE_LOCATION_ID = 'L3428RYHNGBKP'; // J'ai mis un ID de localisation sandbox valide pour l'exemple, remplacez par le vôtre.
+
+      if (!SQUARE_APPLICATION_ID || SQUARE_APPLICATION_ID === 'sandbox-sq0idb-DtydjOvTXB4djNYJJP6vdg' || SQUARE_APPLICATION_ID === 'VOTRE_ID_APPLICATION_SQUARE_SANDBOX') {
+        document.getElementById('payment-status-container').textContent = "Configuration Square manquante (ID d'application).";
+        document.getElementById('card-button').disabled = true;
+        return;
+      }
+
+      const payments = Square.payments(SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID);
+      const card = await payments.card();
+      await card.attach('#card-container');
+
+      const cardButton = document.getElementById('card-button');
+      cardButton.addEventListener('click', async () => {
+        cardButton.disabled = true;
+        document.getElementById('payment-status-container').textContent = 'Traitement du paiement...';
+
+        try {
+          const result = await card.tokenize();
+          if (result.status === 'OK') {
+            const token = result.token;
+            // **ÉTAPE CRUCIALE : Envoyer le token et les détails de la commande à votre backend**
+            // Ce backend (ex: Supabase Edge Function) utilisera le token pour créer un paiement réel avec l'API Square.
+            console.log('Token de paiement Square:', token);
+            
+            // Simuler l'appel backend pour l'instant
+            // Vous devrez créer une Supabase Edge Function nommée 'process-square-payment' par exemple
+            const { data: paymentResponse, error: paymentError } = await supa.functions.invoke('process-square-payment', {
+              body: {
+                sourceId: token, // C'est le token de la carte
+                amount: Math.round(currentTotalForPayment * 100), // Montant en centimes
+                currency: 'CAD',
+                locationId: SQUARE_LOCATION_ID,
+                idempotencyKey: crypto.randomUUID(), // Pour éviter les doubles paiements
+                cartDetails: currentCartForPayment // Envoyez les détails du panier pour enregistrement
+              }
+            });
+
+            if (paymentError) {
+              throw new Error(paymentError.message);
+            }
+
+            if (paymentResponse && paymentResponse.success) {
+               document.getElementById('payment-status-container').textContent = 'Paiement réussi ! Redirection...';
+               // Optionnel: Vider le panier après paiement réussi
+               const { data: { user } } = await supa.auth.getUser();
+               if (user) {
+                   await supa.from('cart_items').delete().eq('user_id', user.id);
+               } else {
+                   localStorage.removeItem('cart');
+               }
+               // Rediriger vers une page de confirmation
+               setTimeout(() => window.location.href = 'confirmation.html', 2000); // Créez confirmation.html
+            } else {
+              throw new Error(paymentResponse.message || 'Échec du traitement du paiement par le backend.');
+            }
+
+          } else {
+            let errorMessage = `Tokenisation échouée: ${result.status}`;
+            if (result.errors) {
+              errorMessage += ` - ${result.errors.map(e => e.message).join(' ')}`;
+            }
+            throw new Error(errorMessage);
+          }
+        } catch (error) {
+          console.error('Erreur de paiement Square:', error);
+          document.getElementById('payment-status-container').textContent = `Erreur: ${error.message}`;
+          cardButton.disabled = false;
+        }
+      });
+    }
+
+    // Initialisation
+    loadOrderSummary();
+    initializeSquarePaymentForm();
+
+  </script>
+</body>
+</html>
