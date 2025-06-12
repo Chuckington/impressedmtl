@@ -141,8 +141,9 @@
       // TODO: Remplacez par votre ID de localisation Square
       const SQUARE_LOCATION_ID = 'L3428RYHNGBKP'; // J'ai mis un ID de localisation sandbox valide pour l'exemple, remplacez par le vôtre.
 
-      if (!SQUARE_APPLICATION_ID || SQUARE_APPLICATION_ID === 'sandbox-sq0idb-DtydjOvTXB4djNYJJP6vdg' || SQUARE_APPLICATION_ID === 'VOTRE_ID_APPLICATION_SQUARE_SANDBOX') {
-        document.getElementById('payment-status-container').textContent = "Configuration Square manquante (ID d'application).";
+      // Si l'ID d'application n'est pas défini ou est encore la valeur placeholder générique
+      if (!SQUARE_APPLICATION_ID || SQUARE_APPLICATION_ID === 'VOTRE_ID_APPLICATION_SQUARE_SANDBOX') {
+        document.getElementById('payment-status-container').textContent = "Configuration Square incorrecte ou manquante (ID d'application). Veuillez vérifier la constante SQUARE_APPLICATION_ID dans checkout.html.";
         document.getElementById('card-button').disabled = true;
         return;
       }
