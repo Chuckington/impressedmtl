@@ -2,8 +2,8 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts"; // Version de std mise à jour
 // Importer le SDK Square.
 // Pour Deno, il est souvent plus simple d'utiliser un CDN comme esm.sh.
-// Vérifiez la dernière version compatible avec Deno sur esm.sh ou la documentation Square.
-import { Client, Environment, ApiError } from "https://esm.sh/square@35.0.0"; // Exemple de version, vérifiez la dernière
+// Essayons une version plus récente du SDK Square.
+import { Client, Environment, ApiError } from "https://esm.sh/square@39.0.0"; // Mise à jour de la version
 
 console.log("Initialisation de la fonction process-square-payment");
 
