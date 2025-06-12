@@ -22,7 +22,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails } = await req.json();
+    const { sourceId, amount, currency, locationId, idempotencyKey, _cartDetails } = await req.json(); // cartDetails préfixé
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey });
 
     // 3. Récupérer les secrets depuis les variables d'environnement Supabase
@@ -115,15 +115,17 @@ serve(async (req) => {
   } catch (error) {
     console.error("Erreur inattendue dans la fonction process-square-payment:", error);
     let errorMessage = "Erreur interne du serveur lors du traitement du paiement.";
-    let errorDetails = error.toString();
+    let errorDetails: string; // Déclarer sans initialiser immédiatement
 
     if (error instanceof ApiError) { // Erreur spécifique du SDK Square
         errorMessage = error.errors?.map(e => `[${e.category}] ${e.code}: ${e.detail}`).join('; ') || error.message;
         errorDetails = JSON.stringify(error.errors);
     } else if (error instanceof Error) {
         errorMessage = error.message;
+        errorDetails = error.stack || error.message; // Utiliser stack si disponible pour plus de détails
+    } else {
+        errorDetails = String(error); // Fallback pour les types d'erreurs inconnus
     }
-
     return new Response(JSON.stringify({ success: false, message: errorMessage, errorDetails: errorDetails }), {
       status: 500, // Erreur serveur
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
