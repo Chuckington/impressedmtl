@@ -22,7 +22,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, _cartDetails } = await req.json(); // cartDetails préfixé
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails } = await req.json(); // _cartDetails devient cartDetails, ajout de shippingDetails
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey });
 
     // 3. Récupérer les secrets depuis les variables d'environnement Supabase
@@ -72,8 +72,25 @@ serve(async (req) => {
 
     // 6. Gérer la réponse de Square
     if (result.payment && (result.payment.status === 'COMPLETED' || result.payment.status === 'APPROVED')) {
-      console.log("Paiement Square réussi:", result.payment.id);
+      const paymentId = result.payment.id;
 
+      if (!paymentId) {
+        console.error("ERREUR: ID de paiement manquant dans la réponse Square après un paiement réussi.");
+        return new Response(JSON.stringify({ success: false, message: "Erreur interne: ID de paiement manquant." }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
+
+      // À partir d'ici, paymentId est garanti d'être une chaîne de caractères.
+      console.log("Paiement Square réussi:", paymentId);
+
+      // Préparer et envoyer les emails de confirmation/reçu
+      if (shippingDetails && shippingDetails.email && cartDetails) {
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, paymentId, amount);
+        await sendReceiptEmail(shippingDetails.email, "Votre reçu de commande Impressed MTL", emailHtmlBody);
+        await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande Impressed MTL - ${paymentId}`, emailHtmlBody);
+      }
       // TODO : Enregistrer la commande dans votre base de données Supabase
       // C'est une étape cruciale pour garder une trace de la commande après un paiement réussi.
       // Exemple (nécessite d'importer et configurer le client Supabase Admin dans la fonction si besoin) :
@@ -97,7 +114,7 @@ serve(async (req) => {
       // }
       */
 
-      return new Response(JSON.stringify({ success: true, paymentId: result.payment.id }), {
+      return new Response(JSON.stringify({ success: true, paymentId: paymentId }), {
         status: 200,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
@@ -132,3 +149,124 @@ serve(async (req) => {
     });
   }
 });
+
+// Définir des types pour une meilleure clarté et sécurité
+interface PersonalizationDetail {
+  spot_label: string;
+  spot_price: number;
+  image_url?: string;
+}
+
+interface CartItem {
+  product_name: string;
+  quantity: number;
+  base_price: number;
+  personalizations?: PersonalizationDetail[];
+  selected_color_name?: string;
+  selected_size_name?: string;
+  selected_gender_name?: string;
+  // Ajoutez d'autres champs si présents dans vos objets cartItem
+}
+
+interface ShippingInfo {
+  fullName: string;
+  email: string;
+  address: string;
+  apartment?: string;
+  city: string;
+  postalCode: string;
+  phone?: string;
+}
+
+// Fonction pour formater le reçu en HTML
+function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, paymentId: string, totalAmountInCents: number): string {
+  const itemsHtml = (cartItems || []).map(item => {
+    const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
+      let detail = `<li>${p.spot_label}: ${p.spot_price.toFixed(2)}$`;
+      if (p.image_url) {
+        // Pour l'email, une image directe peut être compliquée, un lien est plus sûr
+        detail += ` (Design: <a href="${p.image_url}" target="_blank" rel="noopener noreferrer">voir l'image</a>)`;
+      }
+      detail += `</li>`;
+      return detail;
+    }).join('');
+
+    const options = [];
+    if (item.selected_color_name) options.push(`Couleur: ${item.selected_color_name}`);
+    if (item.selected_size_name) options.push(`Taille: ${item.selected_size_name}`);
+    if (item.selected_gender_name) options.push(`Sexe: ${item.selected_gender_name}`);
+    
+    const itemOptionsHtml = options.length > 0 ? `<li>Options: ${options.join(', ')}</li>` : '';
+
+    return `
+      <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+        <strong>${item.product_name} x ${item.quantity}</strong><br>
+        Prix de base unitaire: ${item.base_price.toFixed(2)}$<br>
+        ${itemPersonalizationsHtml ? `Personnalisations:<ul>${itemPersonalizationsHtml}</ul>` : 'Personnalisations: Aucune'}<br>
+        ${itemOptionsHtml}
+      </div>
+    `;
+  }).join('');
+
+  const totalAmount = (totalAmountInCents / 100).toFixed(2);
+
+  return `
+    <html>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2>Merci pour votre commande, ${shippingInfo.fullName} !</h2>
+        <p>Voici le récapitulatif de votre commande #${paymentId} :</p>
+        <h3>Articles:</h3>
+        ${itemsHtml}
+        <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
+        <h3>Adresse de livraison:</h3>
+        <p>
+          ${shippingInfo.fullName}<br>
+          ${shippingInfo.address}<br>
+          ${shippingInfo.apartment ? shippingInfo.apartment + '<br>' : ''}
+          ${shippingInfo.city}, ${shippingInfo.postalCode}<br>
+          Téléphone: ${shippingInfo.phone || 'Non fourni'}
+        </p>
+        <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+        <p>L'équipe Impressed MTL</p>
+      </body>
+    </html>
+  `;
+}
+
+// Fonction pour envoyer l'email via Resend
+async function sendReceiptEmail(to: string, subject: string, htmlBody: string): Promise<void> {
+  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  if (!RESEND_API_KEY) {
+    console.error("RESEND_API_KEY n'est pas configurée.");
+    return; // Ne pas continuer si la clé API est manquante
+  }
+
+  const resendPayload = {
+    from: 'Impressed MTL <onboarding@resend.dev>', // IMPORTANT: Doit être un domaine vérifié sur Resend pour la production.
+    to: [to],
+    subject: subject,
+    html: htmlBody,
+  };
+
+  console.log(`Tentative d'envoi d'email à ${to} avec sujet: ${subject}`);
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(resendPayload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`Erreur Resend (HTTP ${response.status}) lors de l'envoi à ${to}:`, errorData);
+    } else {
+      const responseData = await response.json();
+      console.log(`Email envoyé avec succès à ${to}. ID Resend: ${responseData.id}`);
+    }
+  } catch (error) {
+    console.error(`Erreur lors de la requête fetch vers Resend pour ${to}:`, error);
+  }
+}
