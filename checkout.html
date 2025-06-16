@@ -23,10 +23,14 @@
     .header-title { flex: 1; text-align: center; }
     .header-title h1 { font-size:1.8rem; }
     .container { max-width:700px; margin:40px auto; padding:20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    h2 { margin-bottom: 20px; text-align: center; }
-    .order-summary, .payment-form { margin-bottom: 30px; }
-    .order-summary h3, .payment-form h3 { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+    h2, h3 { margin-bottom: 20px; text-align: center; }
+    .section { margin-bottom: 30px; }
+    .section h3 { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;}
     .order-summary p { margin-bottom: 8px; }
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+    @media (min-width: 600px) { .form-grid { grid-template-columns: 1fr 1fr; } .form-grid .full-width { grid-column: 1 / -1; } }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+    .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="tel"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
     #card-container { border: 1px solid #ccc; padding: 10px; border-radius: 4px; min-height: 50px; }
     .error-message { color: red; margin-top: 10px; text-align: center; }
   </style>
@@ -44,21 +48,55 @@
   </header>
 
   <div class="container">
-    <div class="order-summary">
+    <div class="section order-summary">
       <h3>Récapitulatif de la commande</h3>
       <div id="summary-items">
         <p>Chargement du récapitulatif...</p>
       </div>
       <p><strong>Total à payer: <span id="total-amount">0.00</span> $</strong></p>
     </div>
+    
+    <div class="section shipping-info">
+      <h3>Informations de livraison</h3>
+      <p style="text-align: center; font-size: 0.9em; color: #555; margin-bottom: 15px;">
+        🚚 Pour l'instant, nous livrons uniquement sur l'île de Montréal et sa région métropolitaine.
+      </p>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="fullName">Nom complet</label>
+          <input type="text" id="fullName" name="fullName" required>
+        </div>
+        <div class="form-group full-width">
+          <label for="address">Adresse</label>
+          <input type="text" id="address" name="address" required>
+        </div>
+        <div class="form-group full-width">
+          <label for="apartment">Appartement, suite, etc. (optionnel)</label>
+          <input type="text" id="apartment" name="apartment">
+        </div>
+        <div class="form-group">
+          <label for="city">Ville</label>
+          <input type="text" id="city" name="city" required>
+        </div>
+        <div class="form-group">
+          <label for="postalCode">Code Postal</label>
+          <input type="text" id="postalCode" name="postalCode" required>
+        </div>
+         <div class="form-group full-width">
+          <label for="phone">Numéro de téléphone (pour la livraison)</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+      </div>
+    </div>
 
-    <div class="payment-form">
+    <div class="section payment-form">
       <h3>Informations de paiement</h3>
       <form id="payment-form-square">
         <div id="card-container"></div>
         <button id="card-button" type="button" class="btn" style="width:100%; margin-top:20px;">Payer</button>
       </form>
       <div id="payment-status-container" class="error-message"></div>
+      <p id="form-validation-error" class="error-message" style="display:none;"></p>
     </div>
   </div>
 
@@ -158,6 +196,13 @@
         document.getElementById('payment-status-container').textContent = 'Traitement du paiement...';
 
         try {
+          // Valider et récupérer les informations de livraison
+          const shippingDetails = getAndValidateShippingInfo();
+          if (!shippingDetails) {
+            cardButton.disabled = false;
+            return; // Arrêter si la validation échoue
+          }
+
           const result = await card.tokenize();
           if (result.status === 'OK') {
             const token = result.token;
@@ -174,7 +219,8 @@
                 currency: 'CAD',
                 locationId: SQUARE_LOCATION_ID,
                 idempotencyKey: crypto.randomUUID(), // Pour éviter les doubles paiements
-                cartDetails: currentCartForPayment // Envoyez les détails du panier pour enregistrement
+                cartDetails: currentCartForPayment, // Détails du panier
+                shippingDetails: shippingDetails // Nouvelles informations de livraison
               }
             });
 
@@ -212,9 +258,36 @@
       });
     }
 
+    function getAndValidateShippingInfo() {
+      const formValidationErrorEl = document.getElementById('form-validation-error');
+      formValidationErrorEl.textContent = '';
+      formValidationErrorEl.style.display = 'none';
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const postalCode = document.getElementById('postalCode').value.trim();
+      const apartment = document.getElementById('apartment').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (!fullName || !address || !city || !postalCode) {
+        formValidationErrorEl.textContent = 'Veuillez remplir tous les champs d\'adresse obligatoires.';
+        formValidationErrorEl.style.display = 'block';
+        return null;
+      }
+      return { fullName, address, apartment, city, postalCode, phone };
+    }
+
     // Initialisation
     loadOrderSummary();
     initializeSquarePaymentForm();
+
+    // Ajouter des écouteurs pour effacer l'erreur de validation en tapant
+    ['fullName', 'address', 'city', 'postalCode'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            document.getElementById('form-validation-error').style.display = 'none';
+        });
+    });
 
   </script>
 </body>
