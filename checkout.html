@@ -53,7 +53,9 @@
       <div id="summary-items">
         <p>Chargement du récapitulatif...</p>
       </div>
-      <p><strong>Total à payer: <span id="total-amount">0.00</span> $</strong></p>
+      <p><strong>Total à payer: <span id="total-amount">0.00</span> $</strong>
+        <br><small style="font-weight:normal; color:#555;">(Taxes incluses)</small>
+      </p>
     </div>
     
     <div class="section shipping-info">
@@ -62,6 +64,10 @@
         🚚 Pour l'instant, nous livrons uniquement sur l'île de Montréal et sa région métropolitaine.
       </p>
       <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="email">Adresse courriel (pour le reçu)</label>
+          <input type="email" id="email" name="email" required>
+        </div>
         <div class="form-group full-width">
           <label for="fullName">Nom complet</label>
           <input type="text" id="fullName" name="fullName" required>
@@ -267,23 +273,24 @@
       const address = document.getElementById('address').value.trim();
       const city = document.getElementById('city').value.trim();
       const postalCode = document.getElementById('postalCode').value.trim();
+      const email = document.getElementById('email').value.trim(); // Ajout du courriel
       const apartment = document.getElementById('apartment').value.trim();
       const phone = document.getElementById('phone').value.trim();
 
-      if (!fullName || !address || !city || !postalCode) {
-        formValidationErrorEl.textContent = 'Veuillez remplir tous les champs d\'adresse obligatoires.';
+      if (!fullName || !address || !city || !postalCode || !email) { // Ajout de la validation pour l'email
+        formValidationErrorEl.textContent = 'Veuillez remplir tous les champs obligatoires (adresse et courriel).';
         formValidationErrorEl.style.display = 'block';
         return null;
       }
-      return { fullName, address, apartment, city, postalCode, phone };
+      return { fullName, email, address, apartment, city, postalCode, phone }; // Ajout du courriel à l'objet retourné
     }
 
     // Initialisation
     loadOrderSummary();
     initializeSquarePaymentForm();
 
-    // Ajouter des écouteurs pour effacer l'erreur de validation en tapant
-    ['fullName', 'address', 'city', 'postalCode'].forEach(id => {
+    // Ajouter des écouteurs pour effacer l'erreur de validation en tapant (incluant l'email)
+    ['fullName', 'address', 'city', 'postalCode', 'email'].forEach(id => {
         document.getElementById(id).addEventListener('input', () => {
             document.getElementById('form-validation-error').style.display = 'none';
         });
