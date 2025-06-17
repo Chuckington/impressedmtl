@@ -242,13 +242,14 @@
             // **ÉTAPE CRUCIALE : Envoyer le token et les détails de la commande à votre backend**
             // Ce backend (ex: Supabase Edge Function) utilisera le token pour créer un paiement réel avec l'API Square.
             console.log('Token de paiement Square:', token);
-            
+            const { data: { user } } = await supa.auth.getUser(); // Récupérer l'utilisateur actuel
             // Simuler l'appel backend pour l'instant
             // Vous devrez créer une Supabase Edge Function nommée 'process-square-payment' par exemple
             const { data: paymentResponse, error: paymentError } = await supa.functions.invoke('process-square-payment', {
               body: {
                 sourceId: token, // C'est le token de la carte
                 amount: Math.round(currentTotalForPayment * 100), // Montant en centimes
+                userId: user ? user.id : null, // Envoyer l'ID utilisateur s'il est connecté
                 currency: 'CAD',
                 locationId: SQUARE_LOCATION_ID,
                 idempotencyKey: crypto.randomUUID(), // Pour éviter les doubles paiements

@@ -4,6 +4,8 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts"; // Version
 // Pour Deno, il est souvent plus simple d'utiliser un CDN comme esm.sh.
 // Essayons une version plus récente du SDK Square.
 import { Client, Environment, ApiError } from "https://esm.sh/square@39.0.0"; // Mise à jour de la version
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 
 console.log("Initialisation de la fonction process-square-payment");
 
@@ -22,7 +24,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails } = await req.json(); // _cartDetails devient cartDetails, ajout de shippingDetails
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId } = await req.json(); // Ajout de userId
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey });
 
     // 3. Récupérer les secrets depuis les variables d'environnement Supabase
@@ -91,28 +93,73 @@ serve(async (req) => {
         await sendReceiptEmail(shippingDetails.email, "Votre reçu de commande Impressed MTL", emailHtmlBody);
         await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande Impressed MTL - ${paymentId}`, emailHtmlBody);
       }
-      // TODO : Enregistrer la commande dans votre base de données Supabase
-      // C'est une étape cruciale pour garder une trace de la commande après un paiement réussi.
-      // Exemple (nécessite d'importer et configurer le client Supabase Admin dans la fonction si besoin) :
-      /*
-      // Importez createClient de Supabase si vous voulez interagir avec la DB ici
-      // import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-      // const supabaseAdminClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-      //
-      // const { error: dbError } = await supabaseAdminClient.from('orders').insert({
-      //   user_id: cartDetails.user_id, // Assurez-vous que user_id est dans cartDetails ou récupérez-le autrement
-      //   square_payment_id: result.payment.id,
-      //   total_amount: amount / 100, // Reconvertir en montant décimal
-      //   currency: currency,
-      //   items: cartDetails, // Les détails du panier
-      //   status: 'PAID',
-      //   // autres champs pertinents...
-      // });
-      // if (dbError) {
-      //   console.error("Erreur lors de l'enregistrement de la commande en base de données:", dbError);
-      //   // Même si l'enregistrement échoue, le paiement a réussi. Gérez ce cas.
-      // }
-      */
+
+      // Enregistrer la commande dans la base de données Supabase
+      const supabaseAdminClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+
+      let fixedFeeApplied = 0;
+      const totalItemCount = (cartDetails || []).reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+      if (totalItemCount === 1) fixedFeeApplied = 15;
+      else if (totalItemCount >= 2 && totalItemCount <= 9) fixedFeeApplied = 10;
+
+      const { data: orderData, error: orderError } = await supabaseAdminClient
+        .from('orders')
+        .insert([{ // insert expects an array of objects
+          user_id: userId || null, // userId est envoyé depuis le client
+          square_payment_id: paymentId,
+          total_amount: amount / 100, // Montant en dollars
+          currency: currency,
+          status: 'PAID',
+          shipping_fullname: shippingDetails.fullName,
+          shipping_email: shippingDetails.email,
+          shipping_address: shippingDetails.address,
+          shipping_apartment: shippingDetails.apartment,
+          shipping_city: shippingDetails.city,
+          shipping_postalcode: shippingDetails.postalCode,
+          shipping_phone: shippingDetails.phone,
+          fixed_fee_applied: fixedFeeApplied
+        }])
+        .select() // Pour retourner la commande insérée
+        .single(); // S'attendre à un seul enregistrement
+
+      if (orderError) {
+        console.error("Erreur lors de l'enregistrement de la commande (table orders):", orderError);
+        // Le paiement a réussi, mais l'enregistrement de la commande a échoué.
+        // Vous devriez logger cela et potentiellement alerter pour une action manuelle.
+        // Pour le client, le paiement est toujours considéré comme réussi.
+      } else if (orderData && cartDetails && cartDetails.length > 0) {
+        console.log("Commande enregistrée avec ID:", orderData.id);
+        const orderItemsToInsert = cartDetails.map((item: CartItem) => {
+          let itemExtraCost = 0;
+          (item.personalizations || []).forEach(p => itemExtraCost += (p.spot_price || 0));
+          return {
+            order_id: orderData.id,
+            product_id: item.product_id, // Assurez-vous que product_id est dans cartDetails
+            product_name: item.product_name,
+            quantity: item.quantity,
+            base_price: item.base_price,
+            personalizations: item.personalizations,
+            selected_color_name: item.selected_color_name,
+            selected_size_name: item.selected_size_name,
+            selected_gender_name: item.selected_gender_name,
+            item_total_price: (item.quantity * (item.base_price + itemExtraCost))
+          };
+        });
+
+        const { error: itemsError } = await supabaseAdminClient
+          .from('order_items')
+          .insert(orderItemsToInsert);
+
+        if (itemsError) {
+          console.error("Erreur lors de l'enregistrement des articles de la commande (table order_items):", itemsError);
+          // Idem, logger et alerter.
+        } else {
+          console.log("Articles de la commande enregistrés pour order_id:", orderData.id);
+        }
+      }
 
       return new Response(JSON.stringify({ success: true, paymentId: paymentId }), {
         status: 200,
@@ -158,6 +205,7 @@ interface PersonalizationDetail {
 }
 
 interface CartItem {
+  product_id: string; // Ajout de la propriété manquante
   product_name: string;
   quantity: number;
   base_price: number;
@@ -242,7 +290,7 @@ async function sendReceiptEmail(to: string, subject: string, htmlBody: string): 
   }
 
   const resendPayload = {
-    from: 'Impressed MTL <onboarding@resend.dev>', // IMPORTANT: Doit être un domaine vérifié sur Resend pour la production.
+    from: 'Impressed MTL <VOTRE_ADRESSE_EMAIL_VERIFIEE_SUR_RESEND_ICI>', // Exemple: 'Impressed MTL <commandes@votredomaine.com>'
     to: [to],
     subject: subject,
     html: htmlBody,
