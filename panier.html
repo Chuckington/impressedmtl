@@ -59,6 +59,10 @@
       </tbody>
     </table>
     <div class="total">
+      <div id="fixed-fee-summary-cart" style="font-size: 0.9em; color: #555; margin-bottom: 10px; text-align: right;">
+        <p id="fixed-fee-message-cart" style="color: #337ab7; margin-bottom: 3px;"></p>
+        <p>Frais de préparation: <span id="fixed-fee-amount-cart">0.00</span> $</p>
+      </div>
       Total général : <span id="grand-total">0.00</span> $
     </div>
     <a href="checkout.html" class="btn">Passer au paiement</a>
@@ -97,11 +101,14 @@
       const { data: { user } } = await supa.auth.getUser();
       const cartTable = document.querySelector('#cart-table tbody');
       const grandTotal = document.getElementById('grand-total');
+      const fixedFeeAmountCartEl = document.getElementById('fixed-fee-amount-cart');
+      const fixedFeeMessageCartEl = document.getElementById('fixed-fee-message-cart');
+
       cartTable.innerHTML = '';
-      let total = 0;
+      let subTotalBeforeFixedFee = 0;
+      let totalItemCount = 0;
 
       if (user) {
-        // Charger les articles depuis Supabase pour les utilisateurs connectés
         const { data, error } = await supa
           .from('cart_items')
           .select('id, quantity, base_price, personalizations, product_name, selected_color_name, selected_size_name, selected_gender_name')
@@ -109,12 +116,12 @@
         if (error || !data || data.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
           grandTotal.textContent = '0.00';
+          fixedFeeAmountCartEl.textContent = '0.00';
+          fixedFeeMessageCartEl.textContent = '';
           return;
         }
         data.forEach(item => {
           const row = document.createElement('tr');
-          // Décoder les personnalisations pour calculer extraCost et obtenir les labels
-          // La structure de item.personalizations est maintenant un tableau d'objets
           let extraCost = 0;
           const personalizationDetails = (item.personalizations || []).map(pObj => {
             extraCost += pObj.spot_price || 0;
@@ -126,12 +133,10 @@
           });
 
           const subtotal = (item.quantity * (item.base_price + extraCost));
-          total += subtotal;
+          subTotalBeforeFixedFee += subtotal;
+          totalItemCount += item.quantity;
 
           let optionsDisplay = [];
-          // if (personalizationLabels.length > 0) { // Ancienne logique
-          //   optionsDisplay.push(personalizationLabels.join(', '));
-          // }
           if (personalizationDetails.length > 0) {
             optionsDisplay.push(personalizationDetails.join('<br>')); // Chaque personnalisation sur une nouvelle ligne
           }
@@ -158,16 +163,15 @@
           cartTable.appendChild(row);
         });
       } else {
-        // Charger les articles depuis LocalStorage pour les utilisateurs non connectés
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
         if (cart.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
           grandTotal.textContent = '0.00';
+          fixedFeeAmountCartEl.textContent = '0.00';
+          fixedFeeMessageCartEl.textContent = '';
           return;
         }
         cart.forEach((item, index) => {
-          // Décoder les personnalisations pour calculer extraCost et obtenir les labels
-          // La structure de item.personalizations est maintenant un tableau d'objets
           let extraCost = 0;
           const personalizationDetails = (item.personalizations || []).map(pObj => {
             extraCost += pObj.spot_price || 0;
@@ -181,13 +185,11 @@
           });
 
           const subtotal = (item.quantity * (item.base_price + extraCost));
-          total += subtotal;
+          subTotalBeforeFixedFee += subtotal;
+          totalItemCount += item.quantity;
           const row = document.createElement('tr');
 
           let optionsDisplay = [];
-          // if (personalizationLabels.length > 0) { // Ancienne logique
-          //   optionsDisplay.push(personalizationLabels.join(', '));
-          // }
           if (personalizationDetails.length > 0) {
             optionsDisplay.push(personalizationDetails.join('<br>'));
           }
@@ -213,7 +215,23 @@
           cartTable.appendChild(row);
         });
       }
-      grandTotal.textContent = total.toFixed(2);
+
+      // Calcul des frais fixes dégressifs pour le panier
+      let fixedFee = 0;
+      if (totalItemCount === 0) { // Au cas où, bien que déjà géré par le return plus haut
+        fixedFeeMessageCartEl.textContent = '';
+      } else if (totalItemCount === 1) {
+        fixedFee = 15;
+        fixedFeeMessageCartEl.textContent = "Des frais de préparation de 15$ s'appliquent pour les commandes d'un seul article.";
+      } else if (totalItemCount >= 2 && totalItemCount <= 9) {
+        fixedFee = 10;
+        fixedFeeMessageCartEl.textContent = "Des frais de préparation de 10$ s'appliquent. Achetez 10 articles ou plus pour économiser ces frais !";
+      } else { // 10 articles ou plus
+        fixedFee = 0;
+        fixedFeeMessageCartEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
+      }
+      fixedFeeAmountCartEl.textContent = fixedFee.toFixed(2);
+      grandTotal.textContent = (subTotalBeforeFixedFee + fixedFee).toFixed(2);
     }
 
     document.addEventListener('click', async (e) => {
