@@ -53,6 +53,10 @@
       <div id="summary-items">
         <p>Chargement du récapitulatif...</p>
       </div>
+      <div id="fixed-fee-summary" style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #eee;">
+        <p id="fixed-fee-message" style="font-size: 0.85em; color: #337ab7; margin-bottom: 5px;"></p>
+        <p>Frais de préparation: <span id="fixed-fee-amount">0.00</span> $</p>
+      </div>
       <p><strong>Total à payer: <span id="total-amount">0.00</span> $</strong>
         <br><small style="font-weight:normal; color:#555;">(Taxes incluses)</small>
       </p>
@@ -138,6 +142,8 @@
     const summaryItemsEl = document.getElementById('summary-items');
     const totalAmountEl = document.getElementById('total-amount');
     let currentCartForPayment = [];
+    const fixedFeeAmountEl = document.getElementById('fixed-fee-amount');
+    const fixedFeeMessageEl = document.getElementById('fixed-fee-message');
     let currentTotalForPayment = 0;
 
     async function loadOrderSummary() {
@@ -156,27 +162,48 @@
         cartItems = JSON.parse(localStorage.getItem('cart')) || [];
       }
 
+      summaryItemsEl.innerHTML = ''; // Clear loading message
+      let subTotalBeforeFixedFee = 0;
+      let totalItemCount = 0;
+
       if (cartItems.length === 0) {
         summaryItemsEl.innerHTML = '<p>Votre panier est vide.</p>';
         totalAmountEl.textContent = '0.00';
         document.getElementById('card-button').disabled = true;
+        fixedFeeAmountEl.textContent = '0.00';
+        fixedFeeMessageEl.textContent = '';
         return;
       }
 
-      currentCartForPayment = cartItems; // Store for payment processing
-      summaryItemsEl.innerHTML = ''; // Clear loading message
+      currentCartForPayment = cartItems; 
 
       cartItems.forEach(item => {
         let extraCost = 0;
         (item.personalizations || []).forEach(p => extraCost += (p.spot_price || 0));
         const subtotal = (item.quantity * (item.base_price + extraCost));
-        total += subtotal;
+        subTotalBeforeFixedFee += subtotal;
+        totalItemCount += item.quantity; // Compter le nombre total d'articles
         const p = document.createElement('p');
         p.textContent = `${item.product_name} x ${item.quantity} - ${subtotal.toFixed(2)}$`;
         summaryItemsEl.appendChild(p);
       });
-      currentTotalForPayment = total;
-      totalAmountEl.textContent = total.toFixed(2);
+
+      // Calcul des frais fixes dégressifs
+      let fixedFee = 0;
+      if (totalItemCount === 1) {
+        fixedFee = 15;
+        fixedFeeMessageEl.textContent = "Des frais de préparation de 15$ s'appliquent pour les commandes d'un seul article.";
+      } else if (totalItemCount >= 2 && totalItemCount <= 9) {
+        fixedFee = 10;
+        fixedFeeMessageEl.textContent = "Des frais de préparation de 10$ s'appliquent. Achetez 10 articles ou plus pour économiser ces frais !";
+      } else { // 10 articles ou plus
+        fixedFee = 0;
+        fixedFeeMessageEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
+      }
+
+      fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
+      currentTotalForPayment = subTotalBeforeFixedFee + fixedFee;
+      totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
     }
 
     async function initializeSquarePaymentForm() {
