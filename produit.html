@@ -481,7 +481,13 @@
             uploadLabel.textContent = 'Chargement...'; // Indiquer l'upload en cours
             fileInput.disabled = true;
 
-            const uniqueFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`; // Nom de fichier unique
+            // Sanitize the file name to remove/replace problematic characters
+            const sanitizedBaseName = file.name
+              .normalize('NFD') // Decompose accented characters (e.g., é -> e + ´)
+              .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks (the accents)
+              .replace(/[^\w.-]/g, '_') // Replace non-alphanumeric (excluding . -) and other special chars with _
+              .replace(/_{2,}/g, '_'); // Replace multiple consecutive underscores with a single one
+            const uniqueFileName = `${Date.now()}-${sanitizedBaseName}`;
             // Optionnel: Organiser par utilisateur si connecté
             const { data: { user } } = await supa.auth.getUser();
             const filePath = user ? `${user.id}/${uniqueFileName}` : `public/${uniqueFileName}`;
