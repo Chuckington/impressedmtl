@@ -19,12 +19,12 @@
     .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; }
     @media(max-width:1000px){ .grid{ grid-template-columns:repeat(2,1fr);} }
     @media(max-width:600px){ .grid{ grid-template-columns:1fr;} }
-    .card { background:white; border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; display:flex; flex-direction:column; cursor:pointer; transition:transform 0.2s; }
+    .card { background:white; border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; display:flex; flex-direction:column; cursor:pointer; transition:transform 0.2s; text-decoration: none; /* Enlève le soulignement */ }
     .card:hover { transform:scale(1.02); }
     .card-image { background:#f0f0f0; display:flex; justify-content:center; align-items:center; padding:30px; height:260px; }
     .card-image img { max-height:200px; max-width:100%; object-fit:contain; }
     .card-content { padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content:center; }
-    .card-content h3 { margin:0 0 10px; font-size:1.2rem; }
+    .card-content h3 { margin:0 0 10px; font-size:1.2rem; color: #333; /* Assure une couleur de texte cohérente */ }
     .card-content p { margin:5px 0; font-size:1rem; color:#444; }
   </style>
 </head>
