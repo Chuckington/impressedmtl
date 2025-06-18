@@ -272,7 +272,7 @@
                    localStorage.removeItem('cart');
                }
                // Rediriger vers une page de confirmation
-               setTimeout(() => window.location.href = 'confirmation.html', 2000); // Créez confirmation.html
+               setTimeout(() => window.location.href = `confirmation.html?paymentId=${paymentResponse.paymentId}`, 2000);
             } else {
               throw new Error(paymentResponse.message || 'Échec du traitement du paiement par le backend.');
             }
