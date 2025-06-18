@@ -263,6 +263,9 @@
             }
 
             if (paymentResponse && paymentResponse.success) {
+               // Log pour débogage
+               console.log('Réponse de la fonction Supabase (paymentResponse):', JSON.stringify(paymentResponse, null, 2));
+
                document.getElementById('payment-status-container').textContent = 'Paiement réussi ! Redirection...';
                // Optionnel: Vider le panier après paiement réussi
                const { data: { user } } = await supa.auth.getUser();
