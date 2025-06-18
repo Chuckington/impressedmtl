@@ -35,7 +35,7 @@
     }
     /* Style pour le bouton "Choisir fichier" dans la section d'upload */
     .upload-section .btn { /* Cible le label qui a la classe .btn */
-      margin-bottom: 15px; /* Espace entre le bouton et l'aperçu de l'image */
+      margin-bottom: 5px; /* Petit espace entre le bouton et le wrapper de l'aperçu */
       /* Si .btn-small doit avoir une taille spécifique, vous pouvez l'ajouter ici */
       /* Par exemple: padding: 6px 10px; font-size: 0.85rem; */
     }
@@ -43,12 +43,18 @@
       /* Déjà display:none via style en ligne, donc margin-bottom ici a peu d'effet visuel */
       font-size: 0.9rem;
     }
-    .upload-section img {
+    .upload-section .preview-wrapper {
+      margin-top: 10px; /* Espace principal entre le bouton et l'aperçu */
+      padding: 5px; /* Optionnel: un peu d'espace intérieur pour la "carte" */
+      border: 1px solid #f0f0f0; /* Optionnel: bordure pour l'effet "carte" */
+      border-radius: 4px; /* Optionnel: coins arrondis */
+      background-color: #fdfdfd; /* Optionnel: fond léger */
+      display: inline-block; /* Pour que le wrapper s'adapte à la taille de l'image */
+    }
+    .upload-section .preview-wrapper img {
       max-width: 200px; /* Augmenté pour un aperçu plus grand */
       max-height: 200px; /* Augmenté pour un aperçu plus grand */
       border: 1px solid #eee; display: block;
-      margin-top: 0; /* L'espace est maintenant géré par margin-bottom du bouton au-dessus */
-      margin-bottom: 10px; /* Espace sous l'image dans la carte */
     }
     #order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 15px; /* Ajout de flex-wrap et gap global */}
     #order-summary .left { display:flex; align-items:center; gap:16px; flex-wrap: wrap; /* Permettre le retour à la ligne des options */}
@@ -328,7 +334,9 @@
             <div class="upload-section" id="upload-section-${item.id}" style="display:block; margin-left:0; margin-top:10px;">
               <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.nom || 'Design'})</label>
               <input type="file" id="file-input-${item.id}" data-spot-label="${item.nom || 'Design personnalisé'}" accept="image/*" style="display:none;">
-              <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
+              <div class="preview-wrapper">
+                <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
+              </div>
             </div>
           `;
         } else {
@@ -350,7 +358,9 @@
                   <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
                     <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
                     <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
-                    <img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;">
+                    <div class="preview-wrapper">
+                      <img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;">
+                    </div>
                   </div>
                 </div>
               `;
@@ -365,7 +375,9 @@
                   <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
                     <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
                     <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
-                    <img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;">
+                    <div class="preview-wrapper">
+                      <img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;">
+                    </div>
                   </div>
                 </div>
               `;
@@ -380,7 +392,9 @@
                 <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
                   <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
                   <input type="file" id="file-input-${item.id}-left" accept="image/*" style="display:none;">
-                  <img id="preview-${item.id}-left" src="#" alt="Aperçu" style="display:none;">
+                  <div class="preview-wrapper">
+                    <img id="preview-${item.id}-left" src="#" alt="Aperçu" style="display:none;">
+                  </div>
                 </div>
               </div>
               <div class="personalize-option-group">
@@ -391,7 +405,9 @@
                 <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
                   <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
                   <input type="file" id="file-input-${item.id}-right" accept="image/*" style="display:none;">
-                  <img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;">
+                  <div class="preview-wrapper">
+                    <img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;">
+                  </div>
                 </div>
               </div>
             `;
@@ -404,7 +420,9 @@
               <div class="upload-section" id="upload-section-${item.id}" style="display:none;">
                 <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.personnalisation})</label>
                 <input type="file" id="file-input-${item.id}" accept="image/*" style="display:none;">
-                <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
+                <div class="preview-wrapper">
+                  <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
+                </div>
               </div>
             `;
           }
