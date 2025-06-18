@@ -324,8 +324,8 @@
         if (noCheckbox.includes(tableName)) {
           // Pour ces articles, le prix de base inclut déjà la personnalisation.
           cardHtml += `
-            <p><strong>Prix:</strong> ${displayedItemBasePrice.toFixed(2)}$ (Personnalisation incluse)</p>
-            <div class="upload-section" id="upload-section-${item.id}" style="display:block; margin-left:0; margin-top:10px;">
+            <p style="margin-bottom: 15px;"><strong>Prix:</strong> ${displayedItemBasePrice.toFixed(2)}$ (Personnalisation incluse)</p> 
+            <div class="upload-section" id="upload-section-${item.id}" style="display:block; margin-left:0; margin-top:15px;"> {/* Augmentation du margin-top ici */}
               <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.nom || 'Design'})</label>
               <input type="file" id="file-input-${item.id}" data-spot-label="${item.nom || 'Design personnalisé'}" accept="image/*" style="display:none;">
               <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
