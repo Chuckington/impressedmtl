@@ -290,7 +290,7 @@ async function sendReceiptEmail(to: string, subject: string, htmlBody: string): 
   }
 
   const resendPayload = {
-    from: 'Impressed MTL <VOTRE_ADRESSE_EMAIL_VERIFIEE_SUR_RESEND_ICI>', // Exemple: 'Impressed MTL <commandes@votredomaine.com>'
+    from: 'Impressed MTL <commandes@impressedmtl.com>', // Ou une autre adresse comme noreply@impressedmtl.com
     to: [to],
     subject: subject,
     html: htmlBody,
