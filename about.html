@@ -2,16 +2,16 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <title>À Propos – Impressed MTL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Impressed MTL</title>
   <!-- Supabase UMD -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { 
-      font-family: 'Fredoka', sans-serif; /* Assurez-vous que cette police est chargée ou utilisez une police système */
+      font-family: 'Fredoka', sans-serif; /* Assurez-vous que cette police est chargée */
       background-color: #f7f7f7; 
-      height: 100%; 
+      min-height: 100vh; 
       display: flex;
       flex-direction: column;
     }
@@ -23,15 +23,17 @@
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
-      padding: 15px 30px; /* Un peu moins de padding pour le header */
+      padding: 15px 30px; 
       box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
       z-index:1000; 
-      flex-shrink: 0; /* Empêche le header de rétrécir */
+      flex-shrink: 0;
     }
-    .header-logo img {
-      height: 50px; /* Ajustez la taille du logo */
+    .header-logo img { /* Si vous voulez le logo ici aussi */
+      height: 50px; 
       width: auto;
     }
+    .header-title { flex: 1; text-align: center; }
+    .header-title h1 { margin: 0; font-size: 1.8rem; color: #000; }
     .header-actions {
       display: flex;
       align-items: center;
@@ -50,67 +52,22 @@
       cursor: pointer;
     }
     .btn:hover { background: #444; }
-
-    .main-content-wrapper {
-      display: flex;
-      flex-grow: 1; /* Prend toute la hauteur restante */
-      width: 100%;
-    }
-    .clickable-section {
+    .content-message {
+      flex-grow: 1;
       display: flex;
       justify-content: center;
       align-items: center;
       text-align: center;
+      font-size: 1.5rem;
+      color: #555;
       padding: 20px;
-      text-decoration: none;
-      color: #fff;
-      font-size: 2rem; /* Taille de police de base pour les sections */
-      font-weight: bold;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.3); /* Bordure intérieure subtile */
-    }
-    .clickable-section:hover {
-      transform: scale(1.02);
-      box-shadow: inset 0 0 0 4px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.2);
-    }
-
-    .left-section {
-      flex-basis: 50%;
-      background-color: #3498db; /* Couleur exemple */
-    }
-    .right-column {
-      flex-basis: 50%;
-      display: flex;
-      flex-direction: column;
-    }
-    .right-top-section {
-      flex-basis: 50%;
-      background-color: #2ecc71; /* Couleur exemple */
-    }
-    .right-bottom-section {
-      flex-basis: 50%;
-      background-color: #e74c3c; /* Couleur exemple */
-    }
-
-    /* Responsive pour les petites tailles d'écran */
-    @media (max-width: 768px) {
-      .main-content-wrapper {
-        flex-direction: column;
-      }
-      .left-section, .right-column {
-        flex-basis: auto; /* Réinitialise la base pour la colonne */
-      }
-      .left-section { height: 40vh; } /* Hauteur pour la section gauche en mode colonne */
-      .right-top-section, .right-bottom-section { height: 30vh; } /* Hauteur pour les sections droites */
-      .clickable-section { font-size: 1.5rem; }
     }
   </style>
 </head>
 <body>
   <header>
-    <a href="index.html" class="header-logo">
-      <img src="assets/logo.png" alt="Logo Impressed MTL">
-    </a>
+    <a href="index.html" class="btn">← Accueil</a>
+    <div class="header-title"><h1>À Propos de Nous</h1></div>
     <div class="header-actions">
       <a href="panier.html" class="btn">Panier</a>
       <button id="auth-button" class="btn">Compte</button>
@@ -118,18 +75,8 @@
     </div>
   </header>
 
-  <div class="main-content-wrapper">
-    <a href="inventaire.html" class="clickable-section left-section">
-      Voir notre inventaire
-    </a>
-    <div class="right-column">
-      <a href="contact.html" class="clickable-section right-top-section">
-        Pour prendre un rendez-vous avec nous
-      </a>
-      <a href="about.html" class="clickable-section right-bottom-section">
-        Découvrir Impressed MTL
-      </a>
-    </div>
+  <div class="content-message">
+    <p>Page en construction, à venir bientôt !</p>
   </div>
 
   <script>
@@ -161,14 +108,13 @@
       } else {
         window.location.href = 'login2.html'; // Redirige vers login2.html si non connecté
       }
-      updateAuthUI(); // Mettre à jour l'UI après déconnexion ou tentative de connexion
+      updateAuthUI(); 
     });
 
     supa.auth.onAuthStateChange((event, session) => {
       updateAuthUI();
     });
 
-    // Appel initial pour mettre à jour l'UI au chargement de la page
     updateAuthUI();
   </script>
 </body>
