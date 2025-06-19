@@ -53,6 +53,7 @@
 
     .main-content-wrapper {
       display: flex;
+      flex-direction: column; /* Empile les enfants verticalement */
       flex-grow: 1; /* Prend toute la hauteur restante */
       width: 100%;
     }
@@ -61,65 +62,50 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 20px;
+      padding: 40px 20px; /* Augmentation du padding pour un aspect plus "bouton" */
       text-decoration: none;
-      color: #fff;
-      font-size: 2rem; /* Taille de police de base pour les sections */
-      font-weight: bold;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      /* box-shadow: inset 0 0 0 2px rgba(255,255,255,0.3); Retiré car l'image de fond sera principale */
-      position: relative; /* Pour le positionnement des pseudo-éléments et du texte */
-      overflow: hidden; /* Pour s'assurer que les pseudo-éléments ne débordent pas */
+      color: #fff; /* Texte blanc */
+      background-color: #000; /* Fond noir */
+      font-size: 2.2rem; /* Taille de police plus grande */
+      font-weight: 700; /* Texte en gras */
+      transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+      flex-grow: 1; /* Chaque section essaie de prendre une part égale de l'espace */
+      min-height: 150px; /* Hauteur minimale pour chaque section */
+      margin-bottom: 2px; /* Crée la ligne grise (le fond du body) */
     }
-    .clickable-section::before { /* Pseudo-élément pour l'image de fond avec opacité */
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0.5; /* Image à 50% de transparence */
-      z-index: 1; /* Derrière le contenu texte */
-      transition: opacity 0.3s ease;
+    .clickable-section:last-child {
+      margin-bottom: 0; /* Pas de marge pour le dernier enfant de son conteneur */
     }
     .clickable-section:hover {
-      transform: scale(1.02);
-      /* box-shadow: inset 0 0 0 4px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.2); Ajustez si besoin */
-    }
-    .clickable-section:hover::before {
-      opacity: 0.7; /* Optionnel: rendre l'image un peu plus visible au survol */
+      background-color: #fff; /* Fond blanc au survol */
+      color: #000; /* Texte noir au survol */
+      transform: scale(1.02); /* Effet de grossissement */
     }
     .clickable-section span { /* Pour le texte par-dessus l'image */
-      position: relative;
-      z-index: 2;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Ombre portée en bas à droite */
+      /* Les styles de positionnement et text-shadow ne sont plus nécessaires ici */
     }
 
     .left-section {
-      flex-basis: 50%;
-      background-color: #4a4a4a; /* Gris foncé 1 */
-    }
-    .left-section::before {
-      background-image: url('assets/inventaire2.webp'); /* Correction de l'extension */
+      /* Plus besoin de styles spécifiques de fond ou de flex-basis ici */
+      /* La couleur de fond est gérée par .clickable-section */
     }
     .right-column {
-      flex-basis: 50%;
+      /* flex-basis: 50%; Retiré, prendra la largeur complète car main-content-wrapper est en colonne */
       display: flex;
       flex-direction: column;
+      flex-grow: 2; /* Pour que la colonne de droite prenne plus d'espace si elle a deux enfants */
+      width: 100%; /* Assure que la colonne prend toute la largeur */
     }
     .right-top-section {
-      flex-basis: 50%;
-      background-color: #5f5f5f; /* Gris foncé 2 */
-    }
-    .right-top-section::before {
-      background-image: url('assets/rdv2.jpg'); /* Assurez-vous que le chemin et l'extension sont corrects */
+      /* flex-basis: 50%; Retiré, géré par flex-grow sur .clickable-section */
+      /* La couleur de fond est gérée par .clickable-section */
     }
     .right-bottom-section {
-      flex-basis: 50%;
-      background-color: #737373; /* Gris foncé 3 */
+      /* flex-basis: 50%; Retiré, géré par flex-grow sur .clickable-section */
+      /* La couleur de fond est gérée par .clickable-section */
     }
-    .right-bottom-section::before {
-      background-image: url('assets/logo.png'); /* Utilisation du logo comme arrière-plan */
+    .right-column .clickable-section:last-child {
+        margin-bottom: 0; /* Assure que le dernier bouton dans la colonne de droite n'a pas de marge en bas */
     }
 
     /* Responsive pour les petites tailles d'écran */
@@ -127,11 +113,12 @@
       .main-content-wrapper {
         flex-direction: column;
       }
-      .left-section, .right-column {
-        flex-basis: auto; /* Réinitialise la base pour la colonne */
+      .right-column {
+        flex-grow: 1; /* Réajustement pour le mode colonne */
       }
-      .left-section { height: 40vh; } /* Hauteur pour la section gauche en mode colonne */
-      .right-top-section, .right-bottom-section { height: 30vh; } /* Hauteur pour les sections droites */
+      .clickable-section {
+        min-height: calc( (100vh - 80px) / 3 ); /* Tente de diviser l'espace restant (moins le header) */
+      }
       .clickable-section { font-size: 1.5rem; }
     }
   </style>
@@ -150,14 +137,14 @@
 
   <div class="main-content-wrapper">
     <a href="inventaire.html" class="clickable-section left-section">
-      Voir notre inventaire
+      <span>Voir notre inventaire</span>
     </a>
     <div class="right-column">
       <a href="contact.html" class="clickable-section right-top-section">
-        Pour prendre un rendez-vous avec nous
+        <span>Pour prendre un rendez-vous avec nous</span>
       </a>
       <a href="about.html" class="clickable-section right-bottom-section">
-        Découvrir Impressed MTL et FAQ
+        <span>À propos + FAQ</span>
       </a>
     </div>
   </div>
