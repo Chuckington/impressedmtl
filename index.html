@@ -67,16 +67,40 @@
       font-size: 2rem; /* Taille de police de base pour les sections */
       font-weight: bold;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.3); /* Bordure intérieure subtile */
+      /* box-shadow: inset 0 0 0 2px rgba(255,255,255,0.3); Retiré car l'image de fond sera principale */
+      position: relative; /* Pour le positionnement des pseudo-éléments et du texte */
+      overflow: hidden; /* Pour s'assurer que les pseudo-éléments ne débordent pas */
+    }
+    .clickable-section::before { /* Pseudo-élément pour l'image de fond avec opacité */
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.5; /* Image à 50% de transparence */
+      z-index: 1; /* Derrière le contenu texte */
+      transition: opacity 0.3s ease;
     }
     .clickable-section:hover {
       transform: scale(1.02);
-      box-shadow: inset 0 0 0 4px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.2);
+      /* box-shadow: inset 0 0 0 4px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.2); Ajustez si besoin */
+    }
+    .clickable-section:hover::before {
+      opacity: 0.7; /* Optionnel: rendre l'image un peu plus visible au survol */
+    }
+    .clickable-section span { /* Pour le texte par-dessus l'image */
+      position: relative;
+      z-index: 2;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Ombre portée en bas à droite */
     }
 
     .left-section {
       flex-basis: 50%;
       background-color: #4a4a4a; /* Gris foncé 1 */
+    }
+    .left-section::before {
+      background-image: url('assets/inventaire2.jpg'); /* Assurez-vous que le chemin et l'extension sont corrects */
     }
     .right-column {
       flex-basis: 50%;
@@ -87,9 +111,15 @@
       flex-basis: 50%;
       background-color: #5f5f5f; /* Gris foncé 2 */
     }
+    .right-top-section::before {
+      background-image: url('assets/rdv2.jpg'); /* Assurez-vous que le chemin et l'extension sont corrects */
+    }
     .right-bottom-section {
       flex-basis: 50%;
       background-color: #737373; /* Gris foncé 3 */
+    }
+    .right-bottom-section::before {
+      background-image: url('assets/logo.png'); /* Utilisation du logo comme arrière-plan */
     }
 
     /* Responsive pour les petites tailles d'écran */
