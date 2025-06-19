@@ -68,10 +68,11 @@
       background-color: #000; /* Fond noir */
       font-size: 2.2rem; /* Taille de police plus grande */
       font-weight: 700; /* Texte en gras */
-      transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+      transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, border-color 0.3s ease; /* Ajout de border-color à la transition */
       flex-grow: 1; /* Chaque section essaie de prendre une part égale de l'espace */
       min-height: 150px; /* Hauteur minimale pour chaque section */
       margin-bottom: 2px; /* Crée la ligne grise (le fond du body) */
+      border: 2px solid #fff; /* Bordure blanche par défaut */
     }
     .clickable-section:last-child {
       margin-bottom: 0; /* Pas de marge pour le dernier enfant de son conteneur */
@@ -80,6 +81,7 @@
       background-color: #fff; /* Fond blanc au survol */
       color: #000; /* Texte noir au survol */
       transform: scale(1.02); /* Effet de grossissement */
+      border-color: #000; /* Bordure noire au survol */
     }
     .clickable-section span { /* Pour le texte par-dessus l'image */
       /* Les styles de positionnement et text-shadow ne sont plus nécessaires ici */
