@@ -88,7 +88,7 @@
       min-width: 120px; /* Assure un espace pour le total */
       font-weight:bold;
       font-size:1.2rem;
-    }
+    } /* Style de .btn déplacé dans #order-summary .btn ci-dessous */
     #order-summary .btn { /* Le bouton "Ajouter au panier" */
       /* margin-top: 10px; /* Supprimé, le gap du parent gère l'espacement */
     }
@@ -96,6 +96,17 @@
       display: inline-block;
       width: 24px; /* Augmentation de la taille */
       height: 24px; /* Augmentation de la taille */
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-left: 4px; /* Petit espace entre le select et le preview */
+    }
+    /* Copie des styles de .btn du header pour #order-summary .btn */
+    #order-summary .btn { 
+        padding: 10px 14px; 
+        background: #000; 
+        color: #fff; 
+        text-decoration: none; 
       border: 1px solid #ccc;
       border-radius: 4px;
       vertical-align: middle;
