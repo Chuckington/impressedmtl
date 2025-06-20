@@ -9,7 +9,13 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { font-family: 'Fredoka', sans-serif; background-color: #f7f7f7; min-height: 100%; }
-    header { position: sticky; top: 0; width: 100%; background: white; display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; /* Consistent padding */ box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index:1000; }
+    header {
+      position: sticky; top: 0; width: 100%; background: white;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 30px; /* Consistent padding */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index:1000;
+      position: relative; /* Ajouté pour le positionnement absolu du titre */
+    }
     /* Updated .btn style for consistency */
     .btn {
       display: inline-block;
@@ -24,7 +30,14 @@
       cursor: pointer;
     }
     .btn:hover { background: #444; }
-    .header-title { flex:1; text-align:center; }
+    .header-title {
+      /* flex:1; Retiré */
+      text-align:center; /* Gardé pour centrer le texte à l'intérieur du h1 et p */
+      position: absolute; /* Ajouté */
+      left: 50%;          /* Ajouté */
+      top: 50%;           /* Ajouté */
+      transform: translate(-50%, -50%); /* Ajouté pour un centrage parfait */
+    }
     .header-title h1 { font-size:1.8rem; }
     .header-title p { font-size:1rem; color:#555; margin-top:4px; }
     .container { max-width:1300px; margin:0 auto; padding:40px 20px; }
