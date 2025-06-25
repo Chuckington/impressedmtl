@@ -23,16 +23,17 @@
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
-      padding: 15px 30px; 
+      padding: 20px 40px; /* Uniformisation du padding */
       box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
       z-index:1000; 
       flex-shrink: 0;
+      position: relative; /* Pour le centrage absolu du titre */
     }
-    .header-logo img { /* Si vous voulez le logo ici aussi */
-      height: 50px; 
-      width: auto;
+    .header-title {
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
     }
-    .header-title { flex: 1; text-align: center; }
     .header-title h1 { margin: 0; font-size: 1.8rem; color: #000; }
     .header-actions {
       display: flex;
@@ -40,7 +41,6 @@
       gap: 15px;
     }
     .btn { 
-      /* Updated .btn style to match index.html */
       display: inline-block;
       padding: 10px 14px;
       background: #000;
@@ -49,33 +49,78 @@
       border-radius: 5px;
       transition: background 0.2s;
       font-size: 0.9rem; /* Added font-size */
-      border: none; /* Added border: none */
-      padding: 10px 14px; 
-      background: #000; 
-      color: #fff; 
-      text-decoration: none; 
-      border-radius:5px; 
-      transition: background 0.2s; 
-      font-size: 0.9rem;
       border: none;
       cursor: pointer;
     }
     .btn:hover { background: #444; }
-    .content-message {
+    .about-container {
       flex-grow: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 40px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       text-align: center;
-      font-size: 1.5rem;
+    }
+    .about-logo {
+      width: 150px;
+      margin-bottom: 30px;
+    }
+    .intro-text {
+      font-size: 1.1rem;
+      color: #333;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      text-align: left;
+    }
+    .intro-text p {
+      margin-bottom: 1em;
+    }
+    .faq-section {
+      margin-top: 40px;
+      border-top: 1px solid #eee;
+      padding-top: 30px;
+      text-align: left;
+    }
+    .faq-section h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.8rem;
+    }
+    .faq-item {
+      margin-bottom: 25px;
+    }
+    .faq-item h4 {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+      color: #000;
+    }
+    .faq-item p {
+      font-size: 1rem;
       color: #555;
-      padding: 20px;
+      line-height: 1.6;
+    }
+    .final-notes {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 1.1rem;
+      line-height: 1.8;
+    }
+    .final-notes a {
+      color: #007BFF;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .final-notes a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
   <header>
     <a href="index.html" class="btn">← Accueil</a>
+    <div class="header-title"><h1>À Propos & FAQ</h1></div>
     <div class="header-actions">
       <a href="panier.html" class="btn">Panier</a>
       <button id="auth-button" class="btn">Compte</button>
@@ -83,8 +128,34 @@
     </div>
   </header>
 
-  <div class="content-message">
-    <p>Page en construction, à venir bientôt !</p>
+  <div class="about-container">
+    <img src="assets/logo.png" alt="Logo Impressed MTL" class="about-logo">
+    <div class="intro-text">
+      <p>Bienvenue chez <strong>Impressed MTL</strong>, votre nouvel atelier de personnalisation de vêtements au cœur de Montréal ! Née de la passion pour le design et la mode, notre mission est de donner vie à vos idées sur des textiles de première qualité.</p>
+      <p>Nous nous spécialisons dans la création de pièces uniques en fournissant des vêtements <strong>confortables, durables et abordables</strong>, alliés à une impression de haute-fidélité qui résiste à l'épreuve du temps. Que ce soit pour votre entreprise, un événement spécial ou simplement pour exprimer votre style, nous sommes là pour vous accompagner.</p>
+    </div>
+
+    <div class="faq-section">
+      <h2>Questions fréquentes</h2>
+      <div class="faq-item">
+        <h4>Et si la qualité de mon image n'est pas suffisante ?</h4>
+        <p>Pas d'inquiétude ! Notre équipe examine attentivement chaque image envoyée pour s'assurer qu'elle soit parfaite pour l'impression. Si nous détectons le moindre problème de qualité, nous vous contacterons directement pour trouver la meilleure solution ensemble.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Comment fonctionne la livraison ?</h4>
+        <p>Pour le moment, nous avons le plaisir de livrer nous-mêmes vos commandes sur l'île de Montréal et ses environs. Nous travaillons activement à étendre notre zone de livraison pour vous servir où que vous soyez. Restez à l'affût !</p>
+      </div>
+      <div class="faq-item">
+        <h4>Quels sont les délais pour recevoir ma commande ?</h4>
+        <p>Généralement, il faut compter entre 2 et 3 semaines pour que votre commande soit prête et livrée. La qualité prend un peu de temps ! Soyez assuré(e) que si nous prévoyons le moindre retard, nous vous en informerons immédiatement pour garantir une transparence totale.</p>
+      </div>
+    </div>
+
+    <div class="final-notes">
+      <p>Vous avez d'autres questions ? N'hésitez pas à <a href="contact.html">nous contacter ici</a>.</p>
+      <p>Pour un aperçu de nos dernières créations, suivez-nous sur <a href="https://www.instagram.com/impressed.mtl" target="_blank" rel="noopener noreferrer">Instagram @impressed.mtl</a>.</p>
+      <p><strong>Merci de faire confiance à Impressed pour vos vêtements personnalisés !</strong></p>
+    </div>
   </div>
 
   <script>
