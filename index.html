@@ -23,7 +23,7 @@
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
-      padding: 15px 30px; /* Un peu moins de padding pour le header */
+      padding: 20px 40px; /* Uniformisation du padding */
       box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
       z-index:1000; 
       flex-shrink: 0; /* Empêche le header de rétrécir */
@@ -51,11 +51,68 @@
     }
     .btn:hover { background: #444; }
 
+    /* --- Hero Section Styles --- */
+    .hero-section {
+      background-image: url('assets/hero-bg.jpg'); /* Assurez-vous d'avoir cette image */
+      background-size: cover;
+      background-position: center;
+      color: white;
+      text-align: center;
+      padding: 80px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+      position: relative;
+    }
+    .hero-section::before { /* Overlay sombre pour la lisibilité */
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 1;
+    }
+    .hero-section > * { /* Contenu au-dessus de l'overlay */
+      position: relative;
+      z-index: 2;
+    }
+    .hero-section h1 {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .hero-section p {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+      max-width: 800px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    .hero-section .btn {
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      background-color: #007BFF; /* Couleur vive pour le CTA */
+      border-radius: 8px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .hero-section .btn:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+    }
+
+    /* --- Services/Navigation Section Styles --- */
+    .services-section-title {
+      text-align: center;
+      font-size: 2.5rem;
+      margin: 50px 20px 30px;
+      color: #333;
+    }
     .main-content-wrapper {
       display: flex;
-      flex-direction: column; /* Empile les enfants verticalement */
+      flex-direction: row; /* Par défaut en ligne pour le bureau */
       flex-grow: 1; /* Prend toute la hauteur restante */
       width: 100%;
+      gap: 2px; /* Espace entre les sections */
     }
     .clickable-section {
       display: flex;
@@ -70,8 +127,8 @@
       font-weight: 700; /* Texte en gras */
       transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, border-color 0.3s ease; /* Ajout de border-color à la transition */
       flex-grow: 1; /* Chaque section essaie de prendre une part égale de l'espace */
-      min-height: 150px; /* Hauteur minimale pour chaque section */
-      margin-bottom: 2px; /* Crée la ligne grise (le fond du body) */
+      min-height: 250px; /* Hauteur minimale augmentée */
+      margin-bottom: 0; /* Marge gérée par le gap */
       border: 2px solid #fff; /* Bordure blanche par défaut */
     }
     .clickable-section:last-child {
@@ -83,35 +140,30 @@
       transform: scale(1.02); /* Effet de grossissement */
       border-color: #000; /* Bordure noire au survol */
     }
-    .clickable-section span { /* Pour le texte par-dessus l'image */
-      /* Les styles de positionnement et text-shadow ne sont plus nécessaires ici */
-    }
 
     .left-section {
-      /* Plus besoin de styles spécifiques de fond ou de flex-basis ici */
-      /* La couleur de fond est gérée par .clickable-section */
+      flex-basis: 50%; /* La section de gauche prend la moitié */
     }
     .right-column {
-      /* flex-basis: 50%; Retiré, prendra la largeur complète car main-content-wrapper est en colonne */
+      flex-basis: 50%; /* La colonne de droite prend l'autre moitié */
       display: flex;
       flex-direction: column;
-      flex-grow: 2; /* Pour que la colonne de droite prenne plus d'espace si elle a deux enfants */
-      width: 100%; /* Assure que la colonne prend toute la largeur */
-    }
-    .right-top-section {
-      /* flex-basis: 50%; Retiré, géré par flex-grow sur .clickable-section */
-      /* La couleur de fond est gérée par .clickable-section */
-    }
-    .right-bottom-section {
-      /* flex-basis: 50%; Retiré, géré par flex-grow sur .clickable-section */
-      /* La couleur de fond est gérée par .clickable-section */
+      gap: 2px; /* Espace entre les deux sections de droite */
     }
     .right-column .clickable-section:last-child {
         margin-bottom: 0; /* Assure que le dernier bouton dans la colonne de droite n'a pas de marge en bas */
     }
+    .right-column .clickable-section {
+      min-height: calc(50% - 1px); /* Moitié de la hauteur de la colonne droite moins la moitié du gap */
+    }
 
     /* Responsive pour les petites tailles d'écran */
     @media (max-width: 768px) {
+      .hero-section h1 { font-size: 2.5rem; }
+      .hero-section p { font-size: 1.2rem; }
+      .hero-section .btn { font-size: 1rem; padding: 12px 25px; }
+
+      .services-section-title { font-size: 2rem; margin-top: 30px; }
       .main-content-wrapper {
         flex-direction: column;
       }
@@ -119,9 +171,13 @@
         flex-grow: 1; /* Réajustement pour le mode colonne */
       }
       .clickable-section {
-        min-height: calc( (100vh - 80px) / 3 ); /* Tente de diviser l'espace restant (moins le header) */
+        min-height: 150px; /* Hauteur minimale pour toutes les sections en mode colonne */
+        font-size: 1.8rem;
+        margin-bottom: 2px; /* Remet la marge entre les sections */
       }
-      .clickable-section { font-size: 1.5rem; }
+      .right-column .clickable-section {
+        min-height: 150px; /* Hauteur cohérente pour les sections empilées */
+      }
     }
 
     footer {
@@ -162,6 +218,14 @@
     </div>
   </header>
 
+  <div class="hero-section">
+    <h1>Donnez Vie à Vos Idées sur Textile</h1>
+    <p>Votre partenaire local à Montréal pour des vêtements personnalisés de haute qualité, confortables et durables.</p>
+    <a href="inventaire.html" class="btn">Découvrez Notre Inventaire</a>
+  </div>
+
+  <h2 class="services-section-title">Explorez Nos Services</h2>
+
   <div class="main-content-wrapper">
     <a href="inventaire.html" class="clickable-section left-section">
       <span>Voir notre inventaire</span>
@@ -178,11 +242,11 @@
 
   <footer>
     <p>
-      <a href="https://www.instagram.com/impressed.mtl" target="_blank" rel="noopener noreferrer" class="social-link">
+      <a href="https://www.instagram.com/impressed.mtl" target="_blank" rel="noopener noreferrer" class="social-link" style="margin-bottom: 5px;">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.268.058 2.15.241 2.908.542.788.308 1.444.796 2.017 1.369.572.572 1.06 1.229 1.368 2.017.302.758.484 1.64.542 2.908.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.268-.24 2.15-.542 2.908-.308.788-.796 1.444-1.369 2.017-.572.572-1.229 1.06-2.017 1.368-.758.302-1.64.484-2.908.542-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.268-.058-2.15-.24-2.908-.542-.788-.308-1.444-.796-2.017-1.368-.572-.572-1.06-1.229-1.368-2.017-.302-.758-.484-1.64-.542-2.908-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.268.24-2.15.542-2.908.308-.788.796-1.444 1.369-2.017.572-.572 1.229-1.06 2.017-1.368.758-.302 1.64-.484 2.908-.542C8.416 2.175 8.796 2.163 12 2.163m0-2.163C8.74 0 8.333.014 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.123 1.382S.936 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.014 8.333 0 8.74 0 12s.014 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.382 2.123s1.335.936 2.123 1.382c.766.296 1.636.499 2.913.558C8.333 23.986 8.74 24 12 24s3.667-.014 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.717 2.123-1.382s1.335-.936 2.123-1.382c.296-.765.499-1.636.558-2.913.06-1.277.072-1.687.072-4.947s-.014-3.667-.072-4.947c-.06-1.277-.262-2.148-.558-2.913-.306-.789-.717-1.459-1.382-2.123S20.65 1.079 19.86.774c-.765-.296-1.636-.499-2.913-.558C15.667.014 15.26 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.88 1.44 1.44 0 000-2.88z"></path>
         </svg>
-        Suivez-nous sur Instagram au @impressed.mtl
+        Suivez-nous sur @impressed.mtl
       </a>
     </p>
     <p>Copyright © 2025 Impressed MTL - Tous droits réservés. | Paiement sécurisé par Square® Payment Processing</p>
