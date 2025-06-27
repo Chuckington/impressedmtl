@@ -53,9 +53,7 @@
 
     /* --- Hero Section Styles --- */
     .hero-section {
-      background-image: url('assets/hero-bg.jpg'); /* Assurez-vous d'avoir cette image */
-      background-size: cover;
-      background-position: center;
+      /* L'image de fond est maintenant gérée par une balise <video> */
       color: white;
       text-align: center;
       padding: 80px 20px;
@@ -65,6 +63,17 @@
       align-items: center;
       min-height: 400px;
       position: relative;
+      overflow: hidden; /* Empêche la vidéo de déborder sur les côtés */
+    }
+    .hero-video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Assure que la vidéo couvre tout l'espace */
+      transform: translate(-50%, -50%);
+      z-index: 0; /* Place la vidéo derrière l'overlay et le texte */
     }
     .hero-section::before { /* Overlay sombre pour la lisibilité */
       content: '';
@@ -219,6 +228,10 @@
   </header>
 
   <div class="hero-section">
+    <video autoplay loop muted playsinline class="hero-video">
+      <source src="assets/hero-video.mp4" type="video/mp4">
+      Votre navigateur ne supporte pas la balise vidéo.
+    </video>
     <h1>Créez facilement vos vêtments personnalisés, conçus pour être portés avec fierté.</h1>
     <p>Votre partenaire local à Montréal pour des vêtements personnalisés de haute qualité, confortables et durables.</p>
     <a href="inventaire.html" class="btn">Découvrez Notre Inventaire</a>
