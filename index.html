@@ -34,9 +34,11 @@
       gap: 15px;
     }
     .header-logo img {
-      height: 100px; /* Rendu significativement plus gros (environ 10x la surface) */
+      height: 100px; /* Garde la grande taille du logo */
       width: auto;
       vertical-align: middle; /* Améliore l'alignement vertical */
+      margin-top: -31px; /* Permet au logo de déborder sans agrandir le header */
+      margin-bottom: -31px; /* Permet au logo de déborder sans agrandir le header */
     }
     .header-actions {
       display: flex;
