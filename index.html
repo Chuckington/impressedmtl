@@ -28,9 +28,15 @@
       z-index:1000; 
       flex-shrink: 0; /* Empêche le header de rétrécir */
     }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
     .header-logo img {
-      height: 50px; /* Ajustez la taille du logo */
+      height: 40px; /* Ajusté pour s'aligner avec la hauteur des boutons */
       width: auto;
+      vertical-align: middle; /* Améliore l'alignement vertical */
     }
     .header-actions {
       display: flex;
@@ -208,9 +214,15 @@
 </head>
 <body>
   <header>
-    <a href="index.html" class="header-logo">
-      <img src="assets/logo.png" alt="Logo Impressed MTL">
-    </a>
+    <div class="header-left">
+      <a href="index.html" class="header-logo">
+        <img src="assets/logo2.png" alt="Logo Impressed MTL">
+      </a>
+      <a href="inventaire.html" class="btn">Inventaire</a>
+      <a href="contact.html" class="btn">Nous contacter</a>
+      <a href="about.html" class="btn">À propos</a>
+    </div>
+
     <div class="header-actions">
       <a href="panier.html" class="btn">Panier</a>
       <button id="auth-button" class="btn">Compte</button>
