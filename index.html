@@ -51,62 +51,53 @@
     }
     .btn:hover { background: #444; }
 
-    /* --- Hero Section Styles --- */
-    .hero-section {
-      /* L'image de fond est maintenant gérée par une balise <video> */
-      color: white;
+    /* --- Intro & Video Section Styles --- */
+    .intro-text-section {
+      background-color: #fff;
       text-align: center;
-      padding: 80px 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 400px;
-      position: relative;
-      overflow: hidden; /* Empêche la vidéo de déborder sur les côtés */
+      padding: 60px 20px;
     }
-    .hero-video {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Assure que la vidéo couvre tout l'espace */
-      transform: translate(-50%, -50%);
-      z-index: 0; /* Place la vidéo derrière l'overlay et le texte */
-    }
-    .hero-section::before { /* Overlay sombre pour la lisibilité */
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0, 0, 0, 0.4);
-      z-index: 1;
-    }
-    .hero-section > * { /* Contenu au-dessus de l'overlay */
-      position: relative;
-      z-index: 2;
-    }
-    .hero-section h1 {
-      font-size: 3.5rem;
+    .intro-text-section h1 {
+      font-size: 2.8rem;
       margin-bottom: 20px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      color: #000;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.2;
     }
-    .hero-section p {
-      font-size: 1.5rem;
+    .intro-text-section p {
+      font-size: 1.2rem;
       margin-bottom: 30px;
-      max-width: 800px;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+      max-width: 700px;
+      color: #555;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .hero-section .btn {
+    .intro-text-section .btn {
       padding: 15px 30px;
       font-size: 1.1rem;
-      background-color: #007BFF; /* Couleur vive pour le CTA */
+      background-color: #000;
       border-radius: 8px;
       transition: background-color 0.3s ease, transform 0.2s ease;
     }
-    .hero-section .btn:hover {
-      background-color: #0056b3;
+    .intro-text-section .btn:hover {
+      background-color: #444;
       transform: translateY(-2px);
+    }
+    .video-section {
+      width: 100%;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .video-section video {
+      width: 100%;
+      height: auto;
+      max-height: 75vh;
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
     }
 
     /* --- Services/Navigation Section Styles --- */
@@ -168,10 +159,10 @@
 
     /* Responsive pour les petites tailles d'écran */
     @media (max-width: 768px) {
-      .hero-section h1 { font-size: 2.5rem; }
-      .hero-section p { font-size: 1.2rem; }
-      .hero-section .btn { font-size: 1rem; padding: 12px 25px; }
-
+      .intro-text-section { padding: 40px 20px; }
+      .intro-text-section h1 { font-size: 2rem; }
+      .intro-text-section p { font-size: 1rem; }
+      
       .services-section-title { font-size: 2rem; margin-top: 30px; }
       .main-content-wrapper {
         flex-direction: column;
@@ -227,14 +218,17 @@
     </div>
   </header>
 
-  <div class="hero-section">
-    <video autoplay loop muted playsinline class="hero-video">
-      <source src="assets/hero-video.mp4" type="video/mp4">
-      Votre navigateur ne supporte pas la balise vidéo.
-    </video>
-    <h1>Créez facilement vos vêtments personnalisés, conçus pour être portés avec fierté.</h1>
+  <div class="intro-text-section">
+    <h1>Créez facilement des pièces uniques, conçues pour être portées avec fierté.</h1>
     <p>Votre partenaire local à Montréal pour des vêtements personnalisés de haute qualité, confortables et durables.</p>
     <a href="inventaire.html" class="btn">Découvrez Notre Inventaire</a>
+  </div>
+
+  <div class="video-section">
+      <video autoplay loop muted playsinline>
+        <source src="assets/hero-video.mp4" type="video/mp4">
+        Votre navigateur ne supporte pas la balise vidéo.
+      </video>
   </div>
 
   <h2 class="services-section-title">Explorez Nos Services</h2>
