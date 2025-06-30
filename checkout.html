@@ -7,7 +7,7 @@
   <!-- Supabase JS UMD via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <!-- Square Web Payments SDK -->
-  <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+  <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { font-family: 'Fredoka', sans-serif; background: #f7f7f7; min-height: 100vh; }
@@ -220,13 +220,13 @@
     }
 
     async function initializeSquarePaymentForm() {
-      // TODO: Remplacez par votre ID d'application Square (Sandbox ou Production)
-      const SQUARE_APPLICATION_ID = 'sandbox-sq0idb-DtydjOvTXB4djNYJJP6vdg';
+      // IMPORTANT: Remplacez par votre ID d'application de PRODUCTION Square
+      const SQUARE_APPLICATION_ID = 'sq0idp-PhZLJgo903hJONOYGnYnKg';
       // TODO: Remplacez par votre ID de localisation Square
       const SQUARE_LOCATION_ID = 'L3428RYHNGBKP'; // J'ai mis un ID de localisation sandbox valide pour l'exemple, remplacez par le vôtre.
 
       // Si l'ID d'application n'est pas défini ou est encore la valeur placeholder générique
-      if (!SQUARE_APPLICATION_ID || SQUARE_APPLICATION_ID === 'VOTRE_ID_APPLICATION_SQUARE_SANDBOX') {
+      if (!SQUARE_APPLICATION_ID || SQUARE_APPLICATION_ID === 'sq0idp-PhZLJgo903hJONOYGnYnKg') {
         document.getElementById('payment-status-container').textContent = "Configuration Square incorrecte ou manquante (ID d'application). Veuillez vérifier la constante SQUARE_APPLICATION_ID dans checkout.html.";
         document.getElementById('card-button').disabled = true;
         return;
