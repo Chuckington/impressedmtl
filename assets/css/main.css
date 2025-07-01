@@ -179,7 +179,7 @@ header {
 .card:hover { transform:scale(1.02); }
 .card-image { background:#f0f0f0; display:flex; justify-content:center; align-items:center; padding:30px; height:260px; }
 .card-image img { max-height:200px; max-width:100%; object-fit:contain; }
-.card-content { padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content: flex-start; }
+.card-content { padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content: flex-start; align-items: flex-start; }
 .card-content h3 { margin:0 0 10px; font-size:1.2rem; color: #333; }
 .card-content p { margin:5px 0; font-size:1rem; color:#444; }
 
