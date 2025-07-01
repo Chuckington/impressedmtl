@@ -280,6 +280,14 @@ th { background:#f0f0f0; }
 .confirmation-container a { color: #007bff; text-decoration: none; font-weight: bold; }
 .confirmation-container a:hover { text-decoration: underline; }
 
+/* Styles pour le corps de la page de confirmation pour la centrer */
+body.confirmation-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
 /* --- Footer --- */
 footer {
   background-color: #fff;
