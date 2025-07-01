@@ -145,7 +145,7 @@
     authBtn.addEventListener('click', async () => {
       const { data: { user } } = await supa.auth.getUser();
       if (user) await supa.auth.signOut();
-      else window.location.href = 'login2.html';
+      else window.location.href = 'login.html';
       updateAuthUI();
     });
     supa.auth.onAuthStateChange(updateAuthUI);
