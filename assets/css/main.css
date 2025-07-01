@@ -179,7 +179,7 @@ header {
 .card:hover { transform:scale(1.02); }
 .card-image { background:#f0f0f0; display:flex; justify-content:center; align-items:center; padding:30px; height:260px; }
 .card-image img { max-height:200px; max-width:100%; object-fit:contain; }
-.card-content { padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content:center; }
+.card-content { padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content: flex-start; }
 .card-content h3 { margin:0 0 10px; font-size:1.2rem; color: #333; }
 .card-content p { margin:5px 0; font-size:1rem; color:#444; }
 
@@ -189,9 +189,13 @@ header {
 }
 
 /* --- Page Produit (produit.html) --- */
-.personalize { display:flex; align-items:center; margin-top:10px; }
+.personalize-option-group {
+  margin-top: 15px;
+}
+.personalize { display:flex; align-items:center; }
+.personalize-option-group .personalize { margin-bottom: 5px; }
 .personalize input[type="checkbox"] { margin-right:8px; }
-.upload-section { margin-left: 28px; margin-top: 20px; display: none; }
+.upload-section { margin-left: 28px; margin-top: 10px; display: none; }
 .upload-section .btn { margin-bottom: 5px; }
 .upload-section input[type="file"] { font-size: 0.9rem; }
 .upload-section .preview-wrapper { margin-top: 10px; padding: 5px; border: 1px solid #f0f0f0; border-radius: 4px; background-color: #fdfdfd; display: inline-block; }

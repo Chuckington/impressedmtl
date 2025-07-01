@@ -356,15 +356,17 @@
             `;
           } else if (item.personnalisation) { // Cas général pour les autres personnalisations avec checkbox
             cardHtml += `
-              <div class="personalize">
-                <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForThisSpot}" id="opt-${item.id}">
-                <label for="opt-${item.id}">${item.personnalisation}</label>
-              </div>
-              <div class="upload-section" id="upload-section-${item.id}" style="display:none;">
-                <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.personnalisation})</label>
-                <input type="file" id="file-input-${item.id}" accept="image/*" style="display:none;">
-                <div class="preview-wrapper">
-                  <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
+              <div class="personalize-option-group">
+                <div class="personalize">
+                  <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForThisSpot}" id="opt-${item.id}">
+                  <label for="opt-${item.id}">${item.personnalisation}</label>
+                </div>
+                <div class="upload-section" id="upload-section-${item.id}" style="display:none;">
+                  <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.personnalisation})</label>
+                  <input type="file" id="file-input-${item.id}" accept="image/*" style="display:none;">
+                  <div class="preview-wrapper">
+                    <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
+                  </div>
                 </div>
               </div>
             `;
