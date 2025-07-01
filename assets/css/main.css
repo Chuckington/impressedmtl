@@ -249,6 +249,13 @@ th { background:#f0f0f0; }
 }
 .order-summary p { margin-bottom: 8px; }
 .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+.section h3 {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+@media (min-width: 600px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+}
 .form-grid .full-width { grid-column: 1 / -1; }
 .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
 .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="tel"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
