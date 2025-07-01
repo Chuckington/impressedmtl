@@ -170,13 +170,23 @@ header {
 
 /* --- Page Inventaire (inventaire.html) & Produit (produit.html) --- */
 .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; }
-.card { background:white; border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; display:flex; flex-direction:column; cursor:pointer; transition:transform 0.2s; text-decoration: none; }
+.card { 
+  background:white; border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; 
+  display:flex; flex-direction:column; cursor:pointer; transition:transform 0.2s; text-decoration: none;
+  /* Animation d'apparition pour les cartes */
+  opacity:0; transform: translateY(20px); animation: fadeInUp 0.4s ease forwards;
+}
 .card:hover { transform:scale(1.02); }
 .card-image { background:#f0f0f0; display:flex; justify-content:center; align-items:center; padding:30px; height:260px; }
 .card-image img { max-height:200px; max-width:100%; object-fit:contain; }
 .card-content { padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content:center; }
 .card-content h3 { margin:0 0 10px; font-size:1.2rem; color: #333; }
 .card-content p { margin:5px 0; font-size:1rem; color:#444; }
+
+/* Keyframes pour l'animation des cartes */
+@keyframes fadeInUp { 
+  to { opacity:1; transform: translateY(0); } 
+}
 
 /* --- Page Produit (produit.html) --- */
 .personalize { display:flex; align-items:center; margin-top:10px; }
