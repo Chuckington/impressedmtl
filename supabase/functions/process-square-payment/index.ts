@@ -127,7 +127,7 @@ serve(async (req) => {
         }
       );
 
-      if (rpcError || !rpcData || rpcData.length === 0) {
+      if (rpcError || !rpcData) {
         console.error("ERREUR CRITIQUE: L'appel RPC 'create_order_and_get_number' a échoué.", rpcError);
         // Le paiement a réussi, mais la sauvegarde a échoué. On ne peut pas continuer.
         // On renvoie un succès partiel au client pour ne pas l'inquiéter, mais on log l'ID de paiement pour une action manuelle.
@@ -136,10 +136,17 @@ serve(async (req) => {
         });
       }
 
-      // L'appel RPC a réussi. La fonction retourne un tableau avec un seul objet.
-      const newOrderInfo = rpcData[0];
-      const newOrderId = newOrderInfo.order_id;
-      const newOrderNumber = newOrderInfo.order_no;
+      // L'appel RPC a réussi. rpcData est maintenant un objet JSON simple.
+      const newOrderId = rpcData.order_id;
+      const newOrderNumber = rpcData.order_number;
+
+      // Vérification de sécurité pour s'assurer que la RPC a bien retourné les données attendues.
+      if (!newOrderId || !newOrderNumber) {
+        console.error("ERREUR CRITIQUE: La RPC a réussi mais n'a pas retourné order_id ou order_number.", rpcData);
+        return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: null, error: "DB RPC returned invalid data" }), {
+          status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
 
       console.log(`Commande enregistrée et récupérée avec ID: ${newOrderId} et Numéro de Commande: #${newOrderNumber}`);
 
