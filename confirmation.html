@@ -19,13 +19,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const paymentId = params.get('paymentId');
+            const orderNumber = params.get('orderNumber');
             const orderIdDisplay = document.getElementById('order-id-display');
 
-            if (paymentId && orderIdDisplay) {
-                orderIdDisplay.textContent = `Votre numéro de référence de commande est : ${paymentId}`;
+            if (orderNumber && orderIdDisplay) {
+                orderIdDisplay.textContent = `Votre numéro de commande est le #${orderNumber}.`;
             } else if (orderIdDisplay) {
-                orderIdDisplay.textContent = 'Numéro de référence de commande non disponible.';
+                orderIdDisplay.textContent = 'Numéro de commande non disponible.';
             }
         });
     </script>

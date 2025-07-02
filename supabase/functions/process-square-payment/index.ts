@@ -87,13 +87,6 @@ serve(async (req) => {
       // À partir d'ici, paymentId est garanti d'être une chaîne de caractères.
       console.log("Paiement Square réussi:", paymentId);
 
-      // Préparer et envoyer les emails de confirmation/reçu
-      if (shippingDetails && shippingDetails.email && cartDetails) {
-        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, paymentId, amount);
-        await sendReceiptEmail(shippingDetails.email, "Votre reçu de commande Impressed MTL", emailHtmlBody);
-        await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande Impressed MTL - ${paymentId}`, emailHtmlBody);
-      }
-
       // Enregistrer la commande dans la base de données Supabase
       const supabaseAdminClient = createClient(
         Deno.env.get("SUPABASE_URL")!,
@@ -130,6 +123,16 @@ serve(async (req) => {
         // Le paiement a réussi, mais l'enregistrement de la commande a échoué.
         // Vous devriez logger cela et potentiellement alerter pour une action manuelle.
         // Pour le client, le paiement est toujours considéré comme réussi.
+      } else if (orderData) {
+        const newOrderNumber = orderData.order_number; // Récupérer le nouveau numéro de commande
+        console.log(`Commande enregistrée avec ID: ${orderData.id} et Numéro de Commande: #${newOrderNumber}`);
+
+        // Préparer et envoyer les emails de confirmation/reçu AVEC le nouveau numéro de commande
+        if (shippingDetails && shippingDetails.email && cartDetails) {
+          const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount);
+          await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
+          await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
+        }
       } else if (orderData && cartDetails && cartDetails.length > 0) {
         console.log("Commande enregistrée avec ID:", orderData.id);
         const orderItemsToInsert = cartDetails.map((item: CartItem) => {
@@ -161,7 +164,7 @@ serve(async (req) => {
         }
       }
 
-      return new Response(JSON.stringify({ success: true, paymentId: paymentId }), {
+      return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: orderData.order_number }), {
         status: 200,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
@@ -227,7 +230,7 @@ interface ShippingInfo {
 }
 
 // Fonction pour formater le reçu en HTML
-function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, paymentId: string, totalAmountInCents: number): string {
+function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number): string {
   const itemsHtml = (cartItems || []).map(item => {
     const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
       let detail = `<li>${p.spot_label}: ${p.spot_price.toFixed(2)}$`;
@@ -262,7 +265,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
         <h2>Merci pour votre commande, ${shippingInfo.fullName} !</h2>
-        <p>Voici le récapitulatif de votre commande #${paymentId} :</p>
+        <p>Voici le récapitulatif de votre commande <strong>#${orderNumber}</strong> :</p>
         <h3>Articles:</h3>
         ${itemsHtml}
         <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
