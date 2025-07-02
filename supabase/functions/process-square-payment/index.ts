@@ -109,7 +109,7 @@ serve(async (req) => {
       else if (totalItemCount >= 2 && totalItemCount <= 9) fixedFeeApplied = 10;
 
       const { data: orderData, error: orderError } = await supabaseAdminClient
-        .from('orders')
+        .from('orders') // Étape 1: Insérer la commande
         .insert([{ // insert expects an array of objects
           user_id: userId || null, // userId est envoyé depuis le client
           square_payment_id: paymentId,
@@ -125,63 +125,72 @@ serve(async (req) => {
           shipping_phone: shippingDetails.phone,
           fixed_fee_applied: fixedFeeApplied
         }])
-        .select() // Pour retourner la commande insérée
-        .single(); // S'attendre à un seul enregistrement
+        .select('id') // On sélectionne juste l'id pour confirmer que l'insertion a eu lieu
+        .single();
 
       if (orderError) {
-        console.error("Erreur lors de l'enregistrement de la commande (table orders):", orderError);
-        // Le paiement a réussi, mais l'enregistrement de la commande a échoué.
-        // Vous devriez logger cela et potentiellement alerter pour une action manuelle.
-        // Pour le client, le paiement est toujours considéré comme réussi.
-        // On continue pour renvoyer une réponse de succès au client, mais on log l'erreur serveur.
-      } else if (orderData) {
-        // La commande a été enregistrée avec succès dans la table 'orders'.
-        const newOrderNumber = orderData.order_number; // Récupérer le nouveau numéro de commande
-        console.log(`Commande enregistrée avec ID: ${orderData.id} et Numéro de Commande: #${newOrderNumber}`);
+        console.error("ERREUR CRITIQUE: Échec de l'insertion de la commande dans la DB après paiement.", orderError);
+        // Même si le paiement a réussi, on ne peut pas continuer. Il faut une intervention manuelle.
+        // On renvoie quand même un succès au client pour ne pas l'inquiéter, mais on log l'ID de paiement.
+        return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: null, error: "DB insert failed" }), {
+          status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
 
-        // Maintenant, on enregistre les articles de la commande dans 'order_items'.
-        if (cartDetails && cartDetails.length > 0) {
-          console.log("Préparation de l'enregistrement des articles pour la commande ID:", orderData.id);
-          const orderItemsToInsert = cartDetails.map((item: CartItem) => {
-            let itemExtraCost = 0;
-            (item.personalizations || []).forEach(p => itemExtraCost += (p.spot_price || 0));
-            return {
-              order_id: orderData.id,
-              product_id: item.product_id, // Assurez-vous que product_id est dans cartDetails
-              product_name: item.product_name,
-              quantity: item.quantity,
-              base_price: item.base_price,
-              personalizations: item.personalizations,
-              selected_color_name: item.selected_color_name,
-              selected_size_name: item.selected_size_name,
-              selected_gender_name: item.selected_gender_name,
-              item_total_price: (item.quantity * (item.base_price + itemExtraCost))
-            };
-          });
+      // Étape 2: L'insertion a réussi, maintenant on récupère la ligne complète pour avoir le order_number
+      const { data: retrievedOrder, error: selectError } = await supabaseAdminClient
+        .from('orders')
+        .select('id, order_number')
+        .eq('square_payment_id', paymentId)
+        .single();
 
-          const { error: itemsError } = await supabaseAdminClient
-            .from('order_items')
-            .insert(orderItemsToInsert);
+      if (selectError || !retrievedOrder) {
+        console.error("ERREUR CRITIQUE: Impossible de récupérer la commande après insertion.", selectError);
+        return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: null, error: "DB select failed" }), {
+          status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
 
-          if (itemsError) {
-            console.error("Erreur lors de l'enregistrement des articles de la commande (table order_items):", itemsError);
-            // Idem, logger et alerter. Le client ne sera pas notifié de cette erreur interne.
-          } else {
-            console.log("Articles de la commande enregistrés avec succès pour order_id:", orderData.id);
-          }
-        }
+      // À partir d'ici, `retrievedOrder` contient `id` et `order_number`. C'est notre "happy path".
+      const newOrderNumber = retrievedOrder.order_number;
+      const newOrderId = retrievedOrder.id;
+      console.log(`Commande enregistrée et récupérée avec ID: ${newOrderId} et Numéro de Commande: #${newOrderNumber}`);
 
-        // Ensuite, on envoie les emails de confirmation.
-        if (shippingDetails && shippingDetails.email && cartDetails) {
-          const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount);
-          await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
-          await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
+      // Enregistrer les articles de la commande dans 'order_items' en utilisant le newOrderId
+      if (cartDetails && cartDetails.length > 0) {
+        const orderItemsToInsert = cartDetails.map((item: CartItem) => {
+          let itemExtraCost = 0;
+          (item.personalizations || []).forEach(p => itemExtraCost += (p.spot_price || 0));
+          return {
+            order_id: newOrderId, // Utilisation de l'ID récupéré
+            product_id: item.product_id,
+            product_name: item.product_name,
+            quantity: item.quantity,
+            base_price: item.base_price,
+            personalizations: item.personalizations,
+            selected_color_name: item.selected_color_name,
+            selected_size_name: item.selected_size_name,
+            selected_gender_name: item.selected_gender_name,
+            item_total_price: (item.quantity * (item.base_price + itemExtraCost))
+          };
+        });
+        const { error: itemsError } = await supabaseAdminClient.from('order_items').insert(orderItemsToInsert);
+        if (itemsError) {
+          console.error("Erreur lors de l'enregistrement des articles de la commande (table order_items):", itemsError);
+        } else {
+          console.log("Articles de la commande enregistrés avec succès pour order_id:", newOrderId);
         }
       }
       
-      // La réponse est envoyée que la sauvegarde en DB ait fonctionné ou non, car le paiement Square a réussi.
-      // On utilise orderData?.order_number pour éviter une erreur si orderData est null.
-      return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: orderData?.order_number }), {
+      // Envoyer les emails de confirmation
+      if (shippingDetails && shippingDetails.email && cartDetails) {
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount);
+        await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
+        await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
+      }
+
+      // Renvoyer la réponse finale avec le bon numéro de commande
+      return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: newOrderNumber }), {
         status: 200,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
