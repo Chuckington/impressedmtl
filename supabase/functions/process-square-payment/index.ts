@@ -27,6 +27,16 @@ serve(async (req) => {
     const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId } = await req.json(); // Ajout de userId
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey });
 
+    // **Validation Côté Serveur**
+    // C'est une sécurité essentielle. Même si le client valide, il faut toujours vérifier côté serveur.
+    if (!sourceId || !amount || !currency || !locationId || !idempotencyKey || !shippingDetails || !shippingDetails.fullName || !shippingDetails.email) {
+      console.error("Validation échouée: Données de paiement ou de livraison manquantes.", { sourceId, amount, currency, locationId, idempotencyKey, shippingDetails });
+      return new Response(JSON.stringify({ success: false, message: "Données de la requête invalides ou manquantes." }), {
+        status: 400, // Bad Request
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
     // 3. Récupérer les secrets depuis les variables d'environnement Supabase
     // Ces secrets sont configurés dans votre tableau de bord Supabase ou via la CLI.
     const SQUARE_ACCESS_TOKEN = Deno.env.get("SQUARE_ACCESS_TOKEN");
@@ -90,8 +100,8 @@ serve(async (req) => {
       // Enregistrer la commande dans la base de données Supabase
       const supabaseAdminClient = createClient(
         Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("MY_SERVICE_ROLE_KEY")! // <--- MODIFIEZ CECI pour correspondre au nom que vous avez choisi
-      );
+        Deno.env.get("MY_SERVICE_ROLE_KEY")! // Rétablissement du nom de variable personnalisé, comme vous l'aviez indiqué.
+      ); 
 
       let fixedFeeApplied = 0;
       const totalItemCount = (cartDetails || []).reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
