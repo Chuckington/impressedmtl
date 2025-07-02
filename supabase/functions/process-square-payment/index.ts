@@ -108,52 +108,39 @@ serve(async (req) => {
       if (totalItemCount === 1) fixedFeeApplied = 15;
       else if (totalItemCount >= 2 && totalItemCount <= 9) fixedFeeApplied = 10;
 
-      const { data: orderData, error: orderError } = await supabaseAdminClient
-        .from('orders') // Étape 1: Insérer la commande
-        .insert([{ // insert expects an array of objects
-          user_id: userId || null, // userId est envoyé depuis le client
-          square_payment_id: paymentId,
-          total_amount: amount / 100, // Montant en dollars
-          currency: currency,
-          status: 'PAID',
-          shipping_fullname: shippingDetails.fullName,
-          shipping_email: shippingDetails.email,
-          shipping_address: shippingDetails.address,
-          shipping_apartment: shippingDetails.apartment,
-          shipping_city: shippingDetails.city,
-          shipping_postalcode: shippingDetails.postalCode,
-          shipping_phone: shippingDetails.phone,
-          fixed_fee_applied: fixedFeeApplied
-        }])
-        .select('id') // On sélectionne juste l'id pour confirmer que l'insertion a eu lieu
-        .single();
+      // Appel de la fonction RPC pour créer la commande et récupérer son ID/numéro en une seule opération atomique.
+      const { data: rpcData, error: rpcError } = await supabaseAdminClient.rpc(
+        'create_order_and_get_number',
+        {
+          p_user_id: userId || null,
+          p_square_payment_id: paymentId,
+          p_total_amount: amount / 100,
+          p_currency: currency,
+          p_shipping_fullname: shippingDetails.fullName,
+          p_shipping_email: shippingDetails.email,
+          p_shipping_address: shippingDetails.address,
+          p_shipping_apartment: shippingDetails.apartment,
+          p_shipping_city: shippingDetails.city,
+          p_shipping_postalcode: shippingDetails.postalCode,
+          p_shipping_phone: shippingDetails.phone,
+          p_fixed_fee_applied: fixedFeeApplied
+        }
+      );
 
-      if (orderError) {
-        console.error("ERREUR CRITIQUE: Échec de l'insertion de la commande dans la DB après paiement.", orderError);
-        // Même si le paiement a réussi, on ne peut pas continuer. Il faut une intervention manuelle.
-        // On renvoie quand même un succès au client pour ne pas l'inquiéter, mais on log l'ID de paiement.
-        return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: null, error: "DB insert failed" }), {
+      if (rpcError || !rpcData || rpcData.length === 0) {
+        console.error("ERREUR CRITIQUE: L'appel RPC 'create_order_and_get_number' a échoué.", rpcError);
+        // Le paiement a réussi, mais la sauvegarde a échoué. On ne peut pas continuer.
+        // On renvoie un succès partiel au client pour ne pas l'inquiéter, mais on log l'ID de paiement pour une action manuelle.
+        return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: null, error: "DB RPC failed" }), {
           status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
       }
 
-      // Étape 2: L'insertion a réussi, maintenant on récupère la ligne complète pour avoir le order_number
-      const { data: retrievedOrder, error: selectError } = await supabaseAdminClient
-        .from('orders')
-        .select('id, order_number')
-        .eq('square_payment_id', paymentId)
-        .single();
+      // L'appel RPC a réussi. La fonction retourne un tableau avec un seul objet.
+      const newOrderInfo = rpcData[0];
+      const newOrderId = newOrderInfo.order_id;
+      const newOrderNumber = newOrderInfo.order_no;
 
-      if (selectError || !retrievedOrder) {
-        console.error("ERREUR CRITIQUE: Impossible de récupérer la commande après insertion.", selectError);
-        return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: null, error: "DB select failed" }), {
-          status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        });
-      }
-
-      // À partir d'ici, `retrievedOrder` contient `id` et `order_number`. C'est notre "happy path".
-      const newOrderNumber = retrievedOrder.order_number;
-      const newOrderId = retrievedOrder.id;
       console.log(`Commande enregistrée et récupérée avec ID: ${newOrderId} et Numéro de Commande: #${newOrderNumber}`);
 
       // Enregistrer les articles de la commande dans 'order_items' en utilisant le newOrderId
