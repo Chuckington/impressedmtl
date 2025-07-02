@@ -8,8 +8,40 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <!-- Lien vers la feuille de style externe -->
   <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .popup-content {
+      background-color: #fff;
+      padding: 20px 30px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .popup-content h2 { margin-top: 0; }
+    .popup-content p { margin-bottom: 20px; line-height: 1.5; }
+  </style>
 </head>
 <body>
+  <div id="mobile-warning-popup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <h2>Avertissement</h2>
+      <p>Ce site n'est pas encore optimisé pour les appareils mobiles. Pour une meilleure expérience, nous vous recommandons de le consulter sur un ordinateur.</p>
+      <button id="close-popup-btn" class="btn">Compris</button>
+    </div>
+  </div>
   <header>
     <div class="header-left">
       <a href="index.html" class="header-logo">
@@ -106,6 +138,28 @@
 
     // Appel initial pour mettre à jour l'UI au chargement de la page
     updateAuthUI();
+
+    // --- POPUP POUR MOBILE ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const popup = document.getElementById('mobile-warning-popup');
+      const closeBtn = document.getElementById('close-popup-btn');
+      const wasPopupShown = sessionStorage.getItem('mobileWarningShown');
+
+      // Détecter si c'est un appareil mobile (basé sur la largeur de l'écran)
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile && !wasPopupShown) {
+        popup.style.display = 'flex';
+      }
+
+      if(closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          popup.style.display = 'none';
+          // Mémoriser que le popup a été montré pour cette session
+          sessionStorage.setItem('mobileWarningShown', 'true');
+        });
+      }
+    });
   </script>
 </body>
 </html>
