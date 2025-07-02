@@ -123,48 +123,55 @@ serve(async (req) => {
         // Le paiement a réussi, mais l'enregistrement de la commande a échoué.
         // Vous devriez logger cela et potentiellement alerter pour une action manuelle.
         // Pour le client, le paiement est toujours considéré comme réussi.
+        // On continue pour renvoyer une réponse de succès au client, mais on log l'erreur serveur.
       } else if (orderData) {
+        // La commande a été enregistrée avec succès dans la table 'orders'.
         const newOrderNumber = orderData.order_number; // Récupérer le nouveau numéro de commande
         console.log(`Commande enregistrée avec ID: ${orderData.id} et Numéro de Commande: #${newOrderNumber}`);
 
-        // Préparer et envoyer les emails de confirmation/reçu AVEC le nouveau numéro de commande
+        // Maintenant, on enregistre les articles de la commande dans 'order_items'.
+        if (cartDetails && cartDetails.length > 0) {
+          console.log("Préparation de l'enregistrement des articles pour la commande ID:", orderData.id);
+          const orderItemsToInsert = cartDetails.map((item: CartItem) => {
+            let itemExtraCost = 0;
+            (item.personalizations || []).forEach(p => itemExtraCost += (p.spot_price || 0));
+            return {
+              order_id: orderData.id,
+              product_id: item.product_id, // Assurez-vous que product_id est dans cartDetails
+              product_name: item.product_name,
+              quantity: item.quantity,
+              base_price: item.base_price,
+              personalizations: item.personalizations,
+              selected_color_name: item.selected_color_name,
+              selected_size_name: item.selected_size_name,
+              selected_gender_name: item.selected_gender_name,
+              item_total_price: (item.quantity * (item.base_price + itemExtraCost))
+            };
+          });
+
+          const { error: itemsError } = await supabaseAdminClient
+            .from('order_items')
+            .insert(orderItemsToInsert);
+
+          if (itemsError) {
+            console.error("Erreur lors de l'enregistrement des articles de la commande (table order_items):", itemsError);
+            // Idem, logger et alerter. Le client ne sera pas notifié de cette erreur interne.
+          } else {
+            console.log("Articles de la commande enregistrés avec succès pour order_id:", orderData.id);
+          }
+        }
+
+        // Ensuite, on envoie les emails de confirmation.
         if (shippingDetails && shippingDetails.email && cartDetails) {
           const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount);
           await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
           await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
         }
-      } else if (orderData && cartDetails && cartDetails.length > 0) {
-        console.log("Commande enregistrée avec ID:", orderData.id);
-        const orderItemsToInsert = cartDetails.map((item: CartItem) => {
-          let itemExtraCost = 0;
-          (item.personalizations || []).forEach(p => itemExtraCost += (p.spot_price || 0));
-          return {
-            order_id: orderData.id,
-            product_id: item.product_id, // Assurez-vous que product_id est dans cartDetails
-            product_name: item.product_name,
-            quantity: item.quantity,
-            base_price: item.base_price,
-            personalizations: item.personalizations,
-            selected_color_name: item.selected_color_name,
-            selected_size_name: item.selected_size_name,
-            selected_gender_name: item.selected_gender_name,
-            item_total_price: (item.quantity * (item.base_price + itemExtraCost))
-          };
-        });
-
-        const { error: itemsError } = await supabaseAdminClient
-          .from('order_items')
-          .insert(orderItemsToInsert);
-
-        if (itemsError) {
-          console.error("Erreur lors de l'enregistrement des articles de la commande (table order_items):", itemsError);
-          // Idem, logger et alerter.
-        } else {
-          console.log("Articles de la commande enregistrés pour order_id:", orderData.id);
-        }
       }
-
-      return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: orderData.order_number }), {
+      
+      // La réponse est envoyée que la sauvegarde en DB ait fonctionné ou non, car le paiement Square a réussi.
+      // On utilise orderData?.order_number pour éviter une erreur si orderData est null.
+      return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: orderData?.order_number }), {
         status: 200,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
