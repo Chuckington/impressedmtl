@@ -194,12 +194,9 @@ header {
   text-align: center;
   line-height: 1.2;
 }
-/* Style pour les cartes d'offres spéciales pour forcer le fond jaune */
-.card.special-offer-card {
-  background-color: #FFC200;
-}
-.card.special-offer-card .card-image {
-  background-color: #FFC200; /* On s'assure que la zone de l'image est aussi jaune, écrasant le gris par défaut */
+/* Style pour les cartes d'offres spéciales */
+.card.special-offer-card .card-content {
+  background-color: #FFC200; /* Fond jaune uniquement pour la section contenu */
 }
 .card-content h3 { margin:0 0 10px; font-size:1.2rem; color: #333; }
 .card-content p { margin:5px 0; font-size:1rem; color:#444; }
