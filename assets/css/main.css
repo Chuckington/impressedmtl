@@ -168,7 +168,7 @@ header {
   gap: 10px;
 }
 .right-column .clickable-section:last-child { margin-bottom: 0; }
-.right-column .clickable-section { min-height: calc(50% - 1px); }
+.right-column .clickable-section { min-height: calc(50% - 5px); }
 
 /* --- Page Inventaire (inventaire.html) & Produit (produit.html) --- */
 .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; }
