@@ -107,7 +107,7 @@ header {
 }
 .hero-image-section {
   width: 100%;
-  padding: 20px 10px; /* Espace pour l'ombre et les marges */
+  padding: 20px 100px; /* Espace vertical pour l'ombre et horizontal de 100px */
 }
 .hero-image-section a {
   display: block; /* Important pour que le lien se comporte comme un conteneur */
@@ -445,6 +445,11 @@ footer a.social-link svg {
   .intro-text-section h1 { font-size: 2rem; }
   .intro-text-section p { font-size: 1rem; }
   
+  .hero-image-section {
+    /* Réduire l'espacement sur les petits écrans pour une meilleure lisibilité */
+    padding: 20px 15px;
+  }
+
   .services-section-title { font-size: 2rem; margin-top: 30px; }
   .main-content-wrapper {
     flex-direction: column;
