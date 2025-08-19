@@ -121,6 +121,41 @@
     const fixedFeeAmountEl = document.getElementById('fixed-fee-amount');
     const fixedFeeMessageEl = document.getElementById('fixed-fee-message');
     let currentTotalForPayment = 0;
+    let totalDiscount = 0; // Variable pour stocker le rabais
+
+    // Fonction pour calculer les rabais (copiée de panier.html)
+    function calculateSpecialOffers(items) {
+      let currentTotalDiscount = 0;
+
+      items.forEach(item => {
+        const personalizations = (item.personalizations || []).map(p => p.spot_label.toLowerCase());
+        const hasGrosDerriere = personalizations.includes('gros design derrière');
+        const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('petit design poitrine droite');
+
+        // Offre 1: T-shirt de base
+        if (item.product_id === 'inventairetshirtdebase' && item.quantity >= 20 && hasGrosDerriere && hasPetitPoitrine) {
+          const numberOfBundles = Math.floor(item.quantity / 20);
+          let extraCostPerShirt = 0;
+          (item.personalizations || []).forEach(p => extraCostPerShirt += p.spot_price || 0);
+          const originalBundlePrice = 20 * (item.base_price + extraCostPerShirt);
+          const offerBundlePrice = 300;
+          const discountPerBundle = originalBundlePrice - offerBundlePrice;
+          currentTotalDiscount += numberOfBundles * discountPerBundle;
+        }
+
+        // Offre 2: T-shirt premium
+        if (item.product_id === 'inventairetshirtpremium' && item.quantity >= 20 && hasGrosDerriere && hasPetitPoitrine) {
+          const numberOfBundles = Math.floor(item.quantity / 20);
+          let extraCostPerShirt = 0;
+          (item.personalizations || []).forEach(p => extraCostPerShirt += p.spot_price || 0);
+          const originalBundlePrice = 20 * (item.base_price + extraCostPerShirt);
+          const offerBundlePrice = 420;
+          const discountPerBundle = originalBundlePrice - offerBundlePrice;
+          currentTotalDiscount += numberOfBundles * discountPerBundle;
+        }
+      });
+      return currentTotalDiscount;
+    }
 
     async function loadOrderSummary() {
       const { data: { user } } = await supa.auth.getUser();
@@ -164,6 +199,16 @@
         summaryItemsEl.appendChild(p);
       });
 
+      // Calculer le rabais pour le récapitulatif
+      totalDiscount = calculateSpecialOffers(cartItems);
+      if (totalDiscount > 0) {
+        const discountP = document.createElement('p');
+        discountP.style.color = '#28a745';
+        discountP.style.fontWeight = 'bold';
+        discountP.textContent = `Rabais Offre Spéciale: -${totalDiscount.toFixed(2)}$`;
+        summaryItemsEl.appendChild(discountP);
+      }
+
       // Calcul des frais fixes dégressifs
       let fixedFee = 0;
       if (totalItemCount === 1) {
@@ -178,7 +223,7 @@
       }
 
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
-      currentTotalForPayment = subTotalBeforeFixedFee + fixedFee;
+      currentTotalForPayment = subTotalBeforeFixedFee - totalDiscount + fixedFee; // Appliquer le rabais ici
       totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
     }
 

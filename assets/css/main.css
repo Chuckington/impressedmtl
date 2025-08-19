@@ -216,6 +216,31 @@ header {
 #offer-info-box h3 { margin-top: 0; margin-bottom: 10px; color: #1976d2; }
 #offer-info-box p { line-height: 1.5; color: #333; }
 
+/* Styles pour le pop-up */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.popup-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+.popup-content h2 { margin-top: 0; color: #000; font-size: 1.8rem; }
+#close-offer-popup-btn { margin-top: 20px; }
+
 #color-preview { display: inline-block; width: 24px; height: 24px; border: 1px solid #ccc; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
 
 /* --- Page Contact (contact.html) --- */
