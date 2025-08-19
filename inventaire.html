@@ -113,10 +113,13 @@
         const card = document.createElement('a');
         card.href = `produit.html?table=${tableTarget}`;
         card.className = 'card';
+        if (isSpecialOffer) {
+          card.classList.add('special-offer-card');
+        }
         card.innerHTML = `
           <div class="card-image">
             <img src="${item.image_url}" alt="${item.nom}">
-            ${isSpecialOffer ? '<div class="offer-badge">Offre Spéciale</div>' : ''}
+            ${isSpecialOffer ? '<div class="offer-badge">Offre<br>Spéciale!</div>' : ''}
           </div>
           <div class="card-content">
             <h3>${item.nom}</h3>
