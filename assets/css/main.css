@@ -132,7 +132,9 @@ header {
   flex-direction: row;
   flex-grow: 1;
   width: 100%;
-  gap: 2px;
+  gap: 10px; /* Un peu plus d'espace entre les blocs */
+  padding: 0 100px; /* Espacement horizontal comme pour l'annonce */
+  margin-bottom: 50px; /* Espace avant le footer */
 }
 .clickable-section {
   display: flex;
@@ -149,7 +151,7 @@ header {
   flex-grow: 1;
   min-height: 250px;
   margin-bottom: 0;
-  border: 2px solid #fff;
+  border-radius: 12px; /* Coins arrondis */
 }
 .clickable-section:last-child { margin-bottom: 0; }
 .clickable-section:hover {
@@ -163,7 +165,7 @@ header {
   flex-basis: 50%;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
 .right-column .clickable-section:last-child { margin-bottom: 0; }
 .right-column .clickable-section { min-height: calc(50% - 1px); }
@@ -453,11 +455,12 @@ footer a.social-link svg {
   .services-section-title { font-size: 2rem; margin-top: 30px; }
   .main-content-wrapper {
     flex-direction: column;
+    padding: 0 15px; /* Réduire l'espacement sur mobile */
+    gap: 10px;
   }
   .clickable-section {
     min-height: 150px;
     font-size: 1.8rem;
-    margin-bottom: 2px;
   }
   .right-column .clickable-section {
     min-height: 150px;
