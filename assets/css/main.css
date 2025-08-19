@@ -318,7 +318,15 @@ th { background:#f0f0f0; }
   width: 18px;
   height: 18px;
 }
-#maquette-option-cart p { padding-left: 28px; font-size: 0.85em; color: #555; margin-top: 5px; }
+/* Style pour la description de l'option maquette */
+#maquette-option-cart p {
+  padding-left: 28px;
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
+  line-height: 1.4;
+}
 
 /* --- Page Connexion (login.html) --- */
 .login-box { max-width: 400px; margin: 40px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
