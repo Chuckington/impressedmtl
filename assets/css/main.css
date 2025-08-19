@@ -193,6 +193,7 @@ header {
   box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
   text-align: center;
   line-height: 1.2;
+  border-radius: 6px; /* Coins arrondis pour le badge */
 }
 /* Style pour les cartes d'offres spéciales */
 .card.special-offer-card .card-content {
