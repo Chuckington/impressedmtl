@@ -107,13 +107,15 @@ header {
 }
 .hero-image-section {
   width: 100%;
-  padding: 0 10px; /* Ajoute un espace de 10px de chaque côté */
+  padding: 20px 10px; /* Espace vertical pour l'ombre et horizontal */
 }
 .hero-image-section img {
   width: 100%;
   height: auto;
   display: block; /* Pour enlever l'espace sous l'image */
   border: 2px solid #000; /* Ajoute une bordure noire sur tous les côtés */
+  border-radius: 12px; /* Arrondit les coins */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Ajoute une ombre portée */
 }
 .services-section-title {
   text-align: center;
