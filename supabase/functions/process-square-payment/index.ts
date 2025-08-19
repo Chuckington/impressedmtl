@@ -65,6 +65,23 @@ serve(async (req) => {
       environment: squareEnvironment,
     });
 
+    // Calculer les détails financiers pour la note de paiement Square
+    const subTotalForNote = (cartDetails || []).reduce((sum: number, item: CartItem) => {
+        const itemExtraCost = (item.personalizations || []).reduce((pSum, p) => pSum + p.spot_price, 0);
+        return sum + (item.quantity * (item.base_price + itemExtraCost));
+    }, 0);
+
+    const totalItemCountForNote = (cartDetails || []).reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+    let fixedFeeForNote = 0;
+    if (totalItemCountForNote === 1) fixedFeeForNote = 15;
+    else if (totalItemCountForNote >= 2 && totalItemCountForNote <= 9) fixedFeeForNote = 10;
+
+    const discountApplied = (cartDetails || []).length > 0 ? (subTotalForNote + fixedFeeForNote + (maquetteFee || 0)) - (amount / 100) : 0;
+
+    const paymentNoteParts = [];
+    if (maquetteFee > 0) paymentNoteParts.push(`Frais maquette: ${maquetteFee.toFixed(2)}$`);
+    if (discountApplied > 0.01) paymentNoteParts.push(`Rabais: -${discountApplied.toFixed(2)}$`);
+
     // 5. Créer le paiement avec l'API Square
     console.log("Tentative de création de paiement avec l'API Square...");
     const { result, statusCode } = await client.paymentsApi.createPayment({
@@ -75,7 +92,7 @@ serve(async (req) => {
         currency: currency,     // Ex: 'CAD'
       },
       locationId: locationId, // L'ID de votre localisation Square
-      note: maquetteFee > 0 ? `Inclut des frais de maquette de ${maquetteFee.toFixed(2)}$` : undefined,
+      note: paymentNoteParts.length > 0 ? paymentNoteParts.join(' | ') : undefined,
       // Optionnel: ajoutez des détails supplémentaires si nécessaire
       // note: `Commande pour ${cartDetails?.[0]?.product_name || 'un article'}`,
       // orderId: 'VOTRE_ID_COMMANDE_INTERNE_SI_APPLICABLE' // Si vous avez un système d'ID de commande
