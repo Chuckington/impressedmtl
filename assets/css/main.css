@@ -107,15 +107,19 @@ header {
 }
 .hero-image-section {
   width: 100%;
-  padding: 20px 10px; /* Espace vertical pour l'ombre et horizontal */
+  padding: 20px 10px; /* Espace pour l'ombre et les marges */
+}
+.hero-image-section a {
+  display: block; /* Important pour que le lien se comporte comme un conteneur */
+  border: 2px solid #000; /* La bordure est sur le conteneur */
+  border-radius: 12px; /* Arrondit les coins */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Ajoute une ombre portée */
+  overflow: hidden; /* Crucial pour que l'image respecte les coins arrondis */
 }
 .hero-image-section img {
   width: 100%;
   height: auto;
   display: block; /* Pour enlever l'espace sous l'image */
-  border: 2px solid #000; /* Ajoute une bordure noire sur tous les côtés */
-  border-radius: 12px; /* Arrondit les coins */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Ajoute une ombre portée */
 }
 .services-section-title {
   text-align: center;
