@@ -106,12 +106,18 @@
           };
           tableTarget = baseMap[nomKey];
         }
-        if (!tableTarget) return;
+        if (!tableTarget) return; // Ne rien afficher si le produit n'est pas mappé
+
+        const isSpecialOffer = nomKey === 't-shirt de base' || nomKey === 't-shirt premium - sport';
+
         const card = document.createElement('a');
         card.href = `produit.html?table=${tableTarget}`;
         card.className = 'card';
         card.innerHTML = `
-          <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div>
+          <div class="card-image">
+            <img src="${item.image_url}" alt="${item.nom}">
+            ${isSpecialOffer ? '<div class="offer-badge">Offre Spéciale</div>' : ''}
+          </div>
           <div class="card-content">
             <h3>${item.nom}</h3>
             <p><strong>Modèle:</strong> ${item.modèle || '—'}</p>

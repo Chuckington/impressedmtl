@@ -24,6 +24,7 @@
   </header>
 
   <div class="container">
+    <div id="offer-info-box" style="display:none; margin-bottom: 30px;"></div>
     <div id="custom-list" class="grid"><p>Chargement...</p></div>
     <div id="order-summary">
       <div class="summary-options-container"> <!-- anciennement .left -->
@@ -115,6 +116,7 @@
       const sizeSelect = document.getElementById('size-select');
       const genderSelect = document.getElementById('gender-select');
       const colorPreview = document.getElementById('color-preview');
+      const offerInfoBox = document.getElementById('offer-info-box');
       
       // Récupérer les conteneurs des groupes d'options
       const colorOptionGroup = document.getElementById('color-option-group');
@@ -129,6 +131,21 @@
       }
       titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
       subtitleEl.textContent = 'Choisissez vos options';
+
+      // Afficher l'encadré de l'offre spéciale
+      if (tableName === 'inventairetshirtdebase') {
+        offerInfoBox.style.display = 'block';
+        offerInfoBox.innerHTML = `
+          <h3>✨ Offre Spéciale ✨</h3>
+          <p>Commandez <strong>20 unités</strong> avec un "Gros design derrière" ET un "Petit design poitrine" (gauche ou droite) pour un prix fixe de <strong>300$</strong> ! Le rabais sera appliqué automatiquement dans le panier.</p>
+        `;
+      } else if (tableName === 'inventairetshirtpremium') {
+        offerInfoBox.style.display = 'block';
+        offerInfoBox.innerHTML = `
+          <h3>✨ Offre Spéciale ✨</h3>
+          <p>Commandez <strong>20 unités</strong> avec un "Gros design derrière" ET un "Petit design poitrine" (gauche ou droite) pour un prix fixe de <strong>420$</strong> ! Le rabais sera appliqué automatiquement dans le panier.</p>
+        `;
+      }
 
       // Construire la requête pour le prix de base depuis la table 'inventaire'
       let basePriceQuery = supa.from('inventaire').select('prix');

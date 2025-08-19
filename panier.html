@@ -42,6 +42,9 @@
         <p id="fixed-fee-message-cart" style="color: #337ab7; margin-bottom: 3px;"></p>
         <p>Frais de préparation: <span id="fixed-fee-amount-cart">0.00</span> $</p>
       </div>
+      <div id="discount-summary-cart" style="font-size: 0.9em; color: #28a745; margin-bottom: 10px; text-align: right; display: none;">
+        <p>Rabais Offre Spéciale: <span id="discount-amount-cart">0.00</span> $</p>
+      </div>
       Total général : <span id="grand-total">0.00</span> $
     </div>
     <a href="checkout.html" class="btn">Passer au paiement</a>
@@ -82,10 +85,48 @@
       const grandTotal = document.getElementById('grand-total');
       const fixedFeeAmountCartEl = document.getElementById('fixed-fee-amount-cart');
       const fixedFeeMessageCartEl = document.getElementById('fixed-fee-message-cart');
+      const discountSummaryEl = document.getElementById('discount-summary-cart');
+      const discountAmountEl = document.getElementById('discount-amount-cart');
 
       cartTable.innerHTML = '';
       let subTotalBeforeFixedFee = 0;
       let totalItemCount = 0;
+      let cartItems = [];
+
+      // Fonction pour calculer les rabais
+      function calculateSpecialOffers(items) {
+        let totalDiscount = 0;
+
+        items.forEach(item => {
+          const personalizations = (item.personalizations || []).map(p => p.spot_label.toLowerCase());
+          const hasGrosDerriere = personalizations.includes('gros design derrière');
+          const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('petit design poitrine droite');
+
+          // Offre 1: T-shirt de base
+          if (item.product_id === 'inventairetshirtdebase' && item.quantity >= 20 && hasGrosDerriere && hasPetitPoitrine) {
+            const numberOfBundles = Math.floor(item.quantity / 20);
+            let extraCostPerShirt = 0;
+            (item.personalizations || []).forEach(p => extraCostPerShirt += p.spot_price || 0);
+            const originalBundlePrice = 20 * (item.base_price + extraCostPerShirt);
+            const offerBundlePrice = 300;
+            const discountPerBundle = originalBundlePrice - offerBundlePrice;
+            totalDiscount += numberOfBundles * discountPerBundle;
+          }
+
+          // Offre 2: T-shirt premium
+          if (item.product_id === 'inventairetshirtpremium' && item.quantity >= 20 && hasGrosDerriere && hasPetitPoitrine) {
+            const numberOfBundles = Math.floor(item.quantity / 20);
+            let extraCostPerShirt = 0;
+            (item.personalizations || []).forEach(p => extraCostPerShirt += p.spot_price || 0);
+            const originalBundlePrice = 20 * (item.base_price + extraCostPerShirt);
+            const offerBundlePrice = 420;
+            const discountPerBundle = originalBundlePrice - offerBundlePrice;
+            totalDiscount += numberOfBundles * discountPerBundle;
+          }
+        });
+
+        return totalDiscount;
+      }
 
       if (user) {
         const { data, error } = await supa
@@ -99,7 +140,9 @@
           fixedFeeMessageCartEl.textContent = '';
           return;
         }
-        data.forEach(item => {
+        cartItems = data;
+
+        cartItems.forEach(item => {
           const row = document.createElement('tr');
           let extraCost = 0;
           const personalizationDetails = (item.personalizations || []).map(pObj => {
@@ -142,15 +185,15 @@
           cartTable.appendChild(row);
         });
       } else {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        if (cart.length === 0) {
+        cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cartItems.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
           grandTotal.textContent = '0.00';
           fixedFeeAmountCartEl.textContent = '0.00';
           fixedFeeMessageCartEl.textContent = '';
           return;
         }
-        cart.forEach((item, index) => {
+        cartItems.forEach((item, index) => {
           let extraCost = 0;
           const personalizationDetails = (item.personalizations || []).map(pObj => {
             extraCost += pObj.spot_price || 0;
@@ -195,6 +238,15 @@
         });
       }
 
+      // Calculer et afficher le rabais
+      const totalDiscount = calculateSpecialOffers(cartItems);
+      if (totalDiscount > 0) {
+        discountSummaryEl.style.display = 'block';
+        discountAmountEl.textContent = `-${totalDiscount.toFixed(2)}`;
+      } else {
+        discountSummaryEl.style.display = 'none';
+      }
+
       // Calcul des frais fixes dégressifs pour le panier
       let fixedFee = 0;
       if (totalItemCount === 0) { // Au cas où, bien que déjà géré par le return plus haut
@@ -210,7 +262,7 @@
         fixedFeeMessageCartEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
       }
       fixedFeeAmountCartEl.textContent = fixedFee.toFixed(2);
-      grandTotal.textContent = (subTotalBeforeFixedFee + fixedFee).toFixed(2);
+      grandTotal.textContent = (subTotalBeforeFixedFee - totalDiscount + fixedFee).toFixed(2);
     }
 
     document.addEventListener('click', async (e) => {

@@ -206,6 +206,16 @@ header {
 #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; }
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
+#offer-info-box {
+  background-color: #eef7ff;
+  border: 2px solid #90caf9;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+#offer-info-box h3 { margin-top: 0; margin-bottom: 10px; color: #1976d2; }
+#offer-info-box p { line-height: 1.5; color: #333; }
+
 #color-preview { display: inline-block; width: 24px; height: 24px; border: 1px solid #ccc; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
 
 /* --- Page Contact (contact.html) --- */
