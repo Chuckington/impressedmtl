@@ -24,8 +24,8 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId } = await req.json(); // Ajout de userId
-    console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey });
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteFee } = await req.json(); // Ajout de userId et maquetteFee
+    console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteFee });
 
     // **Validation Côté Serveur**
     // C'est une sécurité essentielle. Même si le client valide, il faut toujours vérifier côté serveur.
@@ -75,6 +75,7 @@ serve(async (req) => {
         currency: currency,     // Ex: 'CAD'
       },
       locationId: locationId, // L'ID de votre localisation Square
+      note: maquetteFee > 0 ? `Inclut des frais de maquette de ${maquetteFee.toFixed(2)}$` : undefined,
       // Optionnel: ajoutez des détails supplémentaires si nécessaire
       // note: `Commande pour ${cartDetails?.[0]?.product_name || 'un article'}`,
       // orderId: 'VOTRE_ID_COMMANDE_INTERNE_SI_APPLICABLE' // Si vous avez un système d'ID de commande
@@ -178,7 +179,7 @@ serve(async (req) => {
       
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
-        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount);
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteFee || 0, fixedFeeApplied);
         await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
         await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
       }
@@ -250,7 +251,7 @@ interface ShippingInfo {
 }
 
 // Fonction pour formater le reçu en HTML
-function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number): string {
+function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteFee: number, fixedFee: number): string {
   const itemsHtml = (cartItems || []).map(item => {
     const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
       let detail = `<li>${p.spot_label}: ${p.spot_price.toFixed(2)}$`;
@@ -279,6 +280,13 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     `;
   }).join('');
 
+  const subTotal = (cartItems || []).reduce((sum, item) => {
+    const itemExtraCost = (item.personalizations || []).reduce((pSum, p) => pSum + p.spot_price, 0);
+    return sum + (item.quantity * (item.base_price + itemExtraCost));
+  }, 0);
+
+  const discount = (cartItems || []).length > 0 ? (subTotal + fixedFee + maquetteFee) - (totalAmountInCents / 100) : 0;
+
   const totalAmount = (totalAmountInCents / 100).toFixed(2);
 
   return `
@@ -288,6 +296,10 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         <p>Voici le récapitulatif de votre commande <strong>#${orderNumber}</strong> :</p>
         <h3>Articles:</h3>
         ${itemsHtml}
+        <p>Sous-total: ${subTotal.toFixed(2)}$</p>
+        ${discount > 0.01 ? `<p style="color: #28a745;">Rabais Offre Spéciale: -${discount.toFixed(2)}$</p>` : ''}
+        ${fixedFee > 0 ? `<p>Frais de préparation: ${fixedFee.toFixed(2)}$</p>` : ''}
+        ${maquetteFee > 0 ? `<p>Frais de maquette: ${maquetteFee.toFixed(2)}$</p>` : ''}
         <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
         <h3>Adresse de livraison:</h3>
         <p>

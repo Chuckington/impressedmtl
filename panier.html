@@ -45,6 +45,13 @@
       <div id="discount-summary-cart" style="font-size: 0.9em; color: #28a745; margin-bottom: 10px; text-align: right; display: none;">
         <p>Rabais Offre Spéciale: <span id="discount-amount-cart">0.00</span> $</p>
       </div>
+      <div id="maquette-option-cart">
+        <label for="maquette-checkbox">
+          <input type="checkbox" id="maquette-checkbox">
+          <strong>Demander une maquette (+5.00$)</strong>
+        </label>
+        <p>Une maquette de vos morceaux vous sera envoyée par courriel avant de confirmer la commande. Permet de vous assurer du produit final.</p>
+      </div>
       Total général : <span id="grand-total">0.00</span> $
     </div>
     <a href="checkout.html" class="btn">Passer au paiement</a>
@@ -87,6 +94,7 @@
       const fixedFeeMessageCartEl = document.getElementById('fixed-fee-message-cart');
       const discountSummaryEl = document.getElementById('discount-summary-cart');
       const discountAmountEl = document.getElementById('discount-amount-cart');
+      const maquetteCheckbox = document.getElementById('maquette-checkbox');
 
       cartTable.innerHTML = '';
       let subTotalBeforeFixedFee = 0;
@@ -131,7 +139,7 @@
       if (user) {
         const { data, error } = await supa
           .from('cart_items')
-          .select('id, quantity, base_price, personalizations, product_name, selected_color_name, selected_size_name, selected_gender_name')
+          .select('id, quantity, base_price, personalizations, product_name, selected_color_name, selected_size_name, selected_gender_name, product_id')
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
@@ -262,11 +270,22 @@
         fixedFeeMessageCartEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
       }
       fixedFeeAmountCartEl.textContent = fixedFee.toFixed(2);
-      grandTotal.textContent = (subTotalBeforeFixedFee - totalDiscount + fixedFee).toFixed(2);
+
+      // Calcul des frais de maquette
+      maquetteCheckbox.checked = localStorage.getItem('maquetteRequested') === 'true';
+      const maquetteFee = maquetteCheckbox.checked ? 5 : 0;
+
+      grandTotal.textContent = (subTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee).toFixed(2);
     }
 
     document.addEventListener('click', async (e) => {
       if (e.target.classList.contains('remove-btn')) {
+        // Si on supprime le dernier article, on réinitialise la demande de maquette
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart.length <= 1) {
+          localStorage.setItem('maquetteRequested', 'false');
+        }
+
         const { data: { user } } = await supa.auth.getUser();
         if (user) {
           const itemId = e.target.getAttribute('data-id');
@@ -279,6 +298,11 @@
         }
         loadCart();
       }
+    });
+
+    document.getElementById('maquette-checkbox').addEventListener('change', (e) => {
+      localStorage.setItem('maquetteRequested', e.target.checked);
+      loadCart(); // Recalculer le total
     });
 
     loadCart();

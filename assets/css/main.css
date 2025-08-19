@@ -298,6 +298,28 @@ th { background:#f0f0f0; }
 .remove-btn { color: red; cursor: pointer; font-weight: bold; }
 .remove-btn:hover { text-decoration: underline; }
 
+/* Style pour l'option de maquette dans le panier */
+#maquette-option-cart {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: left;
+}
+#maquette-option-cart label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+#maquette-option-cart input[type="checkbox"] {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+}
+#maquette-option-cart p { padding-left: 28px; font-size: 0.85em; color: #555; margin-top: 5px; }
+
 /* --- Page Connexion (login.html) --- */
 .login-box { max-width: 400px; margin: 40px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .login-box h2 { text-align: center; font-size: 1.4rem; margin-bottom: 24px; color: #000; }

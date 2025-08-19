@@ -33,6 +33,9 @@
         <p id="fixed-fee-message" style="font-size: 0.85em; color: #337ab7; margin-bottom: 5px;"></p>
         <p>Frais de préparation: <span id="fixed-fee-amount">0.00</span> $</p>
       </div>
+      <div id="maquette-fee-summary" style="display: none; margin-top: 10px; padding-top:10px; border-top: 1px dashed #eee;">
+        <p>Frais de maquette: <span>5.00</span> $</p>
+      </div>
       <p><strong>Total à payer: <span id="total-amount">0.00</span> $</strong>
         <br><small style="font-weight:normal; color:#555;">(Taxes incluses)</small>
       </p>
@@ -209,6 +212,16 @@
         summaryItemsEl.appendChild(discountP);
       }
 
+      // Afficher les frais de maquette si demandés
+      const maquetteRequested = localStorage.getItem('maquetteRequested') === 'true';
+      const maquetteFee = maquetteRequested ? 5 : 0;
+      const maquetteFeeSummaryEl = document.getElementById('maquette-fee-summary');
+      if (maquetteRequested) {
+        maquetteFeeSummaryEl.style.display = 'block';
+      } else {
+        maquetteFeeSummaryEl.style.display = 'none';
+      }
+
       // Calcul des frais fixes dégressifs
       let fixedFee = 0;
       if (totalItemCount === 1) {
@@ -223,7 +236,7 @@
       }
 
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
-      currentTotalForPayment = subTotalBeforeFixedFee - totalDiscount + fixedFee; // Appliquer le rabais ici
+      currentTotalForPayment = subTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee; // Appliquer le rabais et les frais de maquette
       totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
     }
 
@@ -272,6 +285,7 @@
                 amount: Math.round(currentTotalForPayment * 100), // Montant en centimes
                 userId: user ? user.id : null, // Envoyer l'ID utilisateur s'il est connecté
                 currency: 'CAD',
+                maquetteFee: localStorage.getItem('maquetteRequested') === 'true' ? 5 : 0, // Envoyer les frais de maquette
                 locationId: SQUARE_LOCATION_ID,
                 idempotencyKey: crypto.randomUUID(), // Pour éviter les doubles paiements
                 cartDetails: currentCartForPayment, // Détails du panier
@@ -294,6 +308,7 @@
                    await supa.from('cart_items').delete().eq('user_id', user.id);
                } else {
                    localStorage.removeItem('cart');
+                   localStorage.removeItem('maquetteRequested'); // Nettoyer aussi cette option
                }
                // Rediriger vers une page de confirmation
                setTimeout(() => window.location.href = `confirmation.html?orderNumber=${paymentResponse.orderNumber}`, 2000);
