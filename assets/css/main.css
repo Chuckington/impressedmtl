@@ -105,19 +105,13 @@ header {
   background-color: #444;
   transform: translateY(-2px);
 }
-.video-section {
+.hero-image-section {
   width: 100%;
-  background-color: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
-.video-section video {
+.hero-image-section img {
   width: 100%;
   height: auto;
-  max-height: 75vh;
-  aspect-ratio: 4 / 3;
-  object-fit: contain;
+  display: block; /* Pour enlever l'espace sous l'image */
 }
 .services-section-title {
   text-align: center;
