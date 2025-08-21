@@ -8,6 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <!-- Lien vers la feuille de style externe -->
   <link rel="stylesheet" href="assets/css/main.css">
+  <!-- Script Trustpilot (à placer dans le <head>) -->
+  <script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script>
   <!-- === FAVICON === -->
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -91,6 +93,15 @@
         <span>À propos + FAQ</span>
       </a>
     </div>
+  </div>
+
+  <div class="reviews-section">
+    <h2 class="section-title">Ce que nos clients disent de nous</h2>
+    <!-- TrustBox widget - Review Collector -->
+    <div class="trustpilot-widget" data-locale="fr-FR" data-template-id="56278e9abfbbba0bdcd568bc" data-businessunit-id="68a5ed9ae9dab32fe8f21dd8" data-style-height="52px" data-style-width="100%" data-token="2a60ef26-8dad-4ede-9f6f-a477490110b0">
+      <a href="https://fr.trustpilot.com/review/impressedmtl.com" target="_blank" rel="noopener">Trustpilot</a>
+    </div>
+    <!-- End TrustBox widget -->
   </div>
 
   <footer>

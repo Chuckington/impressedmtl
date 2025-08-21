@@ -126,6 +126,13 @@ header {
   margin: 50px 20px 30px;
   color: #333;
 }
+/* Titre générique pour les sections */
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin: 50px 20px 40px;
+  color: #333;
+}
 .main-content-wrapper {
   display: flex;
   flex-direction: row;
@@ -168,6 +175,14 @@ header {
 }
 .right-column .clickable-section:last-child { margin-bottom: 0; }
 .right-column .clickable-section { min-height: calc(50% - 5px); }
+
+/* --- Section Avis Clients --- */
+.reviews-section {
+  text-align: center;
+  margin: 0 auto 50px;
+  padding: 0 15px; /* Un peu d'espace sur les côtés */
+  max-width: 1100px; /* Limite la largeur du widget sur les grands écrans */
+}
 
 /* --- Page Inventaire (inventaire.html) & Produit (produit.html) --- */
 .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; }
@@ -449,6 +464,9 @@ footer a.social-link svg {
   .hero-image-section {
     /* Réduire l'espacement sur les petits écrans pour une meilleure lisibilité */
     padding: 20px 15px;
+  }
+  .section-title {
+    font-size: 2rem;
   }
 
   .services-section-title { font-size: 2rem; margin-top: 30px; }
