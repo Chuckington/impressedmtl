@@ -237,7 +237,7 @@ header {
 .upload-section input[type="file"] { font-size: 0.9rem; }
 .upload-section .preview-wrapper { margin-top: 10px; padding: 5px; border: 1px solid #f0f0f0; border-radius: 4px; background-color: #fdfdfd; display: inline-block; }
 .upload-section .preview-wrapper img { max-width: 200px; max-height: 200px; border: 1px solid #eee; display: block; }
-#order-summary { position: sticky; bottom:0; background:#fff; padding:20px; box-shadow:0 -2px 6px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 20px; }
+#order-summary { position: sticky; bottom:0; background:#fff; padding:25px 30px; box-shadow:0 -2px 8px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 20px; }
 .summary-options-container { display:flex; align-items:center; gap:16px; flex-wrap: wrap; flex-grow: 1; min-width: 200px; }
 #order-summary .option-group { display:flex; align-items:center; gap: 8px; flex-shrink: 0; }
 #order-summary label { font-size: 0.9rem; color: #333; }
@@ -245,6 +245,28 @@ header {
 #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; }
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
+/* Styles pour la sélection de tailles multiples */
+#size-option-group {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.size-inputs-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 5px;
+}
+.size-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.size-input-group label { font-size: 0.85rem; font-weight: 500; }
+.size-quantity-input { width: 60px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+#size-validation-message { margin-top: 10px; font-weight: bold; width: 100%; text-align: left; font-size: 0.9em; }
+
 #offer-info-box {
   background-color: #eef7ff;
   border: 2px solid #90caf9;

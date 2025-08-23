@@ -46,8 +46,11 @@
         </div>
 
         <div class="option-group" id="size-option-group"> <!-- style="display:none;" supprimé -->
-          <label for="size-select">Taille:</label>
-          <select id="size-select"><option value="">Choisir...</option></select>
+          <label>Tailles :</label>
+          <div id="size-inputs-container" class="size-inputs-wrapper">
+            <!-- Les inputs pour chaque taille seront générés ici -->
+          </div>
+          <div id="size-validation-message"></div>
         </div>
 
         <div class="option-group" id="gender-option-group"> <!-- style="display:none;" supprimé -->
@@ -129,10 +132,12 @@
       const qtyInput = document.getElementById('quantity');
       const totalEl = document.getElementById('total-price');
       const colorSelect = document.getElementById('color-select');
-      const sizeSelect = document.getElementById('size-select');
       const genderSelect = document.getElementById('gender-select');
       const colorPreview = document.getElementById('color-preview');
       const offerInfoBox = document.getElementById('offer-info-box');
+      const offerPopupOverlay = document.getElementById('offer-popup-overlay');
+      const closeOfferPopupBtn = document.getElementById('close-offer-popup-btn');
+      let hasShownOfferPopup = false; // Pour ne montrer le popup qu'une fois par session
       
       // Récupérer les conteneurs des groupes d'options
       const colorOptionGroup = document.getElementById('color-option-group');
@@ -236,22 +241,45 @@
       }
 
       // Charger et peupler les options de taille
+      const sizeInputsContainer = document.getElementById('size-inputs-container');
+      const sizeValidationMessage = document.getElementById('size-validation-message');
+
       const { data: availableSizesData, error: sizesError } = await supa
         .from('product_available_sizes')
         .select(`sizes (id, name)`)
-        .eq('product_table_ref', tableName);
+        .eq('product_table_ref', tableName)
+        .order('id', { referencedTable: 'sizes', ascending: true }); // Ordonner les tailles
 
       if (!sizesError && availableSizesData && availableSizesData.length > 0) {
-        // Le groupe est visible par défaut
         availableSizesData.forEach(item => {
           const size = item.sizes;
           if (size) {
-            const option = document.createElement('option');
-            option.value = size.id;
-            option.textContent = size.name;
-            sizeSelect.appendChild(option);
+            const sizeInputGroup = document.createElement('div');
+            sizeInputGroup.className = 'size-input-group';
+            
+            const label = document.createElement('label');
+            label.htmlFor = `size-qty-${size.id}`;
+            label.textContent = size.name;
+            
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.id = `size-qty-${size.id}`;
+            input.className = 'size-quantity-input';
+            input.min = 0;
+            input.value = 0;
+            input.dataset.sizeId = size.id;
+            input.dataset.sizeName = size.name;
+
+            sizeInputGroup.appendChild(label);
+            sizeInputGroup.appendChild(input);
+            sizeInputsContainer.appendChild(sizeInputGroup);
           }
         });
+
+        // Ajouter les écouteurs pour la validation
+        qtyInput.addEventListener('input', validateSizeQuantities);
+        sizeInputsContainer.addEventListener('input', validateSizeQuantities);
+        validateSizeQuantities(); // Vérification initiale
       } else {
         sizeOptionGroup.style.display = 'none'; // Cacher si pas d'options
       }
@@ -561,10 +589,6 @@
             const selectedColor = selectedColorOption && selectedColorOption.value ? 
                                   { id: selectedColorOption.value, name: selectedColorOption.textContent, hex: selectedColorOption.dataset.hex } : null;
 
-            const selectedSizeOption = sizeSelect.selectedOptions[0];
-            const selectedSize = selectedSizeOption && selectedSizeOption.value ?
-                                 { id: selectedSizeOption.value, name: selectedSizeOption.textContent } : null;
-
             const selectedGenderOption = genderSelect.selectedOptions[0];
             const selectedGender = selectedGenderOption && selectedGenderOption.value ?
                                    { id: selectedGenderOption.value, name: selectedGenderOption.textContent } : null;
@@ -577,42 +601,61 @@
             console.log('Quantité:', qty);
             console.log('Prix de base effectif:', effectiveBasePrice);
             console.log('Sélections (personnalisations):', JSON.stringify(personalizationsData, null, 2));
-            console.log('Couleur:', selectedColor, 'Taille:', selectedSize, 'Sexe:', selectedGender);
+            console.log('Couleur:', selectedColor, 'Sexe:', selectedGender);
+
+            // Nouvelle logique pour les tailles multiples
+            const sizeInputs = document.querySelectorAll('.size-quantity-input');
+            const cartItemsToAdd = [];
+            let totalSizeQty = 0;
+
+            sizeInputs.forEach(input => {
+                const sizeQty = parseInt(input.value) || 0;
+                totalSizeQty += sizeQty;
+                if (sizeQty > 0) {
+                    cartItemsToAdd.push({
+                        product_id: tableName, 
+                        product_name: displayName, 
+                        quantity: sizeQty, // Quantité pour cette taille spécifique
+                        personalizations: personalizationsData, 
+                        base_price: effectiveBasePrice, 
+                        selected_color_name: selectedColor ? selectedColor.name : null,
+                        selected_size_name: input.dataset.sizeName, // Taille pour cet article
+                        selected_gender_name: selectedGender ? selectedGender.name : null
+                    });
+                }
+            });
+
+            // Validation avant l'ajout
+            if (qty > 0 && totalSizeQty !== qty) {
+                alert('La somme des quantités par taille ne correspond pas à la quantité totale demandée.');
+                return;
+            }
+            if (qty > 0 && cartItemsToAdd.length === 0) {
+                alert('Veuillez spécifier les quantités pour au moins une taille.');
+                return;
+            }
+            if (qty === 0) {
+                alert('Veuillez choisir une quantité supérieure à 0.');
+                return;
+            }
 
             if (user) {
-              const { data: insertData, error: insertError } = await supa.from('cart_items').insert({
-                user_id: user.id,
-                product_id: tableName, 
-                product_name: displayName, 
-                quantity: qty,
-                personalizations: personalizationsData, 
-                base_price: effectiveBasePrice, 
-                selected_color_name: selectedColor ? selectedColor.name : null,
-                selected_size_name: selectedSize ? selectedSize.name : null,
-                selected_gender_name: selectedGender ? selectedGender.name : null
-              });
+              // Insérer plusieurs articles si nécessaire
+              const { data: insertData, error: insertError } = await supa.from('cart_items').insert(cartItemsToAdd);
 
               if (insertError) {
                 console.error("Erreur lors de l'ajout au panier (Supabase):", insertError);
                 alert(`Erreur lors de l'ajout au panier: ${insertError.message}. Détails en console.`);
                 return; 
               }
-              alert('Article ajouté au panier !');
+              alert('Article(s) ajouté(s) au panier !');
               window.location.href = 'panier.html';
             } else {
+              // Pour les utilisateurs non connectés, ajouter les articles au localStorage
               const cart = JSON.parse(localStorage.getItem('cart')) || [];
-              cart.push({
-                product_id: tableName, 
-                product_name: displayName, 
-                quantity: qty,
-                personalizations: personalizationsData, 
-                base_price: effectiveBasePrice, 
-                selected_color_name: selectedColor ? selectedColor.name : null,
-                selected_size_name: selectedSize ? selectedSize.name : null,
-                selected_gender_name: selectedGender ? selectedGender.name : null
-              });
+              cart.push(...cartItemsToAdd); // L'opérateur "spread" ajoute tous les éléments de cartItemsToAdd
               localStorage.setItem('cart', JSON.stringify(cart));
-              alert('Article ajouté au panier (non connecté) !');
+              alert('Article(s) ajouté(s) au panier (non connecté) !');
               window.location.href = 'panier.html';
             }
         } catch (error) {
