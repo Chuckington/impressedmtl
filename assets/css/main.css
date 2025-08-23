@@ -252,11 +252,10 @@ header {
   gap: 10px;
 }
 .size-inputs-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(3, auto); /* Crée une grille de 3 colonnes */
+  gap: 10px 15px; /* Espace vertical et horizontal */
   margin-top: 5px;
-  max-width: 250px; /* Force le retour à la ligne pour garder la barre de commande sur une seule ligne */
 }
 .size-input-group {
   display: flex;
