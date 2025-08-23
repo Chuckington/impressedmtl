@@ -251,16 +251,24 @@
         .order('id', { referencedTable: 'sizes', ascending: true }); // Ordonner les tailles
 
       if (!sizesError && availableSizesData && availableSizesData.length > 0) {
+        // Create containers for the two rows
+        const sizeRow1 = document.createElement('div');
+        sizeRow1.className = 'size-row';
+        const sizeRow2 = document.createElement('div');
+        sizeRow2.className = 'size-row';
+
+        const topRowSizes = ['XS', 'S', 'M', 'L'];
+
         availableSizesData.forEach(item => {
           const size = item.sizes;
           if (size) {
             const sizeInputGroup = document.createElement('div');
             sizeInputGroup.className = 'size-input-group';
-            
+
             const label = document.createElement('label');
             label.htmlFor = `size-qty-${size.id}`;
             label.textContent = size.name;
-            
+
             const input = document.createElement('input');
             input.type = 'number';
             input.id = `size-qty-${size.id}`;
@@ -272,9 +280,21 @@
 
             sizeInputGroup.appendChild(label);
             sizeInputGroup.appendChild(input);
-            sizeInputsContainer.appendChild(sizeInputGroup);
+
+            // Append to the correct row
+            if (topRowSizes.includes(size.name.toUpperCase())) {
+                sizeRow1.appendChild(sizeInputGroup);
+            } else {
+                sizeRow2.appendChild(sizeInputGroup);
+            }
           }
         });
+
+        // Add rows to the main container
+        sizeInputsContainer.appendChild(sizeRow1);
+        if (sizeRow2.hasChildNodes()) { // Only add the second row if it has content
+            sizeInputsContainer.appendChild(sizeRow2);
+        }
 
         // Ajouter les écouteurs pour la validation
         qtyInput.addEventListener('input', validateSizeQuantities);

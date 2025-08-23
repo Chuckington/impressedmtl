@@ -252,10 +252,16 @@ header {
   gap: 10px;
 }
 .size-inputs-wrapper {
-  display: grid;
-  grid-template-columns: repeat(3, auto); /* Crée une grille de 3 colonnes */
-  gap: 10px 15px; /* Espace vertical et horizontal */
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Espace vertical entre les rangées */
   margin-top: 5px;
+}
+.size-row {
+    display: flex;
+    justify-content: center; /* Centre les tailles dans chaque rangée */
+    flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire sur mobile */
+    gap: 15px; /* Espace horizontal entre les tailles */
 }
 .size-input-group {
   display: flex;
