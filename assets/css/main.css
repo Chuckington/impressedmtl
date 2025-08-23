@@ -239,9 +239,14 @@ header {
 .upload-section .preview-wrapper img { max-width: 200px; max-height: 200px; border: 1px solid #eee; display: block; }
 #order-summary { position: sticky; bottom:0; background:#fff; padding:25px 30px; box-shadow:0 -2px 8px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 20px; }
 .summary-options-container { display:flex; align-items:center; gap:16px; flex-wrap: wrap; flex-grow: 1; min-width: 200px; }
-#order-summary .option-group { display:flex; align-items:center; gap: 8px; flex-shrink: 0; }
+#order-summary .option-group {
+  display: flex;
+  flex-direction: column; /* Met le label au-dessus de l'input */
+  align-items: flex-start; /* Aligne les éléments à gauche */
+  gap: 4px; /* Espace entre le label et l'input */
+}
 #order-summary label { font-size: 0.9rem; color: #333; }
-#quantity { width:60px; margin-left:10px; padding:5px; border:1px solid #ccc; border-radius:4px; }
+#quantity { width:60px; padding:5px; border:1px solid #ccc; border-radius:4px; }
 #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; }
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
@@ -252,16 +257,10 @@ header {
   gap: 10px;
 }
 .size-inputs-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Espace vertical entre les rangées */
+  display: grid;
+  grid-template-columns: repeat(4, auto); /* Crée une grille de 4 colonnes */
+  gap: 10px 15px; /* Espace vertical et horizontal */
   margin-top: 5px;
-}
-.size-row {
-    display: flex;
-    justify-content: center; /* Centre les tailles dans chaque rangée */
-    flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire sur mobile */
-    gap: 15px; /* Espace horizontal entre les tailles */
 }
 .size-input-group {
   display: flex;
