@@ -109,37 +109,60 @@
 
       // Fonction pour calculer les rabais
       function calculateSpecialOffers(items) {
-        let totalDiscount = 0;
+          let totalDiscount = 0;
 
-        items.forEach(item => {
-          const personalizations = (item.personalizations || []).map(p => p.spot_label.toLowerCase());
-          const hasGrosDerriere = personalizations.includes('gros design derrière');
-          const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('petit design poitrine droite');
+          // --- Helper function to check personalizations ---
+          const checkPersonalizations = (item) => {
+              const personalizations = (item.personalizations || []).map(p => p.spot_label.toLowerCase());
+              const hasGrosDerriere = personalizations.includes('gros design derrière');
+              const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('petit design poitrine droite');
+              return hasGrosDerriere && hasPetitPoitrine;
+          };
 
-          // Offre 1: T-shirt de base
-          if (item.product_id === 'inventairetshirtdebase' && item.quantity >= 20 && hasGrosDerriere && hasPetitPoitrine) {
-            const numberOfBundles = Math.floor(item.quantity / 20);
-            let extraCostPerShirt = 0;
-            (item.personalizations || []).forEach(p => extraCostPerShirt += p.spot_price || 0);
-            const originalBundlePrice = 20 * (item.base_price + extraCostPerShirt);
-            const offerBundlePrice = 300;
-            const discountPerBundle = originalBundlePrice - offerBundlePrice;
-            totalDiscount += numberOfBundles * discountPerBundle;
+          // --- Group eligible items ---
+          const baseOfferItems = items.filter(item => item.product_id === 'inventairetshirtdebase' && checkPersonalizations(item));
+          const premiumOfferItems = items.filter(item => item.product_id === 'inventairetshirtpremium' && checkPersonalizations(item));
+
+          // --- Process Base T-Shirt Offer ---
+          const baseTotalQty = baseOfferItems.reduce((sum, item) => sum + item.quantity, 0);
+          const baseBundles = Math.floor(baseTotalQty / 20);
+
+          if (baseBundles > 0) {
+              let originalPrice = 0;
+              let shirtsToAccountFor = baseBundles * 20;
+
+              for (const item of baseOfferItems) {
+                  if (shirtsToAccountFor <= 0) break;
+                  const itemExtraCost = (item.personalizations || []).reduce((sum, p) => sum + p.spot_price, 0);
+                  const itemPrice = item.base_price + itemExtraCost;
+                  const qtyToConsider = Math.min(shirtsToAccountFor, item.quantity);
+                  originalPrice += qtyToConsider * itemPrice;
+                  shirtsToAccountFor -= qtyToConsider;
+              }
+              const offerPrice = baseBundles * 300;
+              totalDiscount += (originalPrice - offerPrice);
           }
 
-          // Offre 2: T-shirt premium
-          if (item.product_id === 'inventairetshirtpremium' && item.quantity >= 20 && hasGrosDerriere && hasPetitPoitrine) {
-            const numberOfBundles = Math.floor(item.quantity / 20);
-            let extraCostPerShirt = 0;
-            (item.personalizations || []).forEach(p => extraCostPerShirt += p.spot_price || 0);
-            const originalBundlePrice = 20 * (item.base_price + extraCostPerShirt);
-            const offerBundlePrice = 420;
-            const discountPerBundle = originalBundlePrice - offerBundlePrice;
-            totalDiscount += numberOfBundles * discountPerBundle;
-          }
-        });
+          // --- Process Premium T-Shirt Offer ---
+          const premiumTotalQty = premiumOfferItems.reduce((sum, item) => sum + item.quantity, 0);
+          const premiumBundles = Math.floor(premiumTotalQty / 20);
 
-        return totalDiscount;
+          if (premiumBundles > 0) {
+              let originalPrice = 0;
+              let shirtsToAccountFor = premiumBundles * 20;
+              for (const item of premiumOfferItems) {
+                  if (shirtsToAccountFor <= 0) break;
+                  const itemExtraCost = (item.personalizations || []).reduce((sum, p) => sum + p.spot_price, 0);
+                  const itemPrice = item.base_price + itemExtraCost;
+                  const qtyToConsider = Math.min(shirtsToAccountFor, item.quantity);
+                  originalPrice += qtyToConsider * itemPrice;
+                  shirtsToAccountFor -= qtyToConsider;
+              }
+              const offerPrice = premiumBundles * 420;
+              totalDiscount += (originalPrice - offerPrice);
+          }
+
+          return totalDiscount;
       }
 
       if (user) {
