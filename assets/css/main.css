@@ -242,7 +242,7 @@ header {
 #order-summary .option-group {
   display: flex;
   flex-direction: column; /* Met le label au-dessus de l'input */
-  align-items: flex-start; /* Aligne les éléments à gauche */
+  align-items: center; /* Aligne les éléments au centre */
   gap: 4px; /* Espace entre le label et l'input */
 }
 #order-summary label { font-size: 0.9rem; color: #333; }
@@ -250,6 +250,18 @@ header {
 #order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; }
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
+/* Wrapper pour le sélecteur de couleur et son aperçu */
+.color-input-wrapper {
+  display: flex;
+}
+#color-preview {
+  display: block;
+  width: 35px; /* Largeur du carré de couleur */
+  align-self: stretch; /* S'étire pour avoir la même hauteur que le select */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-left: 5px;
+}
 /* Styles pour la sélection de tailles multiples */
 #size-option-group {
   flex-direction: column;
@@ -306,8 +318,6 @@ header {
 }
 .popup-content h2 { margin-top: 0; color: #000; font-size: 1.8rem; }
 #close-offer-popup-btn { margin-top: 20px; }
-
-#color-preview { display: inline-block; width: 24px; height: 24px; border: 1px solid #ccc; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
 
 /* --- Page Contact (contact.html) --- */
 .form-wrapper { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 40px; }
