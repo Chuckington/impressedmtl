@@ -549,6 +549,68 @@
       });
       updateTotal();
 
+      // Fonction pour vérifier si la somme des tailles correspond à la quantité totale
+      function validateSizeQuantities() {
+        const masterQty = parseInt(qtyInput.value) || 0;
+        const sizeInputs = document.querySelectorAll('.size-quantity-input');
+        let totalSizeQty = 0;
+        sizeInputs.forEach(input => {
+          totalSizeQty += parseInt(input.value) || 0;
+        });
+
+        if (totalSizeQty < masterQty) {
+          sizeValidationMessage.textContent = `Il manque ${masterQty - totalSizeQty} article(s) à répartir.`;
+          sizeValidationMessage.style.color = 'orange';
+        } else if (totalSizeQty > masterQty) {
+          sizeValidationMessage.textContent = `Vous avez réparti ${totalSizeQty - masterQty} article(s) en trop.`;
+          sizeValidationMessage.style.color = 'red';
+        } else { // totalSizeQty === masterQty
+          sizeValidationMessage.textContent = 'Nombre de morceaux de la quantité demandée est atteint.';
+          sizeValidationMessage.style.color = 'green';
+        }
+      }
+
+      // Fonction pour vérifier les conditions de l'offre et afficher le pop-up
+      function checkOfferConditionsAndShowPopup() {
+        if (hasShownOfferPopup) return;
+
+        const qty = parseInt(qtyInput.value) || 1;
+        const isEligibleProduct = tableName === 'inventairetshirtdebase' || tableName === 'inventairetshirtpremium';
+        
+        if (!isEligibleProduct) {
+          return;
+        }
+
+        // Safely find the personalization items
+        const grosDesignItem = data.find(item => item.personnalisation?.toLowerCase().includes('gros design'));
+        const petitDesignItem = data.find(item => item.personnalisation?.toLowerCase().includes('petit design poitrine'));
+
+        // If the required personalization options don't exist for this product, exit.
+        if (!grosDesignItem || !petitDesignItem) {
+            return;
+        }
+
+        const hasGrosDerriere = document.getElementById(`opt-${grosDesignItem.id}-back`)?.checked;
+        const hasPetitPoitrineGauche = document.getElementById(`opt-${petitDesignItem.id}-left`)?.checked;
+        const hasPetitPoitrineDroite = document.getElementById(`opt-${petitDesignItem.id}-right`)?.checked;
+        
+        const hasPetitPoitrine = hasPetitPoitrineGauche || hasPetitPoitrineDroite;
+
+        if (qty >= 20 && hasGrosDerriere && hasPetitPoitrine) {
+          offerPopupOverlay.style.display = 'flex';
+          hasShownOfferPopup = true;
+        }
+      }
+
+      // Écouteurs pour le pop-up
+      closeOfferPopupBtn.addEventListener('click', () => {
+        offerPopupOverlay.style.display = 'none';
+      });
+
+      // Appeler la vérification des conditions après chaque changement pertinent
+      qtyInput.addEventListener('input', checkOfferConditionsAndShowPopup);
+      container.addEventListener('change', checkOfferConditionsAndShowPopup); // Pour les checkboxes
+
       // Ajouter au panier
       document.getElementById('add-to-cart').addEventListener('click', async () => {
         try {
