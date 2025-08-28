@@ -265,9 +265,9 @@ header {
 }
 #order-summary .option-group {
   display: flex;
-  flex-direction: column; /* Met le label au-dessus de l'input */
-  align-items: center; /* Aligne les éléments au centre */
-  gap: 4px; /* Espace entre le label et l'input */
+  flex-direction: row; /* Met le label à côté de l'input */
+  align-items: center; /* Aligne verticalement le label et l'input */
+  gap: 8px; /* Espace entre le label et l'input */
 }
 #order-summary label { font-size: 0.9rem; color: #333; }
 #quantity { width:60px; padding:5px; border:1px solid #ccc; border-radius:4px; }
@@ -288,9 +288,14 @@ header {
 }
 /* Styles pour la sélection de tailles multiples */
 #size-option-group {
-  flex-direction: column;
-  align-items: center; /* Centre le titre "Tailles :" */
+  /* Ce groupe est spécial, il aligne le label avec le haut des inputs */
+  align-items: flex-start;
   gap: 10px;
+}
+.size-inputs-column {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Espace entre les inputs et le message de validation */
 }
 .size-inputs-wrapper {
   display: flex; /* Met les tailles sur une seule ligne */
