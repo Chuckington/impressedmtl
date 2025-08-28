@@ -241,16 +241,28 @@ header {
   position: sticky;
   bottom: 0;
   background: #fff;
-  padding: 25px 30px;
+  padding: 20px 30px;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
   display: flex;
-  justify-content: center; /* Centre l'ensemble des options */
-  align-items: flex-end; /* Aligne les groupes d'options par le bas, car "Tailles" est plus haut */
+  flex-direction: column; /* Organise les rangées verticalement */
   margin-top: 40px;
-  flex-wrap: wrap;
-  gap: 25px; /* Espace uniforme entre tous les blocs */
+  gap: 20px; /* Espace entre la rangée du haut et celle du bas */
 }
-.summary-options-container { display:flex; align-items:flex-end; gap:25px; flex-wrap: wrap; min-width: 200px; }
+.order-summary-top-row {
+  display: flex;
+  justify-content: center; /* Centre tous les éléments de la rangée du haut */
+  align-items: flex-end; /* Aligne les éléments par le bas */
+  width: 100%;
+  gap: 25px; /* Espace uniforme entre les groupes d'options */
+  flex-wrap: wrap; /* Permet le retour à la ligne sur les petits écrans si nécessaire */
+}
+.order-summary-bottom-row {
+  display: flex;
+  justify-content: center; /* Centre la section des tailles */
+  width: 100%;
+  border-top: 1px solid #eee; /* Ajoute une ligne de séparation fine */
+  padding-top: 20px; /* Espace au-dessus de la section des tailles */
+}
 #order-summary .option-group {
   display: flex;
   flex-direction: column; /* Met le label au-dessus de l'input */
@@ -259,7 +271,7 @@ header {
 }
 #order-summary label { font-size: 0.9rem; color: #333; }
 #quantity { width:60px; padding:5px; border:1px solid #ccc; border-radius:4px; }
-#order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; height: 30px; }
+#order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; }
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
 /* Wrapper pour le sélecteur de couleur et son aperçu */
