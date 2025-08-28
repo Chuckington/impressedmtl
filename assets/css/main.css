@@ -237,8 +237,20 @@ header {
 .upload-section input[type="file"] { font-size: 0.9rem; }
 .upload-section .preview-wrapper { margin-top: 10px; padding: 5px; border: 1px solid #f0f0f0; border-radius: 4px; background-color: #fdfdfd; display: inline-block; }
 .upload-section .preview-wrapper img { max-width: 200px; max-height: 200px; border: 1px solid #eee; display: block; }
-#order-summary { position: sticky; bottom:0; background:#fff; padding:25px 30px; box-shadow:0 -2px 8px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; margin-top:40px; flex-wrap: wrap; gap: 20px; }
-.summary-options-container { display:flex; align-items:center; gap:16px; flex-wrap: wrap; flex-grow: 1; min-width: 200px; }
+#order-summary {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 25px 30px;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: center; /* Centre l'ensemble des options */
+  align-items: flex-end; /* Aligne les groupes d'options par le bas, car "Tailles" est plus haut */
+  margin-top: 40px;
+  flex-wrap: wrap;
+  gap: 25px; /* Espace uniforme entre tous les blocs */
+}
+.summary-options-container { display:flex; align-items:flex-end; gap:25px; flex-wrap: wrap; min-width: 200px; }
 #order-summary .option-group {
   display: flex;
   flex-direction: column; /* Met le label au-dessus de l'input */
