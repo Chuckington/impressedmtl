@@ -259,7 +259,7 @@ header {
 }
 #order-summary label { font-size: 0.9rem; color: #333; }
 #quantity { width:60px; padding:5px; border:1px solid #ccc; border-radius:4px; }
-#order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; }
+#order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; height: 30px; }
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
 /* Wrapper pour le sélecteur de couleur et son aperçu */
@@ -277,13 +277,13 @@ header {
 /* Styles pour la sélection de tailles multiples */
 #size-option-group {
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center; /* Centre le titre "Tailles :" */
   gap: 10px;
 }
 .size-inputs-wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, auto); /* Crée une grille de 4 colonnes */
-  gap: 10px 15px; /* Espace vertical et horizontal */
+  display: flex; /* Met les tailles sur une seule ligne */
+  flex-wrap: wrap; /* Permet le retour à la ligne sur les petits écrans */
+  gap: 15px; /* Espace entre chaque taille */
   margin-top: 5px;
 }
 .size-input-group {

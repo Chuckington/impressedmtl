@@ -33,36 +33,37 @@
     <div id="offer-info-box" style="display:none; margin-bottom: 30px;"></div>
     <div id="custom-list" class="grid"><p>Chargement...</p></div>
     <div id="order-summary">
-      <div class="summary-options-container"> <!-- anciennement .left -->
-        <div class="option-group">
-          <label for="quantity">Quantité:</label>
-          <input type="number" id="quantity" value="1" min="1">
-        </div>
+      <div class="order-summary-top-row">
+        <div class="summary-options-container">
+          <div class="option-group">
+            <label for="quantity">Quantité:</label>
+            <input type="number" id="quantity" value="1" min="1">
+          </div>
 
-        <div class="option-group" id="color-option-group"> <!-- style="display:none;" supprimé -->
-          <label for="color-select">Couleur:</label>
-          <div class="color-input-wrapper">
-            <select id="color-select"><option value="">Choisir...</option></select>
-            <span id="color-preview"></span>
+          <div class="option-group" id="color-option-group">
+            <label for="color-select">Couleur:</label>
+            <div class="color-input-wrapper">
+              <select id="color-select"><option value="">Choisir...</option></select>
+              <span id="color-preview"></span>
+            </div>
+          </div>
+
+          <div class="option-group" id="gender-option-group">
+            <label for="gender-select">Sexe:</label>
+            <select id="gender-select"><option value="">Choisir...</option></select>
           </div>
         </div>
-
-        <div class="option-group" id="size-option-group"> <!-- style="display:none;" supprimé -->
-          <label>Tailles :</label>
-          <div id="size-inputs-container" class="size-inputs-wrapper">
-            <!-- Les inputs pour chaque taille seront générés ici -->
-          </div>
-          <div id="size-validation-message"></div>
-        </div>
-
-        <div class="option-group" id="gender-option-group"> <!-- style="display:none;" supprimé -->
-          <label for="gender-select">Sexe:</label>
-          <select id="gender-select"><option value="">Choisir...</option></select>
+        <div class="summary-actions-container">
+          <div class="total-price-display">Total: <span id="total-price">0.00</span> $</div>
+          <button id="add-to-cart" class="btn">Ajouter au panier</button>
         </div>
       </div>
-      <div class="summary-actions-container">
-        <div class="total-price-display">Total: <span id="total-price">0.00</span> $</div>
-        <button id="add-to-cart" class="btn">Ajouter au panier</button>
+      <div class="order-summary-bottom-row">
+        <div class="option-group" id="size-option-group">
+          <label>Tailles :</label>
+          <div id="size-inputs-container" class="size-inputs-wrapper"></div>
+          <div id="size-validation-message"></div>
+        </div>
       </div>
     </div>
   </div>
