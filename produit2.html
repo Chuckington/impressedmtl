@@ -172,36 +172,55 @@
     }
 
     // --- Génération des cartes de personnalisation (similaire à V1) ---
-    function generatePersonalizationCards() {
-        // Pour l'instant, les options sont codées en dur.
-        // Idéalement, elles viendraient d'une table "personalization_options" liée au produit.
-        const options = [
-            { id: 1, nom: 'Gros Design', prix: 15.00, image_url: 'https://placehold.co/400x300/E7E7E7/A9A9A9?text=Gros+Design', options: ['front', 'back'] },
-            { id: 2, nom: 'Petit Design Poitrine', prix: 8.00, image_url: 'https://placehold.co/400x300/E7E7E7/A9A9A9?text=Petit+Design', options: ['left', 'right'] }
-        ];
+    async function generatePersonalizationCards() {
+        // Récupérer les options de personnalisation depuis la table spécifique (ex: inventairetshirtdebase)
+        const tableNameRef = state.product.table_name_ref;
+        if (!tableNameRef) {
+            console.error("La référence 'table_name_ref' est manquante pour ce produit.");
+            customListEl.innerHTML = '<p>Options de personnalisation non disponibles.</p>';
+            return;
+        }
+
+        const { data: options, error } = await supa
+            .from(tableNameRef)
+            .select('*')
+            .order('nom', { ascending: true });
+
+        if (error) {
+            console.error("Erreur lors du chargement des options de personnalisation:", error);
+            customListEl.innerHTML = '<p>Erreur de chargement des options.</p>';
+            return;
+        }
 
         customListEl.innerHTML = '';
         options.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card';
             let optionsHtml = '';
-            if (item.nom.includes('Gros Design')) {
+            const modificationPrice = parseFloat(item.prix) || 0;
+
+            const desc = item.personnalisation?.toLowerCase() || '';
+            if (desc.includes('gros design')) {
                 optionsHtml = `
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Devant</label></div>
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Derrière</label></div>
+                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Devant</label></div>
+                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Derrière</label></div>
                 `;
-            } else if (item.nom.includes('Petit Design')) {
+            } else if (desc.includes('petit design poitrine')) {
                  optionsHtml = `
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Poitrine Gauche</label></div>
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${item.prix}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Poitrine Droite</label></div>
+                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Poitrine Gauche</label></div>
+                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Poitrine Droite</label></div>
                 `;
+            } else if (item.personnalisation) { // Cas générique
+                 optionsHtml = `
+                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic"><label for="opt-${item.id}-generic">${item.personnalisation}</label></div>
+                 `;
             }
 
             card.innerHTML = `
-              <div class="card-image"><img src="${item.image_url}" alt="${item.nom}"></div>
+              <div class="card-image"><img src="${item.image_url || 'https://placehold.co/400x300/E7E7E7/A9A9A9?text=Image'}" alt="${item.nom}"></div>
               <div class="card-content">
                 <h3>${item.nom}</h3>
-                <p><strong>Prix modification:</strong> ${item.prix.toFixed(2)}$</p>
+                <p><strong>Prix modification:</strong> ${modificationPrice.toFixed(2)}$</p>
                 ${optionsHtml}
                 <!-- Section d'upload à ajouter plus tard -->
               </div>`;
@@ -319,7 +338,7 @@
         state.product = data;
         pageTitleEl.textContent = state.product.name;
 
-        generatePersonalizationCards();
+        await generatePersonalizationCards();
         await initializeOrderBar();
         await renderProduct();
     }
