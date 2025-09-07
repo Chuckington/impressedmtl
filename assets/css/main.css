@@ -583,7 +583,6 @@ footer a.social-link svg {
 /* Colonne de gauche pour les options */
 .configurator-options {
   flex: 1;
-  max-width: 380px; /* Limite la largeur de la colonne d'options */
   position: sticky; /* La colonne reste visible au défilement */
   top: 120px; /* Ajustez selon la hauteur de votre header */
 }
@@ -593,6 +592,11 @@ footer a.social-link svg {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* Assurer que les cartes dans la V2 ont la même taille que dans la V1 */
+.grid-v2 .card {
+  width: 380px;
 }
 
 /* Colonne de droite pour l'aperçu */
@@ -608,6 +612,7 @@ footer a.social-link svg {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   position: sticky; /* L'aperçu reste aussi visible */
   top: 120px;
+  min-width: 0; /* Correction cruciale pour empêcher le débordement */
 }
 
 #product-canvas {

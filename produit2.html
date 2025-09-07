@@ -36,7 +36,7 @@
 
     <div class="configurator-preview">
       <!-- Colonne de droite pour l'aperçu canvas -->
-      <canvas id="product-canvas" width="800" height="800"></canvas>
+      <canvas id="product-canvas"></canvas>
       <div class="view-selector">
         <button class="btn view-btn active" data-view="front">Devant</button>
         <button class="btn view-btn" data-view="back">Dos</button>
@@ -97,6 +97,8 @@
     const viewSelectorEl = document.querySelector('.view-selector');
     const colorSelectEl = document.getElementById('color-select');
     const qtyInput = document.getElementById('quantity');
+    const genderSelectEl = document.getElementById('gender-select');
+    const sizeInputsContainerEl = document.getElementById('size-inputs-container');
     const totalEl = document.getElementById('total-price');
 
     // --- App State ---
@@ -208,23 +210,59 @@
     }
 
     // --- Logique de la barre de commande (inspirée de V1) ---
-    function initializeOrderBar() {
-        // TODO: Remplacer cette logique par un appel à une table de jointure
-        // ex: supa.from('product_colors').select('colors(*)').eq('product_id', state.product.id)
-        const colors = [ { name: 'Blanc', hex: '#FFFFFF' }, { name: 'Noir', hex: '#212529' }, { name: 'Gris', hex: '#6c757d' }];
-        colors.forEach(color => {
-            const option = document.createElement('option');
-            option.value = color.hex;
-            option.textContent = color.name;
-            option.dataset.hex = color.hex;
-            colorSelectEl.appendChild(option);
-        });
-        
+    async function initializeOrderBar() {
+        // IMPORTANT: Assurez-vous d'avoir une colonne 'table_name_ref' dans votre table 'products'
+        // Pour le T-Shirt de base, la valeur doit être 'inventairetshirtdebase'
+        const tableNameRef = state.product.table_name_ref;
+        if (!tableNameRef) {
+            console.error("La référence 'table_name_ref' est manquante pour ce produit dans la base de données.");
+            return;
+        }
+
+        // Charger les couleurs
+        const { data: colorsData } = await supa.from('product_available_colors').select('colors(id, name, hex_code)').eq('product_table_ref', tableNameRef);
+        if (colorsData) {
+            colorsData.forEach(item => {
+                const color = item.colors;
+                const option = document.createElement('option');
+                option.value = color.hex_code;
+                option.textContent = color.name;
+                colorSelectEl.appendChild(option);
+            });
+        }
+
         // Initialiser la couleur par défaut
         state.currentColor = colorSelectEl.value;
         document.getElementById('color-preview').style.backgroundColor = state.currentColor;
 
-        // TODO: Ajouter la logique pour charger les tailles et sexes disponibles
+        // Charger les tailles
+        const { data: sizesData } = await supa.from('product_available_sizes').select('sizes(id, name)').eq('product_table_ref', tableNameRef).order('id', { referencedTable: 'sizes', ascending: true });
+        if (sizesData) {
+            sizesData.forEach(item => {
+                const size = item.sizes;
+                const sizeInputGroup = document.createElement('div');
+                sizeInputGroup.className = 'size-input-group';
+                sizeInputGroup.innerHTML = `
+                    <label for="size-qty-${size.id}">${size.name}</label>
+                    <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
+                `;
+                sizeInputsContainerEl.appendChild(sizeInputGroup);
+            });
+            qtyInput.addEventListener('input', validateSizeQuantities);
+            sizeInputsContainerEl.addEventListener('input', validateSizeQuantities);
+        }
+
+        // Charger les sexes
+        const { data: gendersData } = await supa.from('product_available_genders').select('genders(id, name)').eq('product_table_ref', tableNameRef);
+        if (gendersData) {
+            gendersData.forEach(item => {
+                const gender = item.genders;
+                const option = document.createElement('option');
+                option.value = gender.id;
+                option.textContent = gender.name;
+                genderSelectEl.appendChild(option);
+            });
+        }
 
         // Mettre à jour le total
         updateTotal();
@@ -238,6 +276,26 @@
         
         const newTotalValue = (state.product.base_price + extraCost) * qty;
         totalEl.textContent = newTotalValue.toFixed(2);
+    }
+
+    // Fonction pour valider les quantités de tailles (copiée de V1)
+    function validateSizeQuantities() {
+        const masterQty = parseInt(qtyInput.value) || 0;
+        const sizeInputs = document.querySelectorAll('.size-quantity-input');
+        let totalSizeQty = 0;
+        sizeInputs.forEach(input => { totalSizeQty += parseInt(input.value) || 0; });
+
+        const sizeValidationMessage = document.getElementById('size-validation-message');
+        if (totalSizeQty < masterQty) {
+            sizeValidationMessage.textContent = `Il manque ${masterQty - totalSizeQty} article(s) à répartir.`;
+            sizeValidationMessage.style.color = 'orange';
+        } else if (totalSizeQty > masterQty) {
+            sizeValidationMessage.textContent = `Vous avez réparti ${totalSizeQty - masterQty} article(s) en trop.`;
+            sizeValidationMessage.style.color = 'red';
+        } else {
+            sizeValidationMessage.textContent = 'Le compte est bon !';
+            sizeValidationMessage.style.color = 'green';
+        }
     }
 
     // --- Chargement des données et initialisation ---
@@ -262,7 +320,7 @@
         pageTitleEl.textContent = state.product.name;
 
         generatePersonalizationCards();
-        initializeOrderBar();
+        await initializeOrderBar();
         await renderProduct();
     }
 
