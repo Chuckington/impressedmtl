@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Personnalisations</title>
+  <title>Configurateur de Produit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Supabase JS UMD via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -19,8 +19,7 @@
   <header>
     <a href="inventaire.html" class="btn">← Retour à l’inventaire</a>
     <div class="header-title">
-      <h1 id="page-title">Chargement...</h1>
-      <p id="page-subtitle"></p>
+      <h1 id="page-title">Configurateur</h1>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
       <a href="panier.html" class="btn">Panier</a>
@@ -29,572 +28,195 @@
     </div>
   </header>
 
-  <div class="container">
-    <div id="custom-list" class="grid"><p>Chargement...</p></div>
-    <div id="order-summary">
-      <div class="summary-options-container"> <!-- anciennement .left -->
-        <div class="option-group">
-          <label for="quantity">Quantité:</label>
-          <input type="number" id="quantity" value="1" min="1">
-        </div>
+  <div class="container configurator-container">
+    <div class="configurator-options">
+      <!-- Colonne de gauche pour les options -->
+      <h2 id="product-title">Chargement...</h2>
+      <p id="product-description"></p>
 
-        <div class="option-group" id="color-option-group"> <!-- style="display:none;" supprimé -->
-          <label for="color-select">Couleur:</label>
-          <select id="color-select"><option value="">Choisir...</option></select>
-          <span id="color-preview"></span>
-        </div>
-
-        <div class="option-group" id="size-option-group"> <!-- style="display:none;" supprimé -->
-          <label for="size-select">Taille:</label>
-          <select id="size-select"><option value="">Choisir...</option></select>
-        </div>
-
-        <div class="option-group" id="gender-option-group"> <!-- style="display:none;" supprimé -->
-          <label for="gender-select">Sexe:</label>
-          <select id="gender-select"><option value="">Choisir...</option></select>
+      <div class="option-section">
+        <h3>Couleur</h3>
+        <div id="color-selector-v2">
+          <!-- Les pastilles de couleur seront générées ici -->
         </div>
       </div>
-      <div class="summary-actions-container">
-        <div class="total-price-display">Total: <span id="total-price">0.00</span> $</div>
-        <button id="add-to-cart" class="btn">Ajouter au panier</button>
+
+      <div class="option-section">
+        <h3>Vue</h3>
+        <div class="view-selector">
+          <button class="btn view-btn active" data-view="front">Devant</button>
+          <button class="btn view-btn" data-view="back">Dos</button>
+          <!-- Ajoutez ici les boutons pour les manches si nécessaire -->
+        </div>
       </div>
+
+      <div class="option-section">
+        <h3>Personnalisation</h3>
+        <p>Ajoutez vos logos et designs sur les différentes zones.</p>
+        <button class="btn">Personnaliser le devant</button>
+        <button class="btn">Personnaliser le dos</button>
+      </div>
+    </div>
+
+    <div class="configurator-preview">
+      <!-- Colonne de droite pour l'aperçu canvas -->
+      <canvas id="product-canvas" width="800" height="800"></canvas>
     </div>
   </div>
 
+  <!-- La barre de commande sera simplifiée pour la V2 -->
+  <div id="order-summary">
+      <!-- À définir plus tard -->
+  </div>
+
   <script>
-    // Initialise Supabase client une seule fois
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
     );
 
-    // Auth logic
-    const authBtn = document.getElementById('auth-button');
-    const userEmail = document.getElementById('user-email');
-    async function updateAuthUI() {
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        userEmail.textContent = user.email;
-        authBtn.textContent = 'Se déconnecter';
-      } else {
-        userEmail.textContent = '';
-        authBtn.textContent = 'Se connecter';
-      }
-    }
-    authBtn.addEventListener('click', async () => {
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) await supa.auth.signOut(); else window.location.href = 'login.html';
-      updateAuthUI();
-    });
-    supa.auth.onAuthStateChange(updateAuthUI);
-    updateAuthUI();
+    // --- DOM Elements ---
+    const canvas = document.getElementById('product-canvas');
+    const ctx = canvas.getContext('2d');
+    const productTitleEl = document.getElementById('product-title');
+    const productDescriptionEl = document.getElementById('product-description');
+    const colorSelectorEl = document.getElementById('color-selector-v2');
+    const viewSelectorEl = document.querySelector('.view-selector');
 
-    // Lecture du paramètre table
-    const params = new URLSearchParams(window.location.search);
-    const tableName = params.get('table')?.trim().toLowerCase();
-
-    const nomsPropres = {
-      inventairecrewneck: 'Crewneck',
-      inventairehoodie: 'Hoodie',
-      inventairepolosport: 'Polo Sport',
-      inventairesousverrerond: 'Sous-verre sublimé (4 pack) modèle rond',
-      inventairesousverrecarre: 'Sous-verre sublimé (4 pack) modèle carré',
-      inventairetablier: 'Tablier',
-      inventairetotebag: 'Tote Bag',
-      inventairetshirtcroptop: 'T-Shirt Crop top',
-      inventairetshirtdebase: 'T-Shirt de base',
-      inventairetshirtlongsleeve: 'Long Sleeve',
-      inventairetshirtpremium: 'T-Shirt Premium - Sport',
-      inventairetuque: 'Tuque',
-      inventaireveste: 'Veste',
-      inventairetapisdesouris: 'Tapis de souris'
+    // --- App State ---
+    const state = {
+        product: null,
+        currentColor: '#000000', // Couleur par défaut
+        currentView: 'front',    // Vue par défaut ('front', 'back', etc.)
+        loadedImages: {}         // Cache pour les images déjà chargées
     };
-    const noCheckbox = ['inventairesousverrecarre','inventairesousverrerond','inventairetapisdesouris'];
 
-    async function loadData() {
-      const titleEl = document.getElementById('page-title');
-      const subtitleEl = document.getElementById('page-subtitle');
-      const container = document.getElementById('custom-list');
-      const qtyInput = document.getElementById('quantity');
-      const totalEl = document.getElementById('total-price');
-      const colorSelect = document.getElementById('color-select');
-      const sizeSelect = document.getElementById('size-select');
-      const genderSelect = document.getElementById('gender-select');
-      const colorPreview = document.getElementById('color-preview');
-      
-      // Récupérer les conteneurs des groupes d'options
-      const colorOptionGroup = document.getElementById('color-option-group');
-      const sizeOptionGroup = document.getElementById('size-option-group');
-      const genderOptionGroup = document.getElementById('gender-option-group');
-
-      // Vérification table
-      if (!tableName || !nomsPropres[tableName]) {
-        titleEl.textContent = 'Erreur';
-        container.innerHTML = '<p>Produit inconnu.</p>';
-        return;
-      }
-      titleEl.textContent = `Personnalisations pour ${nomsPropres[tableName]}`;
-      subtitleEl.textContent = 'Choisissez vos options';
-
-      // Construire la requête pour le prix de base depuis la table 'inventaire'
-      let basePriceQuery = supa.from('inventaire').select('prix');
-
-      if (tableName === 'inventairesousverrerond') {
-        basePriceQuery = basePriceQuery
-          .eq('nom', 'Sous-verre sublimé (4 pack)')
-          .eq('modèle', 'Rond'); // Assurez-vous que 'Rond' correspond exactement à la valeur dans votre DB
-      } else if (tableName === 'inventairesousverrecarre') {
-        basePriceQuery = basePriceQuery
-          .eq('nom', 'Sous-verre sublimé (4 pack)')
-          .eq('modèle', 'Carré'); // Assurez-vous que 'Carré' correspond exactement à la valeur dans votre DB
-      } else {
-        basePriceQuery = basePriceQuery.eq('nom', nomsPropres[tableName]);
-      }
-      const { data: baseDataInv, error: baseErrInv } = await basePriceQuery.single();
-
-      // Ce prix sera utilisé comme base, sauf s'il est surchargé (ex: pour noCheckbox items)
-      let effectiveBasePrice = (!baseErrInv && baseDataInv) ? parseFloat(baseDataInv.prix) : 0;
-
-      // Pour débogage du point 3 (Polo Sport)
-      if (tableName === 'inventairepolosport') {
-        console.log(`Polo Sport: Prix initial récupéré de la table 'inventaire' (clé: '${nomsPropres[tableName]}'): ${effectiveBasePrice}`);
-        if (effectiveBasePrice === 0) {
-            console.warn("Polo Sport: Le prix de base est 0. Vérifiez l'entrée correspondante dans la table 'inventaire'. Elle devrait avoir un prix (ex: 25$).");
+    // --- Utilitaire de chargement d'image ---
+    async function loadImage(url) {
+        if (state.loadedImages[url]) {
+            return state.loadedImages[url];
         }
-      }
-
-      // Récupérer personnalisations
-      const { data, error } = await supa
-        .from(tableName)
-        .select('*')
-        .order('nom', { ascending: true });
-      if (error) {
-        console.error('Supabase error:', error);
-        container.innerHTML = '<p>Erreur chargement.</p>';
-        return;
-      }
-      container.innerHTML = '';
-
-      // Pour les produits sans case à cocher, le effectiveBasePrice (de la table 'inventaire') est déjà correct.
-      // Nous nous assurons simplement que leur prix de modification est 0.
-      if (noCheckbox.includes(tableName) && data && data.length > 0) {
-        // L'effectiveBasePrice est déjà celui de la table 'inventaire'.
-        // data[0].prix de la table spécifique (ex: inventairesousverrerond.prix) n'est pas utilisé pour le prix de base ici.
-      }
-
-      // Charger et peupler les options de couleur
-      const { data: availableColorsData, error: colorsError } = await supa
-        .from('product_available_colors')
-        .select(`colors (id, name, hex_code)`) // Jointure pour obtenir les détails de la couleur
-        .eq('product_table_ref', tableName);
-
-      if (!colorsError && availableColorsData && availableColorsData.length > 0) {
-        // Le groupe est visible par défaut, on peuple juste
-        availableColorsData.forEach(item => {
-          const color = item.colors; // Accéder à l'objet couleur joint
-          if (color) {
-            const option = document.createElement('option');
-            option.value = color.id;
-            option.textContent = color.name;
-            option.dataset.hex = color.hex_code;
-            colorSelect.appendChild(option);
-          }
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous"; // Crucial pour le canvas
+            img.onload = () => {
+                state.loadedImages[url] = img;
+                resolve(img);
+            };
+            img.onerror = reject;
+            img.src = url;
         });
-        colorSelect.addEventListener('change', (event) => {
-          const selectedOption = event.target.selectedOptions[0];
-          colorPreview.style.backgroundColor = selectedOption.dataset.hex || 'transparent';
-        });
-      } else {
-        colorOptionGroup.style.display = 'none'; // Cacher si pas d'options
-      }
-
-      // Charger et peupler les options de taille
-      const { data: availableSizesData, error: sizesError } = await supa
-        .from('product_available_sizes')
-        .select(`sizes (id, name)`)
-        .eq('product_table_ref', tableName);
-
-      if (!sizesError && availableSizesData && availableSizesData.length > 0) {
-        // Le groupe est visible par défaut
-        availableSizesData.forEach(item => {
-          const size = item.sizes;
-          if (size) {
-            const option = document.createElement('option');
-            option.value = size.id;
-            option.textContent = size.name;
-            sizeSelect.appendChild(option);
-          }
-        });
-      } else {
-        sizeOptionGroup.style.display = 'none'; // Cacher si pas d'options
-      }
-
-      // Charger et peupler les options de sexe
-      const { data: availableGendersData, error: gendersError } = await supa
-        .from('product_available_genders')
-        .select(`genders (id, name)`)
-        .eq('product_table_ref', tableName);
-
-      // Debugging for gender options
-      console.log('[DEBUG] Requête pour les sexes (genders) pour tableName:', tableName);
-      console.log('[DEBUG] Données des sexes (availableGendersData):', JSON.stringify(availableGendersData, null, 2));
-      if (gendersError) {
-        console.error('[DEBUG] Erreur lors de la récupération des sexes (gendersError):', JSON.stringify(gendersError, null, 2));
-      }
-
-      if (!gendersError && availableGendersData && availableGendersData.length > 0) {
-        // Le groupe est visible par défaut
-        availableGendersData.forEach(item => {
-          const gender = item.genders;
-          if (gender) {
-            const option = document.createElement('option');
-            option.value = gender.id;
-            option.textContent = gender.name;
-            genderSelect.appendChild(option);
-          }
-        });
-      } else {
-        genderOptionGroup.style.display = 'none'; // Cacher si pas d'options
-      }
-
-
-      data.forEach((item, idx) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.animationDelay = `${idx * 0.05}s`;
-
-        let cardHtml = `
-          <div class="card-image">
-            <img src="${item.image_url || 'placeholder.png'}" alt="${item.nom}">
-          </div>
-          <div class="card-content">
-            <h3>${item.nom}</h3>
-        `;
-
-        const displayedItemBasePrice = effectiveBasePrice;
-        // Le 'prix' de la table spécifique (ex: inventairesousverrerond.prix) est le coût de la modification.
-        const modificationPriceForThisSpot = parseFloat(item.prix); 
-
-        // Point 1: Ajustement pour les produits sans case à cocher
-        if (noCheckbox.includes(tableName)) {
-          // Pour ces articles, le prix de base inclut déjà la personnalisation.
-          cardHtml += `
-            <p><strong>Prix:</strong> ${displayedItemBasePrice.toFixed(2)}$ (Personnalisation incluse)</p>
-            <div class="upload-section" id="upload-section-${item.id}" style="display:block; margin-left:0; margin-top:10px;">
-              <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.nom || 'Design'})</label>
-              <input type="file" id="file-input-${item.id}" data-spot-label="${item.nom || 'Design personnalisé'}" accept="image/*" style="display:none;">
-              <div class="preview-wrapper">
-                <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
-              </div>
-            </div>
-          `;
-        } else {
-          // Logique existante pour les articles avec case à cocher
-          cardHtml += `
-            <p><strong>Prix de base:</strong> ${displayedItemBasePrice.toFixed(2)}$</p>
-            <p><strong>Prix modification:</strong> ${modificationPriceForThisSpot.toFixed(2)}$</p>
-          `;
-
-          const desc = item.personnalisation?.toLowerCase() || '';
-          if (desc.includes('gros design')) {
-            if (tableName !== 'inventaireveste') { // Point 4: Veste - pas de "Gros design devant"
-              cardHtml += `
-                <div class="personalize-option-group">
-                  <div class="personalize">
-                    <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForThisSpot}" id="opt-${item.id}-front">
-                    <label for="opt-${item.id}-front">Gros design devant</label>
-                  </div>
-                  <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
-                    <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
-                    <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
-                    <div class="preview-wrapper">
-                      <img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;">
-                    </div>
-                  </div>
-                </div>
-              `;
-            }
-            if (tableName !== 'inventairetablier') { // Point 2: Tablier - pas de "Gros design derrière"
-              cardHtml += `
-                <div class="personalize-option-group">
-                  <div class="personalize">
-                    <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForThisSpot}" id="opt-${item.id}-back">
-                    <label for="opt-${item.id}-back">Gros design derrière</label>
-                  </div>
-                  <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
-                    <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
-                    <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
-                    <div class="preview-wrapper">
-                      <img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;">
-                    </div>
-                  </div>
-                </div>
-              `;
-            }
-          } else if (desc.includes('petit design poitrine')) {
-            cardHtml += `
-              <div class="personalize-option-group">
-                <div class="personalize">
-                  <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForThisSpot}" id="opt-${item.id}-left">
-                  <label for="opt-${item.id}-left">Petit design poitrine gauche</label>
-                </div>
-                <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
-                  <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
-                  <input type="file" id="file-input-${item.id}-left" accept="image/*" style="display:none;">
-                  <div class="preview-wrapper">
-                    <img id="preview-${item.id}-left" src="#" alt="Aperçu" style="display:none;">
-                  </div>
-                </div>
-              </div>
-              <div class="personalize-option-group">
-                <div class="personalize">
-                  <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForThisSpot}" id="opt-${item.id}-right">
-                  <label for="opt-${item.id}-right">Petit design poitrine droite</label>
-                </div>
-                <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
-                  <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
-                  <input type="file" id="file-input-${item.id}-right" accept="image/*" style="display:none;">
-                  <div class="preview-wrapper">
-                    <img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;">
-                  </div>
-                </div>
-              </div>
-            `;
-          } else if (item.personnalisation) { // Cas général pour les autres personnalisations avec checkbox
-            cardHtml += `
-              <div class="personalize-option-group">
-                <div class="personalize">
-                  <input type="checkbox" class="personalization-checkbox" data-price="${modificationPriceForThisSpot}" id="opt-${item.id}">
-                  <label for="opt-${item.id}">${item.personnalisation}</label>
-                </div>
-                <div class="upload-section" id="upload-section-${item.id}" style="display:none;">
-                  <label for="file-input-${item.id}" class="btn btn-small">Choisir fichier (${item.personnalisation})</label>
-                  <input type="file" id="file-input-${item.id}" accept="image/*" style="display:none;">
-                  <div class="preview-wrapper">
-                    <img id="preview-${item.id}" src="#" alt="Aperçu" style="display:none;">
-                  </div>
-                </div>
-              </div>
-            `;
-          }
-        }
-        cardHtml += '</div>'; // Fin de card-content
-        card.innerHTML = cardHtml;
-        container.appendChild(card);
-      });
-
-      // Calcul du total
-      function updateTotal() {
-        const qty = parseInt(qtyInput.value) || 1;
-        const extraCost = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-          // On ne somme que les data-price des checkboxes, pas d'autres inputs qui pourraient avoir data-price
-          .filter(cb => cb.type === 'checkbox') 
-          .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
-        
-        const newTotalValue = (effectiveBasePrice + extraCost) * qty;
-        const newTotalString = newTotalValue.toFixed(2);
-
-        // Log de débogage pour vérifier les valeurs
-        console.log('[DEBUG] Appel de updateTotal:');
-        console.log('  - Prix de base effectif (effectiveBasePrice):', effectiveBasePrice);
-        console.log('  - Coût supplémentaire (extraCost):', extraCost);
-        console.log('  - Quantité (qty):', qty);
-        console.log('  - Valeur totale calculée (newTotalValue):', newTotalValue);
-        console.log('  - Chaîne à afficher (newTotalString):', newTotalString);
-
-        // Reporter la mise à jour du DOM au prochain "animation frame"
-        // Cela peut aider à résoudre les problèmes d'affichage initiaux
-        requestAnimationFrame(() => {
-          totalEl.textContent = newTotalString;
-          console.log('[DEBUG] totalEl.textContent mis à jour à:', newTotalString);
-        });
-      }
-      qtyInput.addEventListener('input', updateTotal);
-      container.addEventListener('change', async e => { // Ajout de async ici
-        if (e.target.classList.contains('personalization-checkbox')) {
-          updateTotal();
-          // Afficher/cacher la section d'upload correspondante
-          const checkboxId = e.target.id; // ex: opt-ITEMID-front
-          const baseId = checkboxId.replace('opt-', ''); // ex: ITEMID-front
-          const uploadSection = document.getElementById(`upload-section-${baseId}`);
-          if (uploadSection) {
-            uploadSection.style.display = e.target.checked ? 'block' : 'none';
-            if (!e.target.checked) {
-              // Optionnel: Réinitialiser l'input fichier et la prévisualisation si décoché
-              const fileInput = document.getElementById(`file-input-${baseId}`);
-              const preview = document.getElementById(`preview-${baseId}`);
-              if (fileInput) fileInput.value = ''; // Réinitialise le champ fichier
-              if (preview) {
-                preview.style.display = 'none';
-                preview.src = '#';
-                // Supprimer l'URL stockée si vous la stockez sur la checkbox
-                delete e.target.dataset.imageUrl;
-              }
-            }
-          }
-        }
-        // Gérer la sélection de fichier pour l'upload
-        if (e.target.type === 'file' && e.target.id.startsWith('file-input-')) {
-          const file = e.target.files[0];
-          const fileInput = e.target;
-          const baseId = fileInput.id.replace('file-input-', ''); // ex: ITEMID-front
-          const previewElement = document.getElementById(`preview-${baseId}`);
-          const checkboxElement = document.getElementById(`opt-${baseId}`); // La checkbox associée
-          const uploadLabel = fileInput.previousElementSibling; // Le <label> qui sert de bouton
-
-          if (file && previewElement && checkboxElement && uploadLabel) {
-            // Prévisualisation
-            const reader = new FileReader();
-            reader.onload = function(event) {
-              previewElement.src = event.target.result;
-              previewElement.style.display = 'block';
-            }
-            reader.readAsDataURL(file);
-
-            // Upload vers Supabase Storage
-            uploadLabel.textContent = 'Chargement...'; // Indiquer l'upload en cours
-            fileInput.disabled = true;
-
-            // Sanitize the file name to remove/replace problematic characters
-            const sanitizedBaseName = file.name
-              .normalize('NFD') // Decompose accented characters (e.g., é -> e + ´)
-              .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks (the accents)
-              .replace(/[^\w.-]/g, '_') // Replace non-alphanumeric (excluding . -) and other special chars with _
-              .replace(/_{2,}/g, '_'); // Replace multiple consecutive underscores with a single one
-            const uniqueFileName = `${Date.now()}-${sanitizedBaseName}`;
-            // Optionnel: Organiser par utilisateur si connecté
-            const { data: { user } } = await supa.auth.getUser();
-            const filePath = user ? `${user.id}/${uniqueFileName}` : `public/${uniqueFileName}`;
-
-            const { data: uploadData, error: uploadError } = await supa.storage
-              .from('designs-clients') // Nom de votre bucket
-              .upload(filePath, file);
-
-            if (uploadError) {
-              console.error("Erreur d'upload Supabase:", uploadError);
-              alert("Erreur lors de l'upload de l'image.");
-              uploadLabel.textContent = 'Choisir fichier';
-              fileInput.disabled = false;
-            } else {
-              console.log('Upload Supabase réussi:', uploadData);
-              const { data: publicURLData } = supa.storage
-                .from('designs-clients')
-                .getPublicUrl(uploadData.path);
-              
-              if (noCheckbox.includes(tableName)) {
-                fileInput.dataset.imageUrl = publicURLData.publicUrl; // Stocker l'URL sur l'input file lui-même
-              } else if (checkboxElement) {
-                checkboxElement.dataset.imageUrl = publicURLData.publicUrl; // Stocker l'URL sur la checkbox
-              }
-              uploadLabel.textContent = 'Fichier chargé ✓';
-              fileInput.disabled = false;
-            }
-          }
-        }
-      });
-      updateTotal();
-
-      // Ajouter au panier
-      document.getElementById('add-to-cart').addEventListener('click', async () => {
-        try {
-            const qty = parseInt(qtyInput.value) || 1;
-            
-            let personalizationsData = [];
-
-            if (noCheckbox.includes(tableName)) {
-              // Pour les articles sans case à cocher, récupérer l'image depuis l'input file
-              const fileInputs = document.querySelectorAll(`#custom-list input[type="file"][id^="file-input-"]`);
-              fileInputs.forEach(fileInput => {
-                if (fileInput.dataset.imageUrl) {
-                  personalizationsData.push({
-                    spot_label: fileInput.dataset.spotLabel || "Design personnalisé",
-                    spot_price: 0, // Le prix de la personnalisation est inclus
-                    image_url: fileInput.dataset.imageUrl
-                  });
-                }
-              });
-            } else {
-              // Logique existante pour les articles avec cases à cocher
-              const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
-              for (const cbCheckbox of checkedPersonalizations) {
-                const labelElement = cbCheckbox.labels[0];
-                const label = labelElement ? labelElement.textContent.trim() : `Option ${cbCheckbox.id}`; 
-                const price = parseFloat(cbCheckbox.dataset.price) || 0;
-                personalizationsData.push({
-                  spot_label: label,
-                  spot_price: price,
-                  image_url: cbCheckbox.dataset.imageUrl || null
-                });
-              }
-            }
-
-            const displayName = nomsPropres[tableName];
-
-            const selectedColorOption = colorSelect.selectedOptions[0];
-            const selectedColor = selectedColorOption && selectedColorOption.value ? 
-                                  { id: selectedColorOption.value, name: selectedColorOption.textContent, hex: selectedColorOption.dataset.hex } : null;
-
-            const selectedSizeOption = sizeSelect.selectedOptions[0];
-            const selectedSize = selectedSizeOption && selectedSizeOption.value ?
-                                 { id: selectedSizeOption.value, name: selectedSizeOption.textContent } : null;
-
-            const selectedGenderOption = genderSelect.selectedOptions[0];
-            const selectedGender = selectedGenderOption && selectedGenderOption.value ?
-                                   { id: selectedGenderOption.value, name: selectedGenderOption.textContent } : null;
-
-            const { data: { user } } = await supa.auth.getUser();
-            
-            // Logs pour débogage
-            console.log('Tentative d\'ajout au panier. Utilisateur:', user ? user.id : 'Invité');
-            console.log('Produit:', displayName, `(ID: ${tableName})`);
-            console.log('Quantité:', qty);
-            console.log('Prix de base effectif:', effectiveBasePrice);
-            console.log('Sélections (personnalisations):', JSON.stringify(personalizationsData, null, 2));
-            console.log('Couleur:', selectedColor, 'Taille:', selectedSize, 'Sexe:', selectedGender);
-
-            if (user) {
-              const { data: insertData, error: insertError } = await supa.from('cart_items').insert({
-                user_id: user.id,
-                product_id: tableName, 
-                product_name: displayName, 
-                quantity: qty,
-                personalizations: personalizationsData, 
-                base_price: effectiveBasePrice, 
-                selected_color_name: selectedColor ? selectedColor.name : null,
-                selected_size_name: selectedSize ? selectedSize.name : null,
-                selected_gender_name: selectedGender ? selectedGender.name : null
-              });
-
-              if (insertError) {
-                console.error("Erreur lors de l'ajout au panier (Supabase):", insertError);
-                alert(`Erreur lors de l'ajout au panier: ${insertError.message}. Détails en console.`);
-                return; 
-              }
-              alert('Article ajouté au panier !');
-              window.location.href = 'panier.html';
-            } else {
-              const cart = JSON.parse(localStorage.getItem('cart')) || [];
-              cart.push({
-                product_id: tableName, 
-                product_name: displayName, 
-                quantity: qty,
-                personalizations: personalizationsData, 
-                base_price: effectiveBasePrice, 
-                selected_color_name: selectedColor ? selectedColor.name : null,
-                selected_size_name: selectedSize ? selectedSize.name : null,
-                selected_gender_name: selectedGender ? selectedGender.name : null
-              });
-              localStorage.setItem('cart', JSON.stringify(cart));
-              alert('Article ajouté au panier (non connecté) !');
-              window.location.href = 'panier.html';
-            }
-        } catch (error) {
-            console.error("Erreur inattendue dans la fonction d'ajout au panier:", error);
-            alert("Une erreur inattendue est survenue lors de l'ajout au panier. Veuillez vérifier la console pour plus de détails.");
-        }
-      });
     }
-    loadData();
+
+    // --- Logique de rendu du Canvas ---
+    async function renderProduct() {
+        if (!state.product) return;
+
+        const baseImageUrl = state.product[`asset_base_${state.currentView}`];
+        const maskImageUrl = state.product[`asset_mask_${state.currentView}`];
+
+        if (!baseImageUrl || !maskImageUrl) {
+            console.error(`Assets pour la vue '${state.currentView}' non trouvés.`);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "20px Fredoka, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("Aperçu non disponible", canvas.width / 2, canvas.height / 2);
+            return;
+        }
+
+        try {
+            const [baseImg, maskImg] = await Promise.all([loadImage(baseImageUrl), loadImage(maskImageUrl)]);
+
+            canvas.width = baseImg.width;
+            canvas.height = baseImg.height;
+
+            // 1. Dessiner le masque (la forme noire)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(maskImg, 0, 0);
+
+            // 2. Remplir la forme avec la couleur choisie
+            ctx.globalCompositeOperation = 'source-in';
+            ctx.fillStyle = state.currentColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 3. Appliquer les ombres et la texture par-dessus
+            ctx.globalCompositeOperation = 'multiply';
+            ctx.drawImage(baseImg, 0, 0);
+
+            // 4. Réinitialiser pour les futurs dessins (logos, etc.)
+            ctx.globalCompositeOperation = 'source-over';
+
+        } catch (error) {
+            console.error("Erreur lors du rendu du canvas:", error);
+        }
+    }
+
+    // --- Chargement des données et initialisation ---
+    async function initializeConfigurator() {
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+
+        if (!productId) {
+            productTitleEl.textContent = "Produit non trouvé";
+            return;
+        }
+
+        const { data, error } = await supa.from('products').select('*').eq('id', productId).single();
+
+        if (error || !data) {
+            console.error("Erreur de chargement du produit:", error);
+            productTitleEl.textContent = "Erreur de chargement";
+            return;
+        }
+
+        state.product = data;
+        productTitleEl.textContent = state.product.name;
+        productDescriptionEl.textContent = state.product.description;
+
+        // TODO: Remplacer par un appel à la base de données pour les couleurs disponibles
+        const colors = [
+            { name: 'Noir', hex: '#212529' }, { name: 'Blanc', hex: '#f8f9fa' },
+            { name: 'Gris', hex: '#6c757d' }, { name: 'Rouge', hex: '#dc3545' },
+            { name: 'Bleu Marine', hex: '#001f3f' }, { name: 'Vert Forêt', hex: '#228B22' }
+        ];
+
+        colorSelectorEl.innerHTML = '';
+        colors.forEach((color, index) => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.style.backgroundColor = color.hex;
+            swatch.dataset.color = color.hex;
+            swatch.title = color.name;
+            if (index === 0) {
+                swatch.classList.add('active');
+                state.currentColor = color.hex;
+            }
+            colorSelectorEl.appendChild(swatch);
+        });
+
+        await renderProduct();
+    }
+
+    // --- Écouteurs d'événements ---
+    colorSelectorEl.addEventListener('click', (e) => {
+        if (e.target.classList.contains('color-swatch')) {
+            state.currentColor = e.target.dataset.color;
+            document.querySelector('.color-swatch.active')?.classList.remove('active');
+            e.target.classList.add('active');
+            renderProduct();
+        }
+    });
+
+    viewSelectorEl.addEventListener('click', (e) => {
+        if (e.target.classList.contains('view-btn')) {
+            state.currentView = e.target.dataset.view;
+            document.querySelector('.view-btn.active')?.classList.remove('active');
+            e.target.classList.add('active');
+            renderProduct();
+        }
+    });
+
+    initializeConfigurator();
   </script>
 </body>
 </html>
