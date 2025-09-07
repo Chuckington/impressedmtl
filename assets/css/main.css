@@ -573,79 +573,54 @@ footer a.social-link svg {
   }
 }
 
-/* --- Page Produit V2 (produit2.html) --- */
+/* --- NOUVEAUX STYLES POUR LA PAGE PRODUIT V2 (produit2.html) --- */
 .configurator-container {
   display: flex;
   gap: 40px;
   align-items: flex-start;
 }
 
+/* Colonne de gauche pour les options */
 .configurator-options {
   flex: 1;
-  max-width: 400px; /* Limite la largeur de la colonne d'options */
+  max-width: 380px; /* Limite la largeur de la colonne d'options */
   position: sticky; /* La colonne reste visible au défilement */
   top: 120px; /* Ajustez selon la hauteur de votre header */
 }
 
-.configurator-options .option-section {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.configurator-options h2 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-.configurator-options h3 {
-  font-size: 1.2rem;
-  margin-bottom: 15px;
-}
-.configurator-options p {
-  color: #555;
-  margin-bottom: 20px;
-}
-
-#color-selector-v2 {
+/* Grille pour les cartes de personnalisation V2 */
+.grid-v2 {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.color-swatch {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 3px solid transparent;
-  transition: border-color 0.2s;
-}
-
-.color-swatch.active {
-  border-color: #000;
-}
-
-.view-selector {
-  display: flex;
-  gap: 10px;
-}
-
+/* Colonne de droite pour l'aperçu */
 .configurator-preview {
   flex: 2;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #fdfdfd;
+  background: #fff;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: sticky; /* L'aperçu reste aussi visible */
+  top: 120px;
 }
 
 #product-canvas {
   max-width: 100%;
   height: auto;
   object-fit: contain;
+  margin-bottom: 20px; /* Espace entre le canvas et les boutons de vue */
+}
+
+.view-selector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 }
