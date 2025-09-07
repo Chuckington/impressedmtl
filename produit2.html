@@ -202,17 +202,60 @@
             const desc = item.personnalisation?.toLowerCase() || '';
             if (desc.includes('gros design')) {
                 optionsHtml = `
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Devant</label></div>
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Derrière</label></div>
+                    <div class="personalize-option-group">
+                      <div class="personalize">
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Devant</label>
+                      </div>
+                      <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
+                        <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
+                        <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
+                        <div class="preview-wrapper"><img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
+                    <div class="personalize-option-group">
+                      <div class="personalize">
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Derrière</label>
+                      </div>
+                      <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
+                        <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
+                        <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
+                        <div class="preview-wrapper"><img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
                 `;
             } else if (desc.includes('petit design poitrine')) {
                  optionsHtml = `
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Poitrine Gauche</label></div>
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Poitrine Droite</label></div>
+                    <div class="personalize-option-group">
+                      <div class="personalize">
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Poitrine Gauche</label>
+                      </div>
+                      <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
+                        <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
+                        <input type="file" id="file-input-${item.id}-left" accept="image/*" style="display:none;">
+                        <div class="preview-wrapper"><img id="preview-${item.id}-left" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
+                    <div class="personalize-option-group">
+                      <div class="personalize">
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Poitrine Droite</label>
+                      </div>
+                      <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
+                        <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
+                        <input type="file" id="file-input-${item.id}-right" accept="image/*" style="display:none;">
+                        <div class="preview-wrapper"><img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
                 `;
             } else if (item.personnalisation) { // Cas générique
                  optionsHtml = `
-                    <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic"><label for="opt-${item.id}-generic">${item.personnalisation}</label></div>
+                    <div class="personalize-option-group">
+                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic"><label for="opt-${item.id}-generic">${item.personnalisation}</label></div>
+                      <div class="upload-section" id="upload-section-${item.id}-generic" style="display:none;">
+                        <label for="file-input-${item.id}-generic" class="btn btn-small">Choisir fichier</label>
+                        <input type="file" id="file-input-${item.id}-generic" accept="image/*" style="display:none;">
+                        <div class="preview-wrapper"><img id="preview-${item.id}-generic" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
                  `;
             }
 
@@ -222,7 +265,6 @@
                 <h3>${item.nom}</h3>
                 <p><strong>Prix modification:</strong> ${modificationPrice.toFixed(2)}$</p>
                 ${optionsHtml}
-                <!-- Section d'upload à ajouter plus tard -->
               </div>`;
             customListEl.appendChild(card);
         });
@@ -362,9 +404,73 @@
 
     // Écouteurs pour la mise à jour du total
     qtyInput.addEventListener('input', updateTotal);
-    customListEl.addEventListener('change', (e) => {
+    customListEl.addEventListener('change', async (e) => {
+        // Gérer les cases à cocher pour le prix et l'affichage de l'upload
         if (e.target.classList.contains('personalization-checkbox')) {
             updateTotal();
+            const checkboxId = e.target.id;
+            const baseId = checkboxId.replace('opt-', '');
+            const uploadSection = document.getElementById(`upload-section-${baseId}`);
+            if (uploadSection) {
+                uploadSection.style.display = e.target.checked ? 'block' : 'none';
+                if (!e.target.checked) {
+                    // Réinitialiser si décoché
+                    const fileInput = document.getElementById(`file-input-${baseId}`);
+                    const preview = document.getElementById(`preview-${baseId}`);
+                    if (fileInput) fileInput.value = '';
+                    if (preview) {
+                        preview.style.display = 'none';
+                        preview.src = '#';
+                    }
+                    delete e.target.dataset.imageUrl;
+                }
+            }
+        }
+
+        // Gérer la sélection de fichier pour l'upload
+        if (e.target.type === 'file' && e.target.id.startsWith('file-input-')) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const fileInput = e.target;
+            const baseId = fileInput.id.replace('file-input-', '');
+            const previewElement = document.getElementById(`preview-${baseId}`);
+            const checkboxElement = document.getElementById(`opt-${baseId}`);
+            const uploadLabel = fileInput.closest('.upload-section').querySelector('label');
+
+            // Prévisualisation
+            if (previewElement) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewElement.src = event.target.result;
+                    previewElement.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Upload vers Supabase Storage
+            if (uploadLabel) uploadLabel.textContent = 'Chargement...';
+            fileInput.disabled = true;
+
+            const sanitizedBaseName = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]/g, '_').replace(/_{2,}/g, '_');
+            const uniqueFileName = `${Date.now()}-${sanitizedBaseName}`;
+            const { data: { user } } = await supa.auth.getUser();
+            const filePath = user ? `${user.id}/${uniqueFileName}` : `public/${uniqueFileName}`;
+
+            const { data: uploadData, error: uploadError } = await supa.storage.from('designs-clients').upload(filePath, file);
+
+            if (uploadError) {
+                console.error("Erreur d'upload Supabase:", uploadError);
+                alert("Erreur lors de l'upload de l'image.");
+                if (uploadLabel) uploadLabel.textContent = 'Choisir fichier';
+            } else {
+                const { data: publicURLData } = supa.storage.from('designs-clients').getPublicUrl(uploadData.path);
+                if (checkboxElement) {
+                    checkboxElement.dataset.imageUrl = publicURLData.publicUrl;
+                }
+                if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
+            }
+            fileInput.disabled = false;
         }
     });
 

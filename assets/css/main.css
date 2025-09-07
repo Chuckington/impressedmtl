@@ -64,6 +64,10 @@ header {
 }
 .btn:hover { background: #444; }
 .btn:disabled { background: #ccc; cursor: not-allowed; }
+.btn.btn-small {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
 
 .container { 
   max-width:1300px; 
