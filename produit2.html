@@ -151,13 +151,22 @@
         try {
             const [baseImg, maskImg] = await Promise.all([loadImage(baseImageUrl), loadImage(maskImageUrl)]);
 
+            // --- NOUVELLE LOGIQUE DE REDIMENSIONNEMENT ---
+            // Obtenir la largeur du conteneur parent pour rendre le canvas responsive
+            const previewContainer = document.querySelector('.configurator-preview');
+            const containerWidth = previewContainer.clientWidth - 40; // -40 pour le padding (20px de chaque côté)
+
+            // Calculer le facteur d'échelle et les nouvelles dimensions du canvas
+            const scaleFactor = containerWidth / baseImg.width;
+            const canvasWidth = baseImg.width * scaleFactor;
+            const canvasHeight = baseImg.height * scaleFactor;
+
             // Utiliser un canvas temporaire pour créer l'image de fond
             const offscreenCanvas = document.createElement('canvas');
             const offscreenCtx = offscreenCanvas.getContext('2d');
             offscreenCanvas.width = baseImg.width;
             offscreenCanvas.height = baseImg.height;
 
-            // Appliquer la couleur et la texture
             offscreenCtx.drawImage(maskImg, 0, 0);
             offscreenCtx.globalCompositeOperation = 'source-in';
             offscreenCtx.fillStyle = state.currentColor;
@@ -165,9 +174,12 @@
             offscreenCtx.globalCompositeOperation = 'multiply';
             offscreenCtx.drawImage(baseImg, 0, 0);
 
-            // Mettre à jour le canvas Fabric.js
-            fabricCanvas.setDimensions({ width: baseImg.width, height: baseImg.height });
-            fabricCanvas.setBackgroundImage(offscreenCanvas.toDataURL(), fabricCanvas.renderAll.bind(fabricCanvas));
+            // Mettre à jour le canvas Fabric.js avec les nouvelles dimensions et l'image de fond redimensionnée
+            fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight });
+            fabricCanvas.setBackgroundImage(offscreenCanvas.toDataURL(), fabricCanvas.renderAll.bind(fabricCanvas), {
+                scaleX: scaleFactor,
+                scaleY: scaleFactor,
+            });
 
             // Mettre à jour les logos
             await updateLogosOnCanvas();
