@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Supabase JS UMD via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Fabric.js pour le canvas interactif -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <!-- Lien vers la feuille de style principale -->
   <link rel="stylesheet" href="assets/css/main.css">
   <!-- === FAVICON === -->
@@ -90,8 +92,12 @@
     // ... (le code d'authentification peut être copié/collé ici si nécessaire)
 
     // --- DOM Elements ---
-    const canvas = document.getElementById('product-canvas');
-    const ctx = canvas.getContext('2d');
+    // Remplacer le contexte 2D natif par une instance de Fabric.js
+    const fabricCanvas = new fabric.Canvas('product-canvas', {
+        width: 800, // Taille initiale, sera ajustée
+        height: 800,
+        backgroundColor: '#f0f0f0' // Fond temporaire
+    });
     const pageTitleEl = document.getElementById('page-title');
     const customListEl = document.getElementById('custom-list-v2');
     const viewSelectorEl = document.querySelector('.view-selector');
@@ -107,7 +113,7 @@
         currentColor: '#FFFFFF', // Couleur par défaut (blanc)
         currentView: 'front',    // Vue par défaut ('front', 'back', etc.)
         loadedImages: {},        // Cache pour les images déjà chargées
-        personalizations: []     // Pour stocker les logos/designs uploadés
+        logos: {}                // Pour stocker les objets Fabric.js des logos
     };
 
     // --- Utilitaire de chargement d'image ---
@@ -127,77 +133,90 @@
     }
 
     // --- Logique de rendu du Canvas ---
-    async function renderProduct() {
+    async function renderProductBase() {
         if (!state.product) return;
 
         // Sélectionne les URLs des images en fonction de la vue actuelle
         const baseImageUrl = state.product[`asset_base_${state.currentView}`];
         const maskImageUrl = state.product[`asset_mask_${state.currentView}`];
 
+        fabricCanvas.setBackgroundImage(null); // Nettoyer l'ancien fond
+        fabricCanvas.renderAll();
+
         if (!baseImageUrl || !maskImageUrl) {
             console.error(`Assets pour la vue '${state.currentView}' non trouvés.`);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // ... (code pour afficher "Aperçu non disponible")
             return;
         }
 
         try {
             const [baseImg, maskImg] = await Promise.all([loadImage(baseImageUrl), loadImage(maskImageUrl)]);
 
-            // Ajuster la taille du canvas à la première image chargée
-            canvas.width = baseImg.width;
-            canvas.height = baseImg.height;
+            // Utiliser un canvas temporaire pour créer l'image de fond
+            const offscreenCanvas = document.createElement('canvas');
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+            offscreenCanvas.width = baseImg.width;
+            offscreenCanvas.height = baseImg.height;
 
-            // Étape 1: Dessiner le masque (la forme noire)
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(maskImg, 0, 0);
+            // Appliquer la couleur et la texture
+            offscreenCtx.drawImage(maskImg, 0, 0);
+            offscreenCtx.globalCompositeOperation = 'source-in';
+            offscreenCtx.fillStyle = state.currentColor;
+            offscreenCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+            offscreenCtx.globalCompositeOperation = 'multiply';
+            offscreenCtx.drawImage(baseImg, 0, 0);
 
-            // Étape 2: Remplir la forme avec la couleur choisie
-            ctx.globalCompositeOperation = 'source-in';
-            ctx.fillStyle = state.currentColor;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Mettre à jour le canvas Fabric.js
+            fabricCanvas.setDimensions({ width: baseImg.width, height: baseImg.height });
+            fabricCanvas.setBackgroundImage(offscreenCanvas.toDataURL(), fabricCanvas.renderAll.bind(fabricCanvas));
 
-            // Étape 3: Appliquer les ombres et la texture par-dessus
-            ctx.globalCompositeOperation = 'multiply';
-            ctx.drawImage(baseImg, 0, 0);
+            // Mettre à jour les logos
+            await updateLogosOnCanvas();
 
-            // Étape 4: Réinitialiser pour les futurs dessins (logos, etc.)
-            ctx.globalCompositeOperation = 'source-over';
-
-            // --- NOUVELLE LOGIQUE ---
-            // Étape 5: Dessiner les logos/designs uploadés
-            const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
-
-            for (const checkbox of checkedPersonalizations) {
-                const idParts = checkbox.id.split('-'); // e.g., ['opt', '1', 'front']
-                const view = idParts.slice(2).join('_').replace('sleeve_', ''); // e.g., 'front', 'left', 'right'
-                
-                // Si la personnalisation cochée correspond à la vue actuelle et a une image
-                if ((state.currentView === 'front' && (view === 'front' || view === 'left' || view === 'right')) || state.currentView === view) {
-                    if (checkbox.dataset.imageUrl) {
-                        try {
-                            const logoImg = await loadImage(checkbox.dataset.imageUrl);
-                            
-                            // --- Logique de positionnement dans des boîtes prédéfinies ---
-                            const placement = getPlacementBox(view, canvas.width, canvas.height);
-                            
-                            // Calculer les dimensions du logo pour qu'il rentre dans la boîte
-                            const ratio = Math.min(placement.width / logoImg.width, placement.height / logoImg.height);
-                            const logoWidth = logoImg.width * ratio;
-                            const logoHeight = logoImg.height * ratio;
-                            const logoX = placement.x + (placement.width - logoWidth) / 2; // Centrer horizontalement
-                            const logoY = placement.y + (placement.height - logoHeight) / 2; // Centrer verticalement
-                            
-                            ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
-                        } catch (error) {
-                            console.error(`Impossible de dessiner le logo pour la vue ${view}:`, error);
-                        }
-                    }
-                }
-            }
         } catch (error) {
             console.error("Erreur lors du rendu du canvas:", error);
         }
+    }
+
+    async function updateLogosOnCanvas() {
+        // Supprimer les anciens logos
+        fabricCanvas.getObjects('image').forEach(obj => fabricCanvas.remove(obj));
+
+        const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
+
+        for (const checkbox of checkedPersonalizations) {
+            const idParts = checkbox.id.split('-'); // e.g., ['opt', '1', 'front']
+            const viewForLogo = idParts.slice(2).join('_'); // e.g., 'front', 'sleeve_left'
+
+            // Si la personnalisation cochée a une image
+            if (checkbox.dataset.imageUrl) {
+                try {
+                    const logoImgElement = await loadImage(checkbox.dataset.imageUrl);
+                    const placement = getPlacementBox(viewForLogo, fabricCanvas.width, fabricCanvas.height);
+
+                    const fabricImage = new fabric.Image(logoImgElement, {
+                        left: placement.x,
+                        top: placement.y,
+                        // Rendre visible seulement si la vue du logo correspond à la vue actuelle
+                        visible: isLogoVisibleInView(viewForLogo, state.currentView),
+                        custom_view: viewForLogo, // Stocker la vue pour référence future
+                        // Style des contrôles
+                        cornerColor: '#007bff',
+                        cornerSize: 12,
+                        transparentCorners: false,
+                        borderColor: '#007bff',
+                        borderDashArray: [5, 5]
+                    });
+
+                    // Redimensionner pour s'adapter à la boîte de placement initiale
+                    fabricImage.scaleToWidth(placement.width);
+
+                    fabricCanvas.add(fabricImage);
+                } catch (error) {
+                    console.error(`Impossible de dessiner le logo pour la vue ${viewForLogo}:`, error);
+                }
+            }
+        }
+        fabricCanvas.renderAll();
     }
 
     // --- Génération des cartes de personnalisation (similaire à V1) ---
@@ -326,13 +345,21 @@
             'back': { x: canvasWidth * 0.35, y: canvasHeight * 0.2, width: canvasWidth * 0.3, height: canvasHeight * 0.5 },
             'left': { x: canvasWidth * 0.55, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
             'right': { x: canvasWidth * 0.35, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
-            'sleeve_left': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 },
-            'sleeve_right': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 }
+            'sleeve_left': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 }, // Garder les clés complètes
+            'sleeve_right': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 } // Garder les clés complètes
         };
-        // Si la vue est 'sleeve_left' ou 'sleeve_right', on utilise la clé correspondante.
-        // Sinon, on utilise la vue simplifiée ('front', 'left', etc.)
-        const key = state.currentView.startsWith('sleeve') ? state.currentView : view;
-        return placements[key] || placements['front']; // Retourne 'front' par défaut
+        return placements[view] || placements['front']; // Utiliser la vue directe de la checkbox
+    }
+
+    function isLogoVisibleInView(logoView, currentCanvasView) {
+        if (logoView === currentCanvasView) {
+            return true;
+        }
+        // Cas spécial : afficher les logos de poitrine (gauche/droite) sur la vue de face
+        if (currentCanvasView === 'front' && (logoView === 'left' || logoView === 'right')) {
+            return true;
+        }
+        return false;
     }
 
     // --- Logique de la barre de commande (inspirée de V1) ---
@@ -447,14 +474,14 @@
 
         await generatePersonalizationCards();
         await initializeOrderBar();
-        await renderProduct();
+        await renderProductBase();
     }
 
     // --- Écouteurs d'événements ---
     colorSelectEl.addEventListener('change', (e) => {
         state.currentColor = e.target.value;
         document.getElementById('color-preview').style.backgroundColor = e.target.value;
-        renderProduct();
+        renderProductBase();
     });
 
     viewSelectorEl.addEventListener('click', (e) => {
@@ -463,7 +490,12 @@
             // Mettre à jour le bouton actif
             document.querySelector('.view-btn.active')?.classList.remove('active');
             e.target.classList.add('active');
-            renderProduct();
+            // Changer le fond et la visibilité des logos
+            renderProductBase();
+            fabricCanvas.getObjects('image').forEach(obj => {
+                obj.set('visible', isLogoVisibleInView(obj.custom_view, state.currentView));
+            });
+            fabricCanvas.renderAll();
         }
     });
 
@@ -490,7 +522,7 @@
                     delete e.target.dataset.imageUrl;
                 }
             }
-            renderProduct(); // Mettre à jour l'aperçu quand on coche/décoche
+            updateLogosOnCanvas(); // Mettre à jour l'aperçu quand on coche/décoche
         }
 
         // Gérer la sélection de fichier pour l'upload
@@ -559,7 +591,7 @@
                 if (checkboxElement) {
                     checkboxElement.dataset.imageUrl = finalImageUrl;
                 }
-                renderProduct(); // Mettre à jour l'aperçu avec la nouvelle image
+                updateLogosOnCanvas(); // Mettre à jour l'aperçu avec la nouvelle image
                 if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
                 fileInput.disabled = false;
             }
@@ -596,8 +628,8 @@
                     
                     // Mettre à jour l'URL de l'image à utiliser
                     checkboxElement.dataset.imageUrl = removeBgResponse.newImageUrl;
+                    updateLogosOnCanvas(); // Mettre à jour l'aperçu principal
                     // Mettre à jour la prévisualisation dans la carte
-                    renderProduct(); // Mettre à jour l'aperçu principal
                     const previewElement = document.getElementById(`preview-${baseId}`);
                     if (previewElement) previewElement.src = removeBgResponse.newImageUrl;
 
@@ -612,7 +644,7 @@
             } else {
                 // L'utilisateur NE VEUT PLUS enlever l'arrière-plan, on revient à l'original
                 checkboxElement.dataset.imageUrl = checkboxElement.dataset.originalImageUrl;
-                renderProduct(); // Mettre à jour l'aperçu principal
+                updateLogosOnCanvas(); // Mettre à jour l'aperçu principal
                 // Mettre à jour la prévisualisation dans la carte
                 const previewElement = document.getElementById(`preview-${baseId}`);
                 if (previewElement) previewElement.src = checkboxElement.dataset.originalImageUrl;
