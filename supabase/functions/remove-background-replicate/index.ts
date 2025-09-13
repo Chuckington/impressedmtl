@@ -2,38 +2,40 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
-// En-têtes pour la gestion des requêtes cross-origine (CORS)
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Petite fonction pour faire une pause
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 serve(async (req) => {
-  // Gérer la requête "pre-flight" CORS (importante pour les appels depuis le navigateur)
+  console.log(`--- NEW INVOCATION: ${new Date().toISOString()} ---`);
+
   if (req.method === 'OPTIONS') {
+    console.log("Responding to OPTIONS pre-flight request.");
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    console.log("Function invoked. Parsing request body...");
-    const { imageUrl } = await req.json();
+    console.log("Inside TRY block. Parsing request body...");
+    const body = await req.json();
+    const imageUrl = body.imageUrl;
+
     if (!imageUrl) {
+      console.error("Validation failed: imageUrl is missing from the request body.");
       throw new Error("L'URL de l'image est manquante.");
     }
     console.log(`Received image URL: ${imageUrl}`);
 
-    // Récupérer la clé API depuis les secrets de la fonction Supabase
     const REPLICATE_API_TOKEN = Deno.env.get("REPLICATE_API_TOKEN");
     if (!REPLICATE_API_TOKEN) {
+      console.error("Security Error: REPLICATE_API_TOKEN secret not found.");
       throw new Error("La clé API pour Replicate n'est pas configurée côté serveur.");
     }
     console.log("Replicate API token found.");
 
-    // Étape 1: Lancer la prédiction sur Replicate
-    console.log("Sending prediction request to Replicate...");
+    console.log("Step 1: Sending prediction request to Replicate...");
     const startResponse = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
@@ -41,57 +43,55 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // La version du nouveau modèle recommandé par Replicate: replicate/replicate-background-remover
         version: "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
         input: { image: imageUrl },
       }),
     });
 
     const prediction = await startResponse.json();
+    console.log("Initial Replicate response received:", JSON.stringify(prediction, null, 2));
+
     if (startResponse.status !== 201) {
-      console.error("Replicate API error response:", prediction);
-      throw new Error(`Erreur de l'API Replicate: ${prediction.detail}`);
+      console.error("Replicate API error on start:", prediction);
+      throw new Error(`Erreur de l'API Replicate: ${prediction.detail || 'Unknown error'}`);
     }
     console.log(`Prediction started with ID: ${prediction.id}`);
 
-    // Étape 2: Interroger Replicate jusqu'à ce que le résultat soit prêt (polling)
     let finalPrediction;
-    const getUrl = prediction.urls.get;
+    const getUrl = prediction?.urls?.get;
+    if (!getUrl) {
+        throw new Error("Replicate response did not contain a 'get' URL.");
+    }
+
     let attempts = 0;
-    const maxAttempts = 60; // Timeout after 60 seconds
+    const maxAttempts = 60;
 
     while (attempts < maxAttempts) {
-      console.log(`Polling for result... Attempt ${attempts + 1}`);
+      console.log(`Step 2: Polling for result... Attempt ${attempts + 1}`);
       const getResponse = await fetch(getUrl, {
-        headers: {
-          "Authorization": `Token ${REPLICATE_API_TOKEN}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Authorization": `Token ${REPLICATE_API_TOKEN}` },
       });
       finalPrediction = await getResponse.json();
-      console.log(`Current prediction status: ${finalPrediction.status}`);
+      console.log(`  - Current prediction status: ${finalPrediction.status}`);
 
-      if (finalPrediction.status === "succeeded" || finalPrediction.status === "failed") {
-        break; // Sortir de la boucle si c'est terminé ou si ça a échoué
+      if (["succeeded", "failed", "canceled"].includes(finalPrediction.status)) {
+        break;
       }
-
-      // Attendre 1 seconde avant de vérifier à nouveau pour ne pas surcharger l'API
       await sleep(1000);
       attempts++;
     }
 
-    if (attempts === maxAttempts) {
-        throw new Error("La prédiction Replicate a dépassé le temps limite.");
+    if (finalPrediction.status !== "succeeded") {
+      console.error("Replicate prediction did not succeed:", finalPrediction);
+      throw new Error(`La prédiction Replicate a échoué avec le statut: ${finalPrediction.status}`);
     }
 
-    if (finalPrediction.status === "failed") {
-      console.error("Replicate prediction failed:", finalPrediction.error);
-      throw new Error(`La prédiction Replicate a échoué: ${finalPrediction.error}`);
-    }
-
-    // Étape 3: Renvoyer l'URL de l'image sans arrière-plan
     const newImageUrl = finalPrediction.output;
-    console.log(`Success! Returning new image URL: ${newImageUrl}`);
+    if (!newImageUrl || typeof newImageUrl !== 'string') {
+        console.error("Invalid output from Replicate:", finalPrediction.output);
+        throw new Error("La sortie de Replicate n'est pas une URL valide.");
+    }
+    console.log(`Step 3: Success! Returning new image URL: ${newImageUrl}`);
 
     return new Response(JSON.stringify({ newImageUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -99,9 +99,8 @@ serve(async (req) => {
     });
 
   } catch (e) {
-    // Log l'erreur complète pour le débogage côté serveur
-    console.error("An error occurred in the Edge Function:", e);
-    // S'assurer que nous avons un message d'erreur à renvoyer
+    console.error("--- ERROR IN FUNCTION ---");
+    console.error(e);
     const errorMessage = e instanceof Error ? e.message : "Une erreur inconnue est survenue.";
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

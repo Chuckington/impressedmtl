@@ -543,6 +543,8 @@
                     const { data: removeBgResponse, error: removeBgError } = await supa.functions.invoke('remove-background-replicate', {
                         body: { imageUrl: checkboxElement.dataset.originalImageUrl },
                     });
+                    console.log("Response from Edge Function:", { data: removeBgResponse, error: removeBgError });
+
                     if (removeBgError) throw removeBgError;
                     
                     // Mettre à jour l'URL de l'image à utiliser
