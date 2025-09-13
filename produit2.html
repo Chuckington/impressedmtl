@@ -520,6 +520,7 @@
 
         // NOUVEAU: Gérer le changement de la case "Enlever l'arrière-plan"
         if (e.target.classList.contains('remove-bg-checkbox')) {
+            console.log("Checkbox 'Enlever l'arrière-plan' cliquée.");
             const removeBgCheckbox = e.target;
             const uploadSection = removeBgCheckbox.closest('.upload-section');
             const uploadLabel = uploadSection.querySelector('label');
@@ -527,9 +528,11 @@
             // Reconstruire l'ID de la checkbox principale
             const baseId = removeBgCheckbox.id.replace('remove-bg-', '');
             const checkboxElement = document.getElementById(`opt-${baseId}`);
+            console.log("Checkbox principale associée:", checkboxElement);
 
             // Ne rien faire si aucune image n'a été uploadée
             if (!checkboxElement || !checkboxElement.dataset.originalImageUrl) {
+                console.log("Aucune image originale trouvée, l'action est ignorée.");
                 return;
             }
 
