@@ -164,8 +164,37 @@
             // Étape 4: Réinitialiser pour les futurs dessins (logos, etc.)
             ctx.globalCompositeOperation = 'source-over';
 
-            // TODO: Étape 5 - Dessiner les logos/designs de state.personalizations qui correspondent à la vue actuelle
+            // --- NOUVELLE LOGIQUE ---
+            // Étape 5: Dessiner les logos/designs uploadés
+            const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
 
+            for (const checkbox of checkedPersonalizations) {
+                const idParts = checkbox.id.split('-'); // e.g., ['opt', '1', 'front']
+                const view = idParts.slice(2).join('_').replace('sleeve_', ''); // e.g., 'front', 'left', 'right'
+                
+                // Si la personnalisation cochée correspond à la vue actuelle et a une image
+                if ((state.currentView === 'front' && (view === 'front' || view === 'left' || view === 'right')) || state.currentView === view) {
+                    if (checkbox.dataset.imageUrl) {
+                        try {
+                            const logoImg = await loadImage(checkbox.dataset.imageUrl);
+                            
+                            // --- Logique de positionnement dans des boîtes prédéfinies ---
+                            const placement = getPlacementBox(view, canvas.width, canvas.height);
+                            
+                            // Calculer les dimensions du logo pour qu'il rentre dans la boîte
+                            const ratio = Math.min(placement.width / logoImg.width, placement.height / logoImg.height);
+                            const logoWidth = logoImg.width * ratio;
+                            const logoHeight = logoImg.height * ratio;
+                            const logoX = placement.x + (placement.width - logoWidth) / 2; // Centrer horizontalement
+                            const logoY = placement.y + (placement.height - logoHeight) / 2; // Centrer verticalement
+                            
+                            ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
+                        } catch (error) {
+                            console.error(`Impossible de dessiner le logo pour la vue ${view}:`, error);
+                        }
+                    }
+                }
+            }
         } catch (error) {
             console.error("Erreur lors du rendu du canvas:", error);
         }
@@ -288,6 +317,22 @@
               </div>`;
             customListEl.appendChild(card);
         });
+    }
+
+    // --- Helper pour définir les zones de placement ---
+    function getPlacementBox(view, canvasWidth, canvasHeight) {
+        const placements = {
+            'front': { x: canvasWidth * 0.35, y: canvasHeight * 0.25, width: canvasWidth * 0.3, height: canvasHeight * 0.4 },
+            'back': { x: canvasWidth * 0.35, y: canvasHeight * 0.2, width: canvasWidth * 0.3, height: canvasHeight * 0.5 },
+            'left': { x: canvasWidth * 0.55, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
+            'right': { x: canvasWidth * 0.35, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
+            'sleeve_left': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 },
+            'sleeve_right': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 }
+        };
+        // Si la vue est 'sleeve_left' ou 'sleeve_right', on utilise la clé correspondante.
+        // Sinon, on utilise la vue simplifiée ('front', 'left', etc.)
+        const key = state.currentView.startsWith('sleeve') ? state.currentView : view;
+        return placements[key] || placements['front']; // Retourne 'front' par défaut
     }
 
     // --- Logique de la barre de commande (inspirée de V1) ---
@@ -445,6 +490,7 @@
                     delete e.target.dataset.imageUrl;
                 }
             }
+            renderProduct(); // Mettre à jour l'aperçu quand on coche/décoche
         }
 
         // Gérer la sélection de fichier pour l'upload
@@ -513,6 +559,7 @@
                 if (checkboxElement) {
                     checkboxElement.dataset.imageUrl = finalImageUrl;
                 }
+                renderProduct(); // Mettre à jour l'aperçu avec la nouvelle image
                 if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
                 fileInput.disabled = false;
             }
@@ -550,6 +597,7 @@
                     // Mettre à jour l'URL de l'image à utiliser
                     checkboxElement.dataset.imageUrl = removeBgResponse.newImageUrl;
                     // Mettre à jour la prévisualisation dans la carte
+                    renderProduct(); // Mettre à jour l'aperçu principal
                     const previewElement = document.getElementById(`preview-${baseId}`);
                     if (previewElement) previewElement.src = removeBgResponse.newImageUrl;
 
@@ -564,6 +612,7 @@
             } else {
                 // L'utilisateur NE VEUT PLUS enlever l'arrière-plan, on revient à l'original
                 checkboxElement.dataset.imageUrl = checkboxElement.dataset.originalImageUrl;
+                renderProduct(); // Mettre à jour l'aperçu principal
                 // Mettre à jour la prévisualisation dans la carte
                 const previewElement = document.getElementById(`preview-${baseId}`);
                 if (previewElement) previewElement.src = checkboxElement.dataset.originalImageUrl;

@@ -1,6 +1,7 @@
 // supabase/functions/remove-background-replicate/index.ts
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -86,14 +87,54 @@ serve(async (req) => {
       throw new Error(`La prédiction Replicate a échoué avec le statut: ${finalPrediction.status}`);
     }
 
-    const newImageUrl = finalPrediction.output;
-    if (!newImageUrl || typeof newImageUrl !== 'string') {
+    const tempImageUrl = finalPrediction.output;
+    if (!tempImageUrl || typeof tempImageUrl !== 'string') {
         console.error("Invalid output from Replicate:", finalPrediction.output);
         throw new Error("La sortie de Replicate n'est pas une URL valide.");
     }
-    console.log(`Step 3: Success! Returning new image URL: ${newImageUrl}`);
+    console.log(`Step 3: Replicate success. Temporary URL: ${tempImageUrl}`);
 
-    return new Response(JSON.stringify({ newImageUrl }), {
+    // --- NOUVELLE LOGIQUE : Télécharger depuis Replicate et téléverser sur Supabase Storage ---
+    console.log("Step 4: Downloading processed image from Replicate...");
+    const imageResponse = await fetch(tempImageUrl);
+    if (!imageResponse.ok) {
+        throw new Error("Failed to download the processed image from Replicate's temporary URL.");
+    }
+    const imageBlob = await imageResponse.blob();
+    console.log("Image downloaded successfully.");
+
+    console.log("Step 5: Uploading processed image to Supabase Storage...");
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const originalFileName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+    const newFileName = `${Date.now()}-nobg-${originalFileName.split('.')[0]}.png`; // Assurer l'extension .png
+    const filePath = `public/${newFileName}`;
+
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+      .from('designs-clients')
+      .upload(filePath, imageBlob, {
+        contentType: 'image/png',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Supabase Storage upload error:", uploadError);
+      throw uploadError;
+    }
+    console.log("Upload to Supabase Storage successful.");
+
+    console.log("Step 6: Getting public URL from Supabase Storage...");
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from('designs-clients')
+      .getPublicUrl(uploadData.path);
+    
+    const permanentImageUrl = publicUrlData.publicUrl;
+    console.log(`Step 7: Success! Returning permanent URL: ${permanentImageUrl}`);
+
+    return new Response(JSON.stringify({ newImageUrl: permanentImageUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
