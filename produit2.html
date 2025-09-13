@@ -549,6 +549,10 @@
                     
                     // Mettre à jour l'URL de l'image à utiliser
                     checkboxElement.dataset.imageUrl = removeBgResponse.newImageUrl;
+                    // Mettre à jour la prévisualisation dans la carte
+                    const previewElement = document.getElementById(`preview-${baseId}`);
+                    if (previewElement) previewElement.src = removeBgResponse.newImageUrl;
+
                     if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
 
                 } catch (err) {
@@ -560,6 +564,9 @@
             } else {
                 // L'utilisateur NE VEUT PLUS enlever l'arrière-plan, on revient à l'original
                 checkboxElement.dataset.imageUrl = checkboxElement.dataset.originalImageUrl;
+                // Mettre à jour la prévisualisation dans la carte
+                const previewElement = document.getElementById(`preview-${baseId}`);
+                if (previewElement) previewElement.src = checkboxElement.dataset.originalImageUrl;
             }
         }
     });
