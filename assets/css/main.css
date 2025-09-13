@@ -632,3 +632,36 @@ footer a.social-link svg {
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.remove-bg-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #333;
+}
+.remove-bg-checkbox { margin: 0; }
+
+/* Style pour le label du bouton d'upload lorsqu'il contient un spinner */
+.upload-section .btn-small {
+    display: inline-flex; /* Permet d'aligner le spinner et le texte */
+    align-items: center;
+    gap: 8px;
+}
+
+/* Animation du spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3); /* Bordure claire sur fond sombre */
+  border-top-color: #fff; /* Couleur principale du spinner */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

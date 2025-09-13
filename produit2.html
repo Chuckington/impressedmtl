@@ -209,6 +209,10 @@
                       <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
                         <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
                         <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-${item.id}-front" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-front">Enlever l'arrière-plan</label>
+                        </div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -219,6 +223,10 @@
                       <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
                         <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
                         <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-${item.id}-back" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-back">Enlever l'arrière-plan</label>
+                        </div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -232,6 +240,10 @@
                       <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
                         <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
                         <input type="file" id="file-input-${item.id}-left" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-${item.id}-left" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-left">Enlever l'arrière-plan</label>
+                        </div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-left" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -242,6 +254,10 @@
                       <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
                         <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
                         <input type="file" id="file-input-${item.id}-right" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-${item.id}-right" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-right">Enlever l'arrière-plan</label>
+                        </div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -253,6 +269,10 @@
                       <div class="upload-section" id="upload-section-${item.id}-generic" style="display:none;">
                         <label for="file-input-${item.id}-generic" class="btn btn-small">Choisir fichier</label>
                         <input type="file" id="file-input-${item.id}-generic" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-${item.id}-generic" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-generic">Enlever l'arrière-plan</label>
+                        </div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-generic" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -463,14 +483,33 @@
                 console.error("Erreur d'upload Supabase:", uploadError);
                 alert("Erreur lors de l'upload de l'image.");
                 if (uploadLabel) uploadLabel.textContent = 'Choisir fichier';
+                fileInput.disabled = false;
             } else {
                 const { data: publicURLData } = supa.storage.from('designs-clients').getPublicUrl(uploadData.path);
+                let finalImageUrl = publicURLData.publicUrl;
+
+                // Vérifier si la suppression d'arrière-plan est demandée
+                const removeBgCheckbox = document.getElementById(`remove-bg-${baseId}`);
+                if (removeBgCheckbox && removeBgCheckbox.checked) {
+                    if (uploadLabel) uploadLabel.innerHTML = `<div class="spinner"></div><span>Analyse IA (30s max)...</span>`;
+                    try {
+                        const { data: removeBgResponse, error: removeBgError } = await supa.functions.invoke('remove-background-replicate', {
+                            body: { imageUrl: finalImageUrl },
+                        });
+                        if (removeBgError) throw removeBgError;
+                        finalImageUrl = removeBgResponse.newImageUrl; // Mettre à jour avec la nouvelle URL
+                    } catch (err) {
+                        console.error("Erreur lors du retrait de l'arrière-plan:", err);
+                        alert("Le retrait de l'arrière-plan a échoué. L'image originale sera utilisée.");
+                    }
+                }
+
                 if (checkboxElement) {
-                    checkboxElement.dataset.imageUrl = publicURLData.publicUrl;
+                    checkboxElement.dataset.imageUrl = finalImageUrl;
                 }
                 if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
+                fileInput.disabled = false;
             }
-            fileInput.disabled = false;
         }
     });
 
