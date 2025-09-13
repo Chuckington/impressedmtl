@@ -486,7 +486,13 @@
                 fileInput.disabled = false;
             } else {
                 const { data: publicURLData } = supa.storage.from('designs-clients').getPublicUrl(uploadData.path);
-                let finalImageUrl = publicURLData.publicUrl;
+                const originalImageUrl = publicURLData.publicUrl;
+                let finalImageUrl = originalImageUrl;
+
+                // Stocker l'URL originale immédiatement
+                if (checkboxElement) {
+                    checkboxElement.dataset.originalImageUrl = originalImageUrl;
+                }
 
                 // Vérifier si la suppression d'arrière-plan est demandée
                 const removeBgCheckbox = document.getElementById(`remove-bg-${baseId}`);
@@ -494,7 +500,7 @@
                     if (uploadLabel) uploadLabel.innerHTML = `<div class="spinner"></div><span>Analyse IA (30s max)...</span>`;
                     try {
                         const { data: removeBgResponse, error: removeBgError } = await supa.functions.invoke('remove-background-replicate', {
-                            body: { imageUrl: finalImageUrl },
+                            body: { imageUrl: originalImageUrl },
                         });
                         if (removeBgError) throw removeBgError;
                         finalImageUrl = removeBgResponse.newImageUrl; // Mettre à jour avec la nouvelle URL
@@ -509,6 +515,46 @@
                 }
                 if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
                 fileInput.disabled = false;
+            }
+        }
+
+        // NOUVEAU: Gérer le changement de la case "Enlever l'arrière-plan"
+        if (e.target.classList.contains('remove-bg-checkbox')) {
+            const removeBgCheckbox = e.target;
+            const uploadSection = removeBgCheckbox.closest('.upload-section');
+            const uploadLabel = uploadSection.querySelector('label');
+            
+            // Reconstruire l'ID de la checkbox principale
+            const baseId = removeBgCheckbox.id.replace('remove-bg-', '');
+            const checkboxElement = document.getElementById(`opt-${baseId}`);
+
+            // Ne rien faire si aucune image n'a été uploadée
+            if (!checkboxElement || !checkboxElement.dataset.originalImageUrl) {
+                return;
+            }
+
+            if (removeBgCheckbox.checked) {
+                // L'utilisateur VEUT enlever l'arrière-plan
+                if (uploadLabel) uploadLabel.innerHTML = `<div class="spinner"></div><span>Analyse IA (30s max)...</span>`;
+                try {
+                    const { data: removeBgResponse, error: removeBgError } = await supa.functions.invoke('remove-background-replicate', {
+                        body: { imageUrl: checkboxElement.dataset.originalImageUrl },
+                    });
+                    if (removeBgError) throw removeBgError;
+                    
+                    // Mettre à jour l'URL de l'image à utiliser
+                    checkboxElement.dataset.imageUrl = removeBgResponse.newImageUrl;
+                    if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
+
+                } catch (err) {
+                    console.error("Erreur lors du retrait de l'arrière-plan:", err);
+                    alert("Le retrait de l'arrière-plan a échoué. L'image originale sera utilisée.");
+                    if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
+                    removeBgCheckbox.checked = false; // Décocher la case en cas d'erreur
+                }
+            } else {
+                // L'utilisateur NE VEUT PLUS enlever l'arrière-plan, on revient à l'original
+                checkboxElement.dataset.imageUrl = checkboxElement.dataset.originalImageUrl;
             }
         }
     });
