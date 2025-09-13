@@ -552,11 +552,44 @@
         const box = obj.custom_placementBox;
         if (!box) return;
 
-        const objBoundingRect = obj.getBoundingRect();
-        if (objBoundingRect.left < box.x) obj.left = box.x + objBoundingRect.width / 2;
-        if (objBoundingRect.left + objBoundingRect.width > box.x + box.width) obj.left = box.x + box.width - objBoundingRect.width / 2;
-        if (objBoundingRect.top < box.y) obj.top = box.y + objBoundingRect.height / 2;
-        if (objBoundingRect.top + objBoundingRect.height > box.y + box.height) obj.top = box.y + box.height - objBoundingRect.height / 2;
+        // Obtenir les dimensions de l'objet après mise à l'échelle
+        const objWidth = obj.getScaledWidth();
+        const objHeight = obj.getScaledHeight();
+
+        // Contraindre la limite gauche
+        if (obj.left < box.x) {
+            obj.left = box.x;
+        }
+        // Contraindre la limite droite
+        if (obj.left + objWidth > box.x + box.width) {
+            obj.left = box.x + box.width - objWidth;
+        }
+        // Contraindre la limite haute
+        if (obj.top < box.y) {
+            obj.top = box.y;
+        }
+        // Contraindre la limite basse
+        if (obj.top + objHeight > box.y + box.height) {
+            obj.top = box.y + box.height - objHeight;
+        }
+    });
+
+    // NOUVEAU: Contraint le redimensionnement du logo pour qu'il ne dépasse pas la boîte
+    fabricCanvas.on('object:scaling', (e) => {
+        const obj = e.target;
+        const box = obj.custom_placementBox;
+        if (!box) return;
+
+        const objWidth = obj.getScaledWidth();
+        const objHeight = obj.getScaledHeight();
+
+        // Empêcher le logo de devenir plus grand que la boîte
+        if (objWidth > box.width) {
+            obj.scaleX = box.width / obj.width;
+        }
+        if (objHeight > box.height) {
+            obj.scaleY = box.height / obj.height;
+        }
     });
 
     // Écouteurs pour la mise à jour du total
