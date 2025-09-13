@@ -211,6 +211,7 @@
                         // Rendre visible seulement si la vue du logo correspond à la vue actuelle
                         visible: isLogoVisibleInView(viewForLogo, state.currentView),
                         custom_view: viewForLogo, // Stocker la vue pour référence future
+                        custom_placementBox: placement, // Stocker la boîte de placement
                         // Style des contrôles
                         cornerColor: '#007bff',
                         cornerSize: 12,
@@ -509,6 +510,53 @@
             });
             fabricCanvas.renderAll();
         }
+    });
+
+    // --- NOUVEAU: Logique d'interaction avec le canvas ---
+
+    // Affiche la zone de placement quand un logo est sélectionné
+    fabricCanvas.on('selection:created', (e) => {
+        const obj = e.target;
+        const box = obj.custom_placementBox;
+        if (box) {
+            const rect = new fabric.Rect({
+                left: box.x,
+                top: box.y,
+                width: box.width,
+                height: box.height,
+                fill: 'rgba(0,0,0,0)',
+                stroke: 'rgba(0, 123, 255, 0.5)',
+                strokeDashArray: [5, 5],
+                selectable: false,
+                evented: false,
+                custom_type: 'placement_box' // Identifiant pour le supprimer plus tard
+            });
+            fabricCanvas.add(rect);
+            fabricCanvas.sendToBack(rect); // Envoyer le cadre derrière le logo
+        }
+    });
+
+    // Cache la zone de placement quand le logo est désélectionné
+    fabricCanvas.on('selection:cleared', () => {
+        fabricCanvas.getObjects().forEach(obj => {
+            if (obj.custom_type === 'placement_box') {
+                fabricCanvas.remove(obj);
+            }
+        });
+        fabricCanvas.renderAll();
+    });
+
+    // Contraint le logo à l'intérieur de sa zone de placement
+    fabricCanvas.on('object:moving', (e) => {
+        const obj = e.target;
+        const box = obj.custom_placementBox;
+        if (!box) return;
+
+        const objBoundingRect = obj.getBoundingRect();
+        if (objBoundingRect.left < box.x) obj.left = box.x + objBoundingRect.width / 2;
+        if (objBoundingRect.left + objBoundingRect.width > box.x + box.width) obj.left = box.x + box.width - objBoundingRect.width / 2;
+        if (objBoundingRect.top < box.y) obj.top = box.y + objBoundingRect.height / 2;
+        if (objBoundingRect.top + objBoundingRect.height > box.y + box.height) obj.top = box.y + box.height - objBoundingRect.height / 2;
     });
 
     // Écouteurs pour la mise à jour du total
