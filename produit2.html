@@ -183,6 +183,7 @@
 
             // Mettre à jour les logos
             await updateLogosOnCanvas();
+            drawPlacementZones(); // Affiche les zones de placement disponibles
 
         } catch (error) {
             console.error("Erreur lors du rendu du canvas:", error);
@@ -364,6 +365,61 @@
         return placements[view] || placements['front']; // Utiliser la vue directe de la checkbox
     }
 
+    // --- NOUVEAU: Dessine les zones de placement sur le canvas ---
+    function drawPlacementZones() {
+        // 1. Nettoyer les anciennes zones
+        fabricCanvas.getObjects().forEach(obj => {
+            if (obj.custom_type === 'placement_zone_group') {
+                fabricCanvas.remove(obj);
+            }
+        });
+
+        // 2. Obtenir toutes les options de personnalisation
+        const allPersonalizations = document.querySelectorAll('.personalization-checkbox');
+
+        allPersonalizations.forEach(checkbox => {
+            const idParts = checkbox.id.split('-');
+            const viewForZone = idParts.slice(2).join('_');
+
+            // 3. Vérifier si cette zone doit être visible dans la vue actuelle
+            if (isLogoVisibleInView(viewForZone, state.currentView)) {
+                const box = getPlacementBox(viewForZone, fabricCanvas.width, fabricCanvas.height);
+                
+                // 4. Créer le rectangle en pointillés
+                const rect = new fabric.Rect({
+                    width: box.width,
+                    height: box.height,
+                    fill: 'rgba(0,0,0,0)',
+                    stroke: 'rgba(0,0,0,0.25)', // Un gris subtil
+                    strokeDashArray: [5, 5],
+                });
+
+                // 5. Créer l'étiquette de la zone
+                const labelText = checkbox.nextElementSibling.textContent; // Récupère le texte du label (ex: "Devant")
+                const text = new fabric.Text(labelText, {
+                    fontSize: 14,
+                    fill: 'rgba(0,0,0,0.4)',
+                    originX: 'center',
+                    originY: 'center'
+                });
+
+                // 6. Grouper le rectangle et le texte pour qu'ils se déplacent ensemble
+                const group = new fabric.Group([rect, text], {
+                    left: box.x,
+                    top: box.y,
+                    selectable: false, // Empêche le client de sélectionner la zone
+                    evented: false,
+                    custom_type: 'placement_zone_group'
+                });
+
+                fabricCanvas.add(group);
+                fabricCanvas.sendToBack(group); // Envoyer la zone derrière les logos
+            }
+        });
+
+        fabricCanvas.renderAll();
+    }
+
     function isLogoVisibleInView(logoView, currentCanvasView) {
         if (logoView === currentCanvasView) {
             return true;
@@ -513,38 +569,6 @@
     });
 
     // --- NOUVEAU: Logique d'interaction avec le canvas ---
-
-    // Affiche la zone de placement quand un logo est sélectionné
-    fabricCanvas.on('selection:created', (e) => {
-        const obj = e.target;
-        const box = obj.custom_placementBox;
-        if (box) {
-            const rect = new fabric.Rect({
-                left: box.x,
-                top: box.y,
-                width: box.width,
-                height: box.height,
-                fill: 'rgba(0,0,0,0)',
-                stroke: 'rgba(0, 123, 255, 0.5)',
-                strokeDashArray: [5, 5],
-                selectable: false,
-                evented: false,
-                custom_type: 'placement_box' // Identifiant pour le supprimer plus tard
-            });
-            fabricCanvas.add(rect);
-            fabricCanvas.sendToBack(rect); // Envoyer le cadre derrière le logo
-        }
-    });
-
-    // Cache la zone de placement quand le logo est désélectionné
-    fabricCanvas.on('selection:cleared', () => {
-        fabricCanvas.getObjects().forEach(obj => {
-            if (obj.custom_type === 'placement_box') {
-                fabricCanvas.remove(obj);
-            }
-        });
-        fabricCanvas.renderAll();
-    });
 
     // Contraint le logo à l'intérieur de sa zone de placement
     fabricCanvas.on('object:moving', (e) => {
