@@ -37,8 +37,8 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // La version du modèle 851-labs/background-remover
-        version: "9542d1a503e71c4a8954543f0a33a3c97c324335843b96443a8537c1843c1399",
+        // La version du nouveau modèle recommandé par Replicate: replicate/replicate-background-remover
+        version: "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
         input: { image: imageUrl },
       }),
     });
