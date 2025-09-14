@@ -854,5 +854,120 @@
 
     document.getElementById('download-preview-btn').addEventListener('click', downloadCanvasAsImage);
   </script>
+  <script>
+    // --- NOUVEAU: Logique "Ajouter au Panier" pour la V2 ---
+    document.getElementById('add-to-cart').addEventListener('click', async () => {
+        try {
+            const qty = parseInt(qtyInput.value) || 1;
+            if (!state.product) {
+                alert("Erreur: les données du produit n'ont pas pu être chargées.");
+                return;
+            }
+
+            // --- Construction des données de personnalisation avec les transformations ---
+            let personalizationsData = [];
+            const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
+
+            for (const cbCheckbox of checkedPersonalizations) {
+                const labelElement = cbCheckbox.labels[0];
+                const label = labelElement ? labelElement.textContent.trim() : `Option ${cbCheckbox.id}`;
+                const price = parseFloat(cbCheckbox.dataset.price) || 0;
+
+                // Trouver le logo correspondant sur le canvas
+                const idParts = cbCheckbox.id.split('-');
+                const viewForLogo = idParts.slice(2).join('_');
+                const fabricLogo = fabricCanvas.getObjects('image').find(obj => obj.custom_view === viewForLogo);
+
+                let transformData = null;
+                if (fabricLogo) {
+                    transformData = {
+                        left: fabricLogo.left,
+                        top: fabricLogo.top,
+                        scaleX: fabricLogo.scaleX,
+                        scaleY: fabricLogo.scaleY,
+                        angle: fabricLogo.angle,
+                        // Sauvegarder les dimensions du canvas pour un repositionnement proportionnel
+                        canvasWidth: fabricCanvas.width,
+                        canvasHeight: fabricCanvas.height
+                    };
+                }
+
+                personalizationsData.push({
+                    spot_label: label,
+                    spot_price: price,
+                    image_url: cbCheckbox.dataset.imageUrl || null,
+                    transform: transformData // Le "plan de montage" du logo
+                });
+            }
+
+            // --- Récupération des autres options (couleur, sexe, etc.) ---
+            const selectedColorOption = colorSelectEl.selectedOptions[0];
+            const selectedColor = selectedColorOption && selectedColorOption.value ?
+                                  { name: selectedColorOption.textContent, hex: selectedColorOption.value } : null;
+
+            const selectedGenderOption = genderSelectEl.selectedOptions[0];
+            const selectedGender = selectedGenderOption && selectedGenderOption.value ?
+                                   { id: selectedGenderOption.value, name: selectedGenderOption.textContent } : null;
+
+            // --- Logique pour les tailles multiples (identique à V1) ---
+            const sizeInputs = document.querySelectorAll('.size-quantity-input');
+            const cartItemsToAdd = [];
+            let totalSizeQty = 0;
+
+            sizeInputs.forEach(input => {
+                const sizeQty = parseInt(input.value) || 0;
+                totalSizeQty += sizeQty;
+                if (sizeQty > 0) {
+                    cartItemsToAdd.push({
+                        product_id: `v2_${state.product.id}`, // Préfixe pour identifier les produits V2
+                        product_name: state.product.name,
+                        quantity: sizeQty,
+                        personalizations: personalizationsData,
+                        base_price: state.product.base_price,
+                        selected_color_name: selectedColor ? selectedColor.name : null,
+                        selected_size_name: input.dataset.sizeName,
+                        selected_gender_name: selectedGender ? selectedGender.name : null
+                    });
+                }
+            });
+
+            // --- Validation (identique à V1) ---
+            if (qty > 0 && totalSizeQty !== qty) {
+                alert('La somme des quantités par taille ne correspond pas à la quantité totale demandée.');
+                return;
+            }
+            if (qty > 0 && cartItemsToAdd.length === 0) {
+                alert('Veuillez spécifier les quantités pour au moins une taille.');
+                return;
+            }
+            if (qty === 0) {
+                alert('Veuillez choisir une quantité supérieure à 0.');
+                return;
+            }
+
+            // --- Sauvegarde dans le panier (identique à V1) ---
+            const { data: { user } } = await supa.auth.getUser();
+            if (user) {
+                const { error: insertError } = await supa.from('cart_items').insert(cartItemsToAdd);
+                if (insertError) {
+                    console.error("Erreur lors de l'ajout au panier (Supabase):", insertError);
+                    alert(`Erreur lors de l'ajout au panier: ${insertError.message}.`);
+                    return;
+                }
+            } else {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                cart.push(...cartItemsToAdd);
+                localStorage.setItem('cart', JSON.stringify(cart));
+            }
+
+            alert('Article(s) ajouté(s) au panier !');
+            window.location.href = 'panier.html';
+
+        } catch (error) {
+            console.error("Erreur inattendue dans la fonction d'ajout au panier:", error);
+            alert("Une erreur inattendue est survenue. Veuillez vérifier la console pour plus de détails.");
+        }
+    });
+  </script>
 </body>
 </html>
