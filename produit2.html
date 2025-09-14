@@ -755,37 +755,75 @@
         }
     });
 
+    // --- Helper pour dessiner un rectangle avec des coins arrondis ---
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    }
+
     // --- NOUVEAU: Logique de téléchargement de l'aperçu ---
     async function downloadCanvasAsImage() {
         const downloadBtn = document.getElementById('download-preview-btn');
         downloadBtn.disabled = true;
         downloadBtn.textContent = 'Préparation...';
 
+        // Cacher les zones de placement avant l'export
+        fabricCanvas.getObjects().forEach(obj => {
+            if (obj.custom_type === 'placement_box') {
+                obj.set('visible', false);
+            }
+        });
+        fabricCanvas.renderAll();
+
         try {
-            // Créer un canvas temporaire pour ajouter le watermark sans affecter l'original
+            // Créer un canvas temporaire pour le rendu haute résolution et le watermark
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
 
-            // Définir les dimensions
-            tempCanvas.width = fabricCanvas.getWidth();
-            tempCanvas.height = fabricCanvas.getHeight();
+            // Utiliser un multiplicateur pour une meilleure résolution
+            const multiplier = 2;
+            tempCanvas.width = fabricCanvas.getWidth() * multiplier;
+            tempCanvas.height = fabricCanvas.getHeight() * multiplier;
 
-            // Dessiner l'état actuel du canvas Fabric sur le canvas temporaire
-            const canvasDataURL = fabricCanvas.toDataURL({ format: 'png', quality: 1.0 });
+            // Dessiner l'état actuel du canvas Fabric sur le canvas temporaire en haute résolution
+            const canvasDataURL = fabricCanvas.toDataURL({ format: 'png', quality: 1.0, multiplier: multiplier });
             const canvasImage = await loadImage(canvasDataURL);
             tempCtx.drawImage(canvasImage, 0, 0);
 
-            // Ajouter le watermark
+            // --- NOUVELLE LOGIQUE POUR LE WATERMARK ---
             const watermarkText = 'impressedmtl.com';
-            tempCtx.font = '20px Fredoka, sans-serif';
-            tempCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-            tempCtx.textAlign = 'right';
-            tempCtx.textBaseline = 'bottom';
-            tempCtx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-            tempCtx.shadowBlur = 3;
+            const padding = 30; // Plus de padding pour la haute résolution
+            const fontSize = 32; // Police plus grande
+            const boxPadding = { x: 20, y: 10 };
+            const boxRadius = 8;
+            
+            tempCtx.font = `bold ${fontSize}px Fredoka, sans-serif`;
+            const textMetrics = tempCtx.measureText(watermarkText);
+            
+            const boxWidth = textMetrics.width + (boxPadding.x * 2);
+            const boxHeight = fontSize + (boxPadding.y * 2);
+            const boxX = tempCanvas.width - boxWidth - padding;
+            const boxY = tempCanvas.height - boxHeight - padding;
 
-            const padding = 15;
-            tempCtx.fillText(watermarkText, tempCanvas.width - padding, tempCanvas.height - padding);
+            // Dessiner le rectangle blanc arrondi
+            tempCtx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            drawRoundedRect(tempCtx, boxX, boxY, boxWidth, boxHeight, boxRadius);
+            tempCtx.fill();
+
+            // Dessiner le texte noir par-dessus
+            tempCtx.fillStyle = '#1a1a1a';
+            tempCtx.textAlign = 'center';
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillText(watermarkText, boxX + boxWidth / 2, boxY + boxHeight / 2 + 2); // +2 pour un meilleur centrage vertical
 
             // Créer le lien de téléchargement
             const link = document.createElement('a');
@@ -799,6 +837,14 @@
             console.error("Erreur lors du téléchargement de l'aperçu:", error);
             alert("Une erreur est survenue lors de la création de l'aperçu.");
         } finally {
+            // Réafficher les zones de placement
+            fabricCanvas.getObjects().forEach(obj => {
+                if (obj.custom_type === 'placement_box') {
+                    obj.set('visible', true);
+                }
+            });
+            fabricCanvas.renderAll();
+
             downloadBtn.disabled = false;
             downloadBtn.textContent = "Télécharger l'aperçu";
         }
