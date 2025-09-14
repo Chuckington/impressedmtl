@@ -516,41 +516,6 @@
 
     // --- NOUVEAU: Logique d'interaction avec le canvas ---
 
-    // Affiche la zone de placement quand un logo est sélectionné
-    fabricCanvas.on('selection:created', (e) => {
-        const obj = e.target;
-        const box = obj.custom_placementBox;
-        if (box) {
-            const rect = new fabric.Rect({
-                left: box.x,
-                top: box.y,
-                width: box.width,
-                height: box.height,
-                fill: 'rgba(0,0,0,0)',
-                // Un trait blanc semi-transparent avec une ombre noire pour la visibilité sur toutes les couleurs
-                stroke: 'rgba(255, 255, 255, 0.7)',
-                strokeWidth: 1,
-                strokeDashArray: [5, 5],
-                shadow: '0 0 2px rgba(0,0,0,0.8)',
-                selectable: false,
-                evented: false,
-                custom_type: 'placement_box' // Identifiant pour le supprimer plus tard
-            });
-            fabricCanvas.add(rect);
-            fabricCanvas.sendToBack(rect); // Envoyer le cadre derrière le logo
-        }
-    });
-
-    // Cache la zone de placement quand le logo est désélectionné
-    fabricCanvas.on('selection:cleared', () => {
-        fabricCanvas.getObjects().forEach(obj => {
-            if (obj.custom_type === 'placement_box') {
-                fabricCanvas.remove(obj);
-            }
-        });
-        fabricCanvas.renderAll();
-    });
-
     // Contraint le logo à l'intérieur de sa zone de placement
     fabricCanvas.on('object:moving', (e) => {
         const obj = e.target;
@@ -620,7 +585,8 @@
                     delete e.target.dataset.imageUrl;
                 }
             }
-            updateLogosOnCanvas(); // Mettre à jour l'aperçu quand on coche/décoche
+            await updateLogosOnCanvas(); // Mettre à jour les logos sur le canvas
+            drawPlacementZones(); // Mettre à jour les zones de placement
         }
 
         // Gérer la sélection de fichier pour l'upload
@@ -689,7 +655,7 @@
                 if (checkboxElement) {
                     checkboxElement.dataset.imageUrl = finalImageUrl;
                 }
-                updateLogosOnCanvas(); // Mettre à jour l'aperçu avec la nouvelle image
+                await updateLogosOnCanvas(); // Mettre à jour l'aperçu avec la nouvelle image
                 if (uploadLabel) uploadLabel.textContent = 'Fichier chargé ✓';
                 fileInput.disabled = false;
             }
@@ -726,7 +692,7 @@
                     
                     // Mettre à jour l'URL de l'image à utiliser
                     checkboxElement.dataset.imageUrl = removeBgResponse.newImageUrl;
-                    updateLogosOnCanvas(); // Mettre à jour l'aperçu principal
+                    await updateLogosOnCanvas(); // Mettre à jour l'aperçu principal
                     // Mettre à jour la prévisualisation dans la carte
                     const previewElement = document.getElementById(`preview-${baseId}`);
                     if (previewElement) previewElement.src = removeBgResponse.newImageUrl;
@@ -742,7 +708,7 @@
             } else {
                 // L'utilisateur NE VEUT PLUS enlever l'arrière-plan, on revient à l'original
                 checkboxElement.dataset.imageUrl = checkboxElement.dataset.originalImageUrl;
-                updateLogosOnCanvas(); // Mettre à jour l'aperçu principal
+                await updateLogosOnCanvas(); // Mettre à jour l'aperçu principal
                 // Mettre à jour la prévisualisation dans la carte
                 const previewElement = document.getElementById(`preview-${baseId}`);
                 if (previewElement) previewElement.src = checkboxElement.dataset.originalImageUrl;
