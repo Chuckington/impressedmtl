@@ -213,6 +213,7 @@
                         // Rendre visible seulement si la vue du logo correspond à la vue actuelle
                         visible: isLogoVisibleInView(viewForLogo, state.currentView),
                         custom_view: viewForLogo, // Stocker la vue pour référence future
+                        custom_id: checkbox.id, // Stocker l'ID de la checkbox pour référence
                         custom_placementBox: placement, // Stocker la boîte de placement
                         // Style des contrôles
                         cornerColor: '#007bff',
@@ -224,6 +225,8 @@
 
                     // Redimensionner pour s'adapter à la boîte de placement initiale
                     fabricImage.scaleToWidth(placement.width);
+                    // Stocker l'échelle initiale pour la comparaison de qualité
+                    fabricImage.set('initialScale', fabricImage.scaleX);
 
                     fabricCanvas.add(fabricImage);
                 } catch (error) {
@@ -276,6 +279,7 @@
                           <input type="checkbox" id="remove-bg-${item.id}-front" class="remove-bg-checkbox">
                           <label for="remove-bg-${item.id}-front">Enlever l'arrière-plan</label>
                         </div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-front" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -290,6 +294,7 @@
                           <input type="checkbox" id="remove-bg-${item.id}-back" class="remove-bg-checkbox">
                           <label for="remove-bg-${item.id}-back">Enlever l'arrière-plan</label>
                         </div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-back" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -307,6 +312,7 @@
                           <input type="checkbox" id="remove-bg-${item.id}-left" class="remove-bg-checkbox">
                           <label for="remove-bg-${item.id}-left">Enlever l'arrière-plan</label>
                         </div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-left" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-left" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -321,6 +327,7 @@
                           <input type="checkbox" id="remove-bg-${item.id}-right" class="remove-bg-checkbox">
                           <label for="remove-bg-${item.id}-right">Enlever l'arrière-plan</label>
                         </div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-right" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -336,6 +343,7 @@
                           <input type="checkbox" id="remove-bg-${item.id}-generic" class="remove-bg-checkbox">
                           <label for="remove-bg-${item.id}-generic">Enlever l'arrière-plan</label>
                         </div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-generic" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
                         <div class="preview-wrapper"><img id="preview-${item.id}-generic" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
@@ -598,6 +606,20 @@
         }
         if (objHeight > box.height) {
             obj.scaleY = box.height / obj.height;
+        }
+
+        // --- NOUVELLE LOGIQUE D'AVERTISSEMENT DE QUALITÉ ---
+        const warningThreshold = 2.0; // Avertir si l'échelle est 2x plus grande que l'initiale
+        const isTooLarge = obj.scaleX > (obj.initialScale * warningThreshold);
+
+        // Trouver l'élément d'avertissement correspondant dans la carte de gauche
+        const checkboxId = obj.custom_id;
+        if (checkboxId) {
+            const baseId = checkboxId.replace('opt-', '');
+            const warningEl = document.getElementById(`quality-warning-${baseId}`);
+            if (warningEl) {
+                warningEl.style.display = isTooLarge ? 'block' : 'none';
+            }
         }
     });
 

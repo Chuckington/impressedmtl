@@ -665,3 +665,10 @@ footer a.social-link svg {
     transform: rotate(360deg);
   }
 }
+
+.quality-warning {
+  color: #e85d04;
+  font-size: 0.8rem;
+  margin-top: 8px;
+  font-weight: bold;
+}
