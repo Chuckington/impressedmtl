@@ -45,6 +45,7 @@
         <button class="btn view-btn" data-view="sleeve_left">Manche Gauche</button>
         <button class="btn view-btn" data-view="sleeve_right">Manche Droite</button>
       </div>
+      <button id="download-preview-btn" class="btn" style="margin-top: 20px;">Télécharger l'aperçu</button>
     </div>
   </div>
 
@@ -754,7 +755,58 @@
         }
     });
 
+    // --- NOUVEAU: Logique de téléchargement de l'aperçu ---
+    async function downloadCanvasAsImage() {
+        const downloadBtn = document.getElementById('download-preview-btn');
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = 'Préparation...';
+
+        try {
+            // Créer un canvas temporaire pour ajouter le watermark sans affecter l'original
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Définir les dimensions
+            tempCanvas.width = fabricCanvas.getWidth();
+            tempCanvas.height = fabricCanvas.getHeight();
+
+            // Dessiner l'état actuel du canvas Fabric sur le canvas temporaire
+            const canvasDataURL = fabricCanvas.toDataURL({ format: 'png', quality: 1.0 });
+            const canvasImage = await loadImage(canvasDataURL);
+            tempCtx.drawImage(canvasImage, 0, 0);
+
+            // Ajouter le watermark
+            const watermarkText = 'impressedmtl.com';
+            tempCtx.font = '20px Fredoka, sans-serif';
+            tempCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            tempCtx.textAlign = 'right';
+            tempCtx.textBaseline = 'bottom';
+            tempCtx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+            tempCtx.shadowBlur = 3;
+
+            const padding = 15;
+            tempCtx.fillText(watermarkText, tempCanvas.width - padding, tempCanvas.height - padding);
+
+            // Créer le lien de téléchargement
+            const link = document.createElement('a');
+            link.download = 'apercu-impressedmtl.png';
+            link.href = tempCanvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } catch (error) {
+            console.error("Erreur lors du téléchargement de l'aperçu:", error);
+            alert("Une erreur est survenue lors de la création de l'aperçu.");
+        } finally {
+            downloadBtn.disabled = false;
+            downloadBtn.textContent = "Télécharger l'aperçu";
+        }
+    }
+
     initializePage();
+
+    document.getElementById('download-preview-btn').addEventListener('click', downloadCanvasAsImage);
   </script>
 </body>
 </html>
