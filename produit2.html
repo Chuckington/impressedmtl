@@ -183,6 +183,7 @@
 
             // Mettre à jour les logos
             await updateLogosOnCanvas();
+            drawPlacementZones(); // Affiche les zones pour les options déjà cochées
 
         } catch (error) {
             console.error("Erreur lors du rendu du canvas:", error);
@@ -356,14 +357,50 @@
         const placements = {
             'front': { x: canvasWidth * 0.35, y: canvasHeight * 0.25, width: canvasWidth * 0.3, height: canvasHeight * 0.4 },
             'back': { x: canvasWidth * 0.35, y: canvasHeight * 0.2, width: canvasWidth * 0.3, height: canvasHeight * 0.5 },
-            // Poitrine Gauche (sur la droite du t-shirt pour le spectateur)
-            'left': { x: canvasWidth * 0.58, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
-            // Poitrine Droite (sur la gauche du t-shirt pour le spectateur) - CORRIGÉ
-            'right': { x: canvasWidth * 0.32, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
+            // Poitrine Gauche (sur la droite du t-shirt pour le spectateur) - Coordonnées ajustées
+            'left': { x: canvasWidth * 0.55, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
+            // Poitrine Droite (sur la gauche du t-shirt pour le spectateur) - Coordonnées ajustées
+            'right': { x: canvasWidth * 0.35, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
             'sleeve_left': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 }, // Garder les clés complètes
             'sleeve_right': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 } // Garder les clés complètes
         };
         return placements[view] || placements['front']; // Utiliser la vue directe de la checkbox
+    }
+
+    // --- NOUVEAU: Dessine les zones de placement pour les options cochées ---
+    function drawPlacementZones() {
+        // 1. Nettoyer les anciennes zones
+        fabricCanvas.getObjects().forEach(obj => {
+            if (obj.custom_type === 'placement_box') {
+                fabricCanvas.remove(obj);
+            }
+        });
+
+        // 2. Obtenir toutes les options de personnalisation cochées
+        const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
+
+        checkedPersonalizations.forEach(checkbox => {
+            const idParts = checkbox.id.split('-');
+            const viewForZone = idParts.slice(2).join('_');
+
+            // 3. Vérifier si cette zone doit être visible dans la vue actuelle
+            if (isLogoVisibleInView(viewForZone, state.currentView)) {
+                const box = getPlacementBox(viewForZone, fabricCanvas.width, fabricCanvas.height);
+                
+                const rect = new fabric.Rect({
+                    left: box.x, top: box.y, width: box.width, height: box.height,
+                    fill: 'rgba(0,0,0,0)',
+                    stroke: 'rgba(255, 255, 255, 0.7)', // Trait blanc semi-transparent
+                    strokeWidth: 1,
+                    strokeDashArray: [5, 5],
+                    shadow: { color: 'rgba(0,0,0,0.8)', blur: 3 }, // Ombre noire pour le contraste
+                    selectable: false, evented: false, custom_type: 'placement_box'
+                });
+                fabricCanvas.add(rect);
+                fabricCanvas.sendToBack(rect);
+            }
+        });
+        fabricCanvas.renderAll();
     }
 
     function isLogoVisibleInView(logoView, currentCanvasView) {
@@ -510,6 +547,7 @@
             fabricCanvas.getObjects('image').forEach(obj => {
                 obj.set('visible', isLogoVisibleInView(obj.custom_view, state.currentView));
             });
+            drawPlacementZones(); // Redessiner les zones pour la nouvelle vue
             fabricCanvas.renderAll();
         }
     });
