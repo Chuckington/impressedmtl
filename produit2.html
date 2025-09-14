@@ -550,6 +550,23 @@
             });
             drawPlacementZones(); // Redessiner les zones pour la nouvelle vue
             fabricCanvas.renderAll();
+
+            // --- NOUVELLE LOGIQUE DE SCROLL ---
+            // Trouver la première option de personnalisation visible dans cette vue
+            const targetCheckbox = document.querySelector(`.personalization-checkbox[id$="-${state.currentView}"]`);
+            if (targetCheckbox) {
+                const targetCard = targetCheckbox.closest('.card');
+                if (targetCard) {
+                    // Faire défiler la carte dans la vue
+                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Mettre la carte en surbrillance temporairement
+                    targetCard.style.transition = 'box-shadow 0.3s ease-in-out';
+                    targetCard.style.boxShadow = '0 0 20px rgba(0, 123, 255, 0.8)';
+                    setTimeout(() => {
+                        targetCard.style.boxShadow = ''; // Revenir à la normale après 1.5s
+                    }, 1500);
+                }
+            }
         }
     });
 
