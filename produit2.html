@@ -141,16 +141,15 @@
         const baseImageUrl = state.product[`asset_base_${state.currentView}`];
         const maskImageUrl = state.product[`asset_mask_${state.currentView}`];
 
-        fabricCanvas.setBackgroundImage(null); // Nettoyer l'ancien fond
-        fabricCanvas.renderAll();
-
-        if (!baseImageUrl || !maskImageUrl) {
+        if (!baseImageUrl) {
             console.error(`Assets pour la vue '${state.currentView}' non trouvés.`);
+            fabricCanvas.setBackgroundImage(null); // Nettoyer l'ancien fond
+            fabricCanvas.renderAll();
             return;
         }
 
         try {
-            const [baseImg, maskImg] = await Promise.all([loadImage(baseImageUrl), loadImage(maskImageUrl)]);
+            const baseImg = await loadImage(baseImageUrl);
 
             // --- NOUVELLE LOGIQUE DE REDIMENSIONNEMENT ---
             // Obtenir la largeur du conteneur parent pour rendre le canvas responsive
@@ -162,6 +161,20 @@
             const canvasWidth = baseImg.width * scaleFactor;
             const canvasHeight = baseImg.height * scaleFactor;
 
+            // Si le produit n'a pas de masque (ex: sous-verre), on affiche juste l'image de base.
+            if (!maskImageUrl) {
+                fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight });
+                fabricCanvas.setBackgroundImage(baseImg.src, fabricCanvas.renderAll.bind(fabricCanvas), {
+                    scaleX: scaleFactor,
+                    scaleY: scaleFactor,
+                });
+                await updateLogosOnCanvas();
+                drawPlacementZones();
+                return; // On s'arrête ici pour ces produits
+            }
+
+            // Pour les produits avec masque, on continue la logique de colorisation
+            const maskImg = await loadImage(maskImageUrl);
             // Utiliser un canvas temporaire pour créer l'image de fond
             const offscreenCanvas = document.createElement('canvas');
             const offscreenCtx = offscreenCanvas.getContext('2d');
@@ -245,6 +258,35 @@
             console.error("La référence 'table_name_ref' est manquante pour ce produit.");
             customListEl.innerHTML = '<p>Options de personnalisation non disponibles.</p>';
             return;
+        }
+
+        // --- NOUVEAU: Gérer les produits simples sans options de personnalisation multiples ---
+        const simpleProducts = ['inventairesousverrerond', 'inventairesousverrecarre', 'inventairetapisdesouris'];
+        if (simpleProducts.includes(tableNameRef)) {
+            customListEl.innerHTML = `
+                <div class="card">
+                  <div class="card-content">
+                    <h3>Votre Design</h3>
+                    <p>Téléversez votre image pour la placer sur le produit.</p>
+                    <div class="personalize-option-group">
+                      <div class="personalize" style="display: none;">
+                        <input type="checkbox" class="personalization-checkbox" data-price="0" id="opt-simple-front" checked><label for="opt-simple-front">Design</label>
+                      </div>
+                      <div class="upload-section" id="upload-section-simple-front" style="display:block;">
+                        <label for="file-input-simple-front" class="btn btn-small">Choisir fichier</label>
+                        <input type="file" id="file-input-simple-front" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-simple-front" class="remove-bg-checkbox">
+                          <label for="remove-bg-simple-front">Enlever l'arrière-plan</label>
+                        </div>
+                        <div class="quality-warning" id="quality-warning-simple-front" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
+                        <div class="preview-wrapper"><img id="preview-simple-front" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            `;
+            return; // On s'arrête ici pour ces produits
         }
 
         const { data: options, error } = await supa
@@ -532,6 +574,12 @@
 
         state.product = data;
         pageTitleEl.textContent = state.product.name;
+
+        // --- NOUVEAU: Cacher les boutons de vue non disponibles ---
+        viewSelectorEl.querySelector('[data-view="front"]').style.display = state.product.asset_base_front ? 'inline-block' : 'none';
+        viewSelectorEl.querySelector('[data-view="back"]').style.display = state.product.asset_base_back ? 'inline-block' : 'none';
+        viewSelectorEl.querySelector('[data-view="sleeve_left"]').style.display = state.product.asset_base_sleeve_left ? 'inline-block' : 'none';
+        viewSelectorEl.querySelector('[data-view="sleeve_right"]').style.display = state.product.asset_base_sleeve_right ? 'inline-block' : 'none';
 
         await generatePersonalizationCards();
         await initializeOrderBar();
