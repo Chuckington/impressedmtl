@@ -114,7 +114,8 @@
         currentColor: '#FFFFFF', // Couleur par défaut (blanc)
         currentView: 'front',    // Vue par défaut ('front', 'back', etc.)
         loadedImages: {},        // Cache pour les images déjà chargées
-        logos: {}                // Pour stocker les objets Fabric.js des logos
+    logos: {},               // Pour stocker les objets Fabric.js des logos
+    isInitialRender: true    // Pour savoir si c'est le premier rendu
     };
 
     // --- Utilitaire de chargement d'image ---
@@ -161,8 +162,8 @@
             const canvasWidth = baseImg.width * scaleFactor;
             const canvasHeight = baseImg.height * scaleFactor;
 
-            // Si le produit n'a pas de masque (ex: sous-verre), on affiche juste l'image de base.
-            if (!maskImageUrl) {
+            // Si le produit n'a pas de masque, ou si c'est le rendu initial, on affiche juste l'image de base.
+            if (!maskImageUrl || state.isInitialRender) {
                 fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight });
                 fabricCanvas.setBackgroundImage(baseImg.src, fabricCanvas.renderAll.bind(fabricCanvas), {
                     scaleX: scaleFactor,
@@ -584,6 +585,7 @@
         await generatePersonalizationCards();
         await initializeOrderBar();
         await renderProductBase();
+        state.isInitialRender = false; // On met le flag à false après le premier rendu
     }
 
     // --- Écouteurs d'événements ---
