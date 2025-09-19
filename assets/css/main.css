@@ -247,25 +247,18 @@ header {
   background: #fff;
   padding: 20px 30px;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column; /* Organise les rangées verticalement */
+  display: flex; /* Met les options et les actions sur la même ligne */
+  justify-content: space-between;
+  align-items: center;
   margin-top: 40px;
-  gap: 20px; /* Espace entre la rangée du haut et celle du bas */
+  gap: 30px; /* Espace entre les options et les actions */
+  flex-wrap: wrap; /* Permet le retour à la ligne sur les petits écrans */
 }
-.order-summary-top-row {
+.summary-options-wrapper {
   display: flex;
-  justify-content: center; /* Centre tous les éléments de la rangée du haut */
   align-items: flex-end; /* Aligne les éléments par le bas */
-  width: 100%;
   gap: 25px; /* Espace uniforme entre les groupes d'options */
   flex-wrap: wrap; /* Permet le retour à la ligne sur les petits écrans si nécessaire */
-}
-.order-summary-bottom-row {
-  display: flex;
-  justify-content: center; /* Centre la section des tailles */
-  width: 100%;
-  border-top: 1px solid #eee; /* Ajoute une ligne de séparation fine */
-  padding-top: 20px; /* Espace au-dessus de la section des tailles */
 }
 #order-summary .option-group {
   display: flex;
@@ -309,13 +302,14 @@ header {
 }
 .size-input-group {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* Met le label à gauche de l'input */
   align-items: center;
-  gap: 5px;
+  gap: 8px; /* Espace entre le label et l'input */
 }
 .size-input-group label { font-size: 0.85rem; font-weight: 500; }
 .size-quantity-input { width: 60px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
-#size-validation-message { margin-top: 10px; font-weight: bold; width: 100%; text-align: left; font-size: 0.9em; }
+/* Le message de validation prend toute la largeur et se place en dernier */
+#size-validation-message { font-weight: bold; width: 100%; text-align: left; font-size: 0.9em; flex-basis: 100%; order: 2; }
 
 #offer-info-box {
   background-color: #eef7ff;
