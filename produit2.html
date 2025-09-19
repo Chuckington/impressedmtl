@@ -51,7 +51,7 @@
 
   <!-- Barre de commande identique à produit.html -->
   <div id="order-summary">
-    <div class="summary-options-wrapper">
+    <div class="order-summary-top-row">
         <div class="option-group">
             <label for="quantity">Quantité:</label>
             <input type="number" id="quantity" value="1" min="1">
@@ -67,16 +67,20 @@
             <label for="gender-select">Sexe:</label>
             <select id="gender-select"><option value="">Choisir...</option></select>
         </div>
-        <div class="option-group" id="size-option-group">
-            <label>Tailles :</label>
-            <div id="size-inputs-container" class="size-inputs-wrapper"></div>
+        <div class="summary-actions-container">
+            <div class="total-price-display">Total: <span id="total-price">0.00</span> $</div>
+            <button id="add-to-cart" class="btn">Ajouter au panier</button>
         </div>
     </div>
-    <div class="summary-actions-container">
-        <div class="total-price-display">Total: <span id="total-price">0.00</span> $</div>
-        <button id="add-to-cart" class="btn">Ajouter au panier</button>
+    <div class="order-summary-bottom-row">
+      <div class="option-group" id="size-option-group">
+        <label>Tailles :</label>
+        <div class="size-inputs-column">
+          <div id="size-inputs-container" class="size-inputs-wrapper"></div>
+          <div id="size-validation-message"></div>
+        </div>
+      </div>
     </div>
-    <div id="size-validation-message"></div>
   </div>
 
   <script>
