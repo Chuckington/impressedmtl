@@ -129,6 +129,7 @@
     let currentCartForPayment = [];
     const fixedFeeAmountEl = document.getElementById('fixed-fee-amount');
     const fixedFeeMessageEl = document.getElementById('fixed-fee-message');
+    let appliedPromoCode = null; // Pour stocker le code promo valide
     let currentTotalForPayment = 0;
     let totalDiscount = 0; // Variable pour stocker le rabais
 
@@ -265,9 +266,57 @@
         fixedFeeMessageEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
       }
 
+      // NOUVEAU: Calcul du rabais du code promotionnel
+      let promoDiscountValue = 0;
+      const promoDiscountSummaryEl = document.getElementById('promo-discount-summary');
+      if (appliedPromoCode) {
+        if (appliedPromoCode.discount_type === 'percentage') {
+          promoDiscountValue = subTotalBeforeFixedFee * (appliedPromoCode.discount_value / 100);
+        } else if (appliedPromoCode.discount_type === 'fixed') {
+          promoDiscountValue = appliedPromoCode.discount_value;
+        }
+        
+        // S'assurer que le rabais ne rend pas le total négatif
+        if (promoDiscountValue > subTotalBeforeFixedFee) {
+          promoDiscountValue = subTotalBeforeFixedFee;
+        }
+
+        promoDiscountSummaryEl.querySelector('span').textContent = `-${promoDiscountValue.toFixed(2)}`;
+        promoDiscountSummaryEl.style.display = 'block';
+      } else {
+        promoDiscountSummaryEl.style.display = 'none';
+      }
+
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
-      currentTotalForPayment = subTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee; // Appliquer le rabais et les frais de maquette
+      currentTotalForPayment = subTotalBeforeFixedFee - totalDiscount - promoDiscountValue + fixedFee + maquetteFee; // Appliquer le rabais et les frais de maquette
       totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
+    }
+
+    async function handleApplyPromoCode() {
+        const codeInput = document.getElementById('promo-code-input');
+        const code = codeInput.value.trim().toUpperCase();
+        const messageEl = document.getElementById('promo-code-message');
+
+        if (!code) {
+            messageEl.textContent = 'Veuillez entrer un code.';
+            messageEl.style.color = 'red';
+            return;
+        }
+
+        const { data, error } = await supa.from('promo_codes').select('*').eq('code', code).eq('is_active', true).single();
+
+        if (error || !data || (data.expires_at && new Date(data.expires_at) < new Date())) {
+            messageEl.textContent = 'Code promotionnel invalide ou expiré.';
+            messageEl.style.color = 'red';
+            appliedPromoCode = null;
+        } else {
+            messageEl.textContent = `Bonne nouvelle ! Rabais appliqué : ${data.discount_value}${data.discount_type === 'percentage' ? '%' : '$'}.`;
+            messageEl.style.color = 'green';
+            appliedPromoCode = data;
+            document.getElementById('promo-code-input').disabled = true;
+            document.getElementById('apply-promo-btn').disabled = true;
+        }
+        await loadOrderSummary(); // Recalculer le total
     }
 
     async function initializeSquarePaymentForm() {
@@ -392,6 +441,9 @@
             document.getElementById('form-validation-error').style.display = 'none';
         });
     });
+
+    // NOUVEAU: Écouteur pour le bouton du code promo
+    document.getElementById('apply-promo-btn').addEventListener('click', handleApplyPromoCode);
 
   </script>
 </body>
