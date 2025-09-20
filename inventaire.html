@@ -82,42 +82,37 @@
 
     // Chargement de l'inventaire
     async function loadInventaire() {
-      const { data, error } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
       const container = document.getElementById('inventaire');
+
+      // NOUVELLE LOGIQUE: On utilise la table 'products' comme source de vérité
+      const { data, error } = await supa
+        .from('products')
+        .select('*')
+        .eq('is_active', true) // On affiche seulement les produits actifs
+        .order('name', { ascending: true });
+
       if (error) {
         container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement.</p>';
         console.error('Erreur Supabase:', error);
         return;
       }
+
       if (!data || data.length === 0) {
         container.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Aucun produit disponible.</p>';
         return;
       }
+
       container.innerHTML = '';
       data.forEach(item => {
-        let tableTarget;
-        const nomKey = item.nom.trim().toLowerCase();
-        // Gestion Sous-verre
-        if (nomKey === 'sous-verre sublimé (4 pack)') {
-          const mod = item.modèle.trim().toLowerCase();
-          tableTarget = mod.includes('rond') ? 'inventairesousverrerond' : 'inventairesousverrecarre';
-        } else {
-          const baseMap = {
-            'crewneck':'inventairecrewneck','hoodie':'inventairehoodie',
-            'polo sport':'inventairepolosport','tablier':'inventairetablier',
-            'tote bag':'inventairetotebag','t-shirt crop top':'inventairetshirtcroptop',
-            't-shirt de base':'inventairetshirtdebase','long sleeve':'inventairetshirtlongsleeve',
-            't-shirt premium - sport':'inventairetshirtpremium','tuque':'inventairetuque',
-            'veste':'inventaireveste','tapis de souris':'inventairetapisdesouris'
-          };
-          tableTarget = baseMap[nomKey];
-        }
-        if (!tableTarget) return; // Ne rien afficher si le produit n'est pas mappé
+        // Déterminer la page cible en fonction du nouvel interrupteur 'has_v2_configurator'
+        const targetPage = item.has_v2_configurator ? 'produit2.html' : 'produit.html';
+        const targetParam = item.has_v2_configurator ? `id=${item.id}` : `table=${item.table_name_ref}`;
+        const href = `${targetPage}?${targetParam}`;
 
-        const isSpecialOffer = nomKey === 't-shirt de base' || nomKey === 't-shirt premium - sport';
+        const isSpecialOffer = item.table_name_ref === 'inventairetshirtdebase' || item.table_name_ref === 'inventairetshirtpremium';
 
         const card = document.createElement('a');
-        card.href = `produit.html?table=${tableTarget}`;
+        card.href = href;
         card.className = 'card';
         if (isSpecialOffer) {
           card.classList.add('special-offer-card');
@@ -128,9 +123,8 @@
             ${isSpecialOffer ? '<div class="offer-badge">Offre<br>Spéciale!</div>' : ''}
           </div>
           <div class="card-content">
-            <h3>${item.nom}</h3>
-            <p><strong>Modèle:</strong> ${item.modèle || '—'}</p>
-            <p><strong>Prix:</strong> ${item.prix}$</p>
+            <h3>${item.name}</h3>
+            <p><strong>Prix de base:</strong> ${item.base_price}$</p>
           </div>`;
         container.appendChild(card);
       });

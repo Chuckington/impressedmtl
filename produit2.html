@@ -115,7 +115,8 @@
         currentView: 'front',    // Vue par défaut ('front', 'back', etc.)
         loadedImages: {},        // Cache pour les images déjà chargées
     logos: {},               // Pour stocker les objets Fabric.js des logos
-    isInitialRender: true    // Pour savoir si c'est le premier rendu
+    isInitialRender: true,   // Pour savoir si c'est le premier rendu
+    placementZones: {}       // Pour stocker les zones de placement depuis la DB
     };
 
     // --- Utilitaire de chargement d'image ---
@@ -212,21 +213,21 @@
         const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
 
         for (const checkbox of checkedPersonalizations) {
-            const idParts = checkbox.id.split('-'); // e.g., ['opt', '1', 'front']
-            const viewForLogo = idParts.slice(2).join('_'); // e.g., 'front', 'sleeve_left'
+            const placementKey = checkbox.dataset.placementKey;
+            const viewForLogo = checkbox.dataset.view; // La vue générique ('front', 'back', etc.)
 
             // Si la personnalisation cochée a une image
-            if (checkbox.dataset.imageUrl) {
+            if (checkbox.dataset.imageUrl && placementKey && viewForLogo) {
                 try {
                     const logoImgElement = await loadImage(checkbox.dataset.imageUrl);
-                    const placement = getPlacementBox(viewForLogo, fabricCanvas.width, fabricCanvas.height);
+                    const placement = getPlacementBox(placementKey, fabricCanvas.width, fabricCanvas.height);
 
                     const fabricImage = new fabric.Image(logoImgElement, {
                         left: placement.x,
                         top: placement.y,
                         // Rendre visible seulement si la vue du logo correspond à la vue actuelle
                         visible: isLogoVisibleInView(viewForLogo, state.currentView),
-                        custom_view: viewForLogo, // Stocker la vue pour référence future
+                        custom_placementKey: placementKey, // Stocker la clé de placement pour référence
                         custom_id: checkbox.id, // Stocker l'ID de la checkbox pour référence
                         custom_placementBox: placement, // Stocker la boîte de placement
                         // Style des contrôles
@@ -271,7 +272,7 @@
                     <p>Téléversez votre image pour la placer sur le produit.</p>
                     <div class="personalize-option-group">
                       <div class="personalize" style="display: none;">
-                        <input type="checkbox" class="personalization-checkbox" data-price="0" id="opt-simple-front" checked><label for="opt-simple-front">Design</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="0" id="opt-simple-front" data-view="front" data-placement-key="default_front" checked><label for="opt-simple-front">Design</label>
                       </div>
                       <div class="upload-section" id="upload-section-simple-front" style="display:block;">
                         <label for="file-input-simple-front" class="btn btn-small">Choisir fichier</label>
@@ -308,12 +309,14 @@
             let optionsHtml = '';
             const modificationPrice = parseFloat(item.prix) || 0;
 
-            const desc = item.personnalisation?.toLowerCase() || '';
+            const desc = (item.personnalisation || '').toLowerCase();
+            const personalizationKey = desc.replace(/[^a-z0-9]/gi, '_').replace(/_{2,}/g, '_').toLowerCase();
+
             if (desc.includes('gros design')) {
                 optionsHtml = `
                     <div class="personalize-option-group">
                       <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front"><label for="opt-${item.id}-front">Devant</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front" data-view="front" data-placement-key="${personalizationKey}_front"><label for="opt-${item.id}-front">Devant</label>
                       </div>
                       <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
                         <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
@@ -328,7 +331,7 @@
                     </div>
                     <div class="personalize-option-group">
                       <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back"><label for="opt-${item.id}-back">Derrière</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back" data-view="back" data-placement-key="${personalizationKey}_back"><label for="opt-${item.id}-back">Derrière</label>
                       </div>
                       <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
                         <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
@@ -343,10 +346,11 @@
                     </div>
                 `;
             } else if (desc.includes('petit design poitrine')) {
+                 const specificKey = 'petit_design_poitrine';
                  optionsHtml = `
                     <div class="personalize-option-group">
                       <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left"><label for="opt-${item.id}-left">Poitrine Gauche</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left" data-view="left" data-placement-key="${specificKey}_left"><label for="opt-${item.id}-left">Poitrine Gauche</label>
                       </div>
                       <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
                         <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
@@ -361,7 +365,7 @@
                     </div>
                     <div class="personalize-option-group">
                       <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right"><label for="opt-${item.id}-right">Poitrine Droite</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right" data-view="right" data-placement-key="${specificKey}_right"><label for="opt-${item.id}-right">Poitrine Droite</label>
                       </div>
                       <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
                         <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
@@ -375,10 +379,11 @@
                       </div>
                     </div>
                 `;
-            } else if (item.personnalisation) { // Cas générique
+            } else if (item.personnalisation) { // Cas générique (ex: manche)
+                 const viewKey = desc.includes('gauche') ? 'sleeve_left' : (desc.includes('droite') ? 'sleeve_right' : 'generic');
                  optionsHtml = `
                     <div class="personalize-option-group">
-                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic"><label for="opt-${item.id}-generic">${item.personnalisation}</label></div>
+                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic" data-view="${viewKey}" data-placement-key="${personalizationKey}"><label for="opt-${item.id}-generic">${item.personnalisation}</label></div>
                       <div class="upload-section" id="upload-section-${item.id}-generic" style="display:none;">
                         <label for="file-input-${item.id}-generic" class="btn btn-small">Choisir fichier</label>
                         <input type="file" id="file-input-${item.id}-generic" accept="image/*" style="display:none;">
@@ -405,18 +410,41 @@
     }
 
     // --- Helper pour définir les zones de placement ---
-    function getPlacementBox(view, canvasWidth, canvasHeight) {
-        const placements = {
-            'front': { x: canvasWidth * 0.35, y: canvasHeight * 0.25, width: canvasWidth * 0.3, height: canvasHeight * 0.4 },
-            'back': { x: canvasWidth * 0.35, y: canvasHeight * 0.2, width: canvasWidth * 0.3, height: canvasHeight * 0.5 },
-            // Poitrine Gauche (sur la droite du t-shirt pour le spectateur) - Coordonnées ajustées
-            'left': { x: canvasWidth * 0.55, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
-            // Poitrine Droite (sur la gauche du t-shirt pour le spectateur) - Coordonnées ajustées
-            'right': { x: canvasWidth * 0.35, y: canvasHeight * 0.25, width: canvasWidth * 0.1, height: canvasHeight * 0.1 },
-            'sleeve_left': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 }, // Garder les clés complètes
-            'sleeve_right': { x: canvasWidth * 0.4, y: canvasHeight * 0.4, width: canvasWidth * 0.2, height: canvasHeight * 0.2 } // Garder les clés complètes
+    function getPlacementBox(placementKey, canvasWidth, canvasHeight) {
+        // --- Taille de référence de vos images sources ---
+        const NATIVE_IMAGE_WIDTH = 6250;
+        const NATIVE_IMAGE_HEIGHT = 6250;
+
+        // --- Récupérer la configuration depuis l'état de l'application ---
+        const placementConfig = state.placementZones[placementKey];
+
+        // --- Gérer le cas où aucune zone n'est définie dans la DB ---
+        if (!placementConfig) {
+            console.warn(`Aucune zone de placement définie dans la base de données pour la clé '${placementKey}'. Utilisation d'une zone par défaut.`);
+            // Coordonnées par défaut en PIXELS (basées sur 2000x2000)
+            const defaultPlacement = { x: 700, y: 500, width: 600, height: 800 }; // Un défaut générique
+            
+            const scaleX = canvasWidth / NATIVE_IMAGE_WIDTH;
+            const scaleY = canvasHeight / NATIVE_IMAGE_HEIGHT;
+
+            return {
+                x: defaultPlacement.x * scaleX,
+                y: defaultPlacement.y * scaleY,
+                width: defaultPlacement.width * scaleX,
+                height: defaultPlacement.height * scaleY
+            };
+        }
+
+        // --- Calculer les coordonnées finales à partir des données de la DB ---
+        const scaleX = canvasWidth / NATIVE_IMAGE_WIDTH;
+        const scaleY = canvasHeight / NATIVE_IMAGE_HEIGHT;
+
+        return {
+            x: placementConfig.x * scaleX,
+            y: placementConfig.y * scaleY,
+            width: placementConfig.width * scaleX,
+            height: placementConfig.height * scaleY
         };
-        return placements[view] || placements['front']; // Utiliser la vue directe de la checkbox
     }
 
     // --- NOUVEAU: Dessine les zones de placement pour les options cochées ---
@@ -432,12 +460,14 @@
         const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
 
         checkedPersonalizations.forEach(checkbox => {
-            const idParts = checkbox.id.split('-');
-            const viewForZone = idParts.slice(2).join('_');
+            const placementKey = checkbox.dataset.placementKey;
+            const viewForZone = checkbox.dataset.view;
+
+            if (!placementKey || !viewForZone) return;
 
             // 3. Vérifier si cette zone doit être visible dans la vue actuelle
             if (isLogoVisibleInView(viewForZone, state.currentView)) {
-                const box = getPlacementBox(viewForZone, fabricCanvas.width, fabricCanvas.height);
+                const box = getPlacementBox(placementKey, fabricCanvas.width, fabricCanvas.height);
                 
                 const rect = new fabric.Rect({
                     left: box.x, top: box.y, width: box.width, height: box.height,
@@ -576,6 +606,23 @@
         state.product = data;
         pageTitleEl.textContent = state.product.name;
 
+        // --- NOUVEAU: Charger les zones de placement depuis la base de données ---
+        const { data: zonesData, error: zonesError } = await supa
+            .from('product_placement_zones')
+            .select('view_name, x, y, width, height')
+            .eq('product_id', productId);
+
+        if (zonesError) {
+            console.error("Erreur lors du chargement des zones de placement:", zonesError);
+        } else if (zonesData) {
+            // Convertir le tableau de zones en un objet pour un accès facile (ex: state.placementZones['front'])
+            state.placementZones = zonesData.reduce((acc, zone) => {
+                acc[zone.view_name] = { x: zone.x, y: zone.y, width: zone.width, height: zone.height };
+                return acc;
+            }, {});
+            console.log("Zones de placement chargées:", state.placementZones);
+        }
+
         // --- NOUVEAU: Cacher les boutons de vue non disponibles ---
         viewSelectorEl.querySelector('[data-view="front"]').style.display = state.product.asset_base_front ? 'inline-block' : 'none';
         viewSelectorEl.querySelector('[data-view="back"]').style.display = state.product.asset_base_back ? 'inline-block' : 'none';
@@ -700,11 +747,10 @@
             // --- NOUVELLE LOGIQUE : Changer la vue de l'aperçu ---
             if (e.target.checked) { // On change la vue seulement quand on coche la case
                 const idParts = checkboxId.split('-');
-                const viewForCheckbox = idParts.slice(2).join('_');
+                const viewForCheckbox = e.target.dataset.view;
                 
                 // Simuler un clic sur le bouton de vue correspondant
-                const viewButton = viewSelectorEl.querySelector(`.view-btn[data-view="${viewForCheckbox}"]`);
-                if (viewButton && state.currentView !== viewForCheckbox) {
+                const viewButton = viewSelectorEl.querySelector(`.view-btn[data-view="${viewForCheckbox}"]`);                if (viewButton && state.currentView !== viewForCheckbox) {
                     viewButton.click();
                 }
             }
@@ -959,8 +1005,7 @@
 
                 // Trouver le logo correspondant sur le canvas
                 const idParts = cbCheckbox.id.split('-');
-                const viewForLogo = idParts.slice(2).join('_');
-                const fabricLogo = fabricCanvas.getObjects('image').find(obj => obj.custom_view === viewForLogo);
+                const fabricLogo = fabricCanvas.getObjects('image').find(obj => obj.custom_id === cbCheckbox.id);
 
                 let transformData = null;
                 if (fabricLogo) {
