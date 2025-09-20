@@ -313,6 +313,7 @@
             const personalizationKey = desc.replace(/[^a-z0-9]/gi, '_').replace(/_{2,}/g, '_').toLowerCase();
 
             if (desc.includes('gros design')) {
+                // Option pour le devant
                 optionsHtml = `
                     <div class="personalize-option-group">
                       <div class="personalize">
@@ -329,22 +330,27 @@
                         <div class="preview-wrapper"><img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
-                    <div class="personalize-option-group">
-                      <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back" data-view="back" data-placement-key="${personalizationKey}_back"><label for="opt-${item.id}-back">Derrière</label>
-                      </div>
-                      <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
-                        <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
-                        <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
-                        <div class="remove-bg-option">
-                          <input type="checkbox" id="remove-bg-${item.id}-back" class="remove-bg-checkbox">
-                          <label for="remove-bg-${item.id}-back">Enlever l'arrière-plan</label>
-                        </div>
-                        <div class="quality-warning" id="quality-warning-${item.id}-back" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
-                        <div class="preview-wrapper"><img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;"></div>
-                      </div>
-                    </div>
                 `;
+                // Option pour le derrière (conditionnelle, pas pour le tablier)
+                if (tableNameRef !== 'inventairetablier') {
+                    optionsHtml += `
+                        <div class="personalize-option-group">
+                          <div class="personalize">
+                            <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back" data-view="back" data-placement-key="${personalizationKey}_back"><label for="opt-${item.id}-back">Derrière</label>
+                          </div>
+                          <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
+                            <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
+                            <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
+                            <div class="remove-bg-option">
+                              <input type="checkbox" id="remove-bg-${item.id}-back" class="remove-bg-checkbox">
+                              <label for="remove-bg-${item.id}-back">Enlever l'arrière-plan</label>
+                            </div>
+                            <div class="quality-warning" id="quality-warning-${item.id}-back" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
+                            <div class="preview-wrapper"><img id="preview-${item.id}-back" src="#" alt="Aperçu" style="display:none;"></div>
+                          </div>
+                        </div>
+                    `;
+                }
             } else if (desc.includes('petit design poitrine')) {
                  const specificKey = 'petit_design_poitrine';
                  optionsHtml = `
@@ -379,11 +385,26 @@
                       </div>
                     </div>
                 `;
-            } else if (item.personnalisation) { // Cas générique (ex: manche)
-                 const viewKey = desc.includes('gauche') ? 'sleeve_left' : (desc.includes('droite') ? 'sleeve_right' : 'generic');
+            } else if (item.personnalisation) { // Cas générique (ex: manche, tuque, tablier)
+                let placementKey;
+                let viewKey;
+                let labelText = item.personnalisation;
+
+                if (desc.includes('manche gauche')) {
+                    placementKey = 'manche_gauche';
+                    viewKey = 'sleeve_left';
+                } else if (desc.includes('manche droite')) {
+                    placementKey = 'manche_droite';
+                    viewKey = 'sleeve_right';
+                } else {
+                    // Pour tout le reste (Tuque, Tablier, etc.), on utilise la zone par défaut.
+                    placementKey = 'default_front';
+                    viewKey = 'front';
+                }
+
                  optionsHtml = `
                     <div class="personalize-option-group">
-                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic" data-view="${viewKey}" data-placement-key="${personalizationKey}"><label for="opt-${item.id}-generic">${item.personnalisation}</label></div>
+                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic" data-view="${viewKey}" data-placement-key="${placementKey}"><label for="opt-${item.id}-generic">${labelText}</label></div>
                       <div class="upload-section" id="upload-section-${item.id}-generic" style="display:none;">
                         <label for="file-input-${item.id}-generic" class="btn btn-small">Choisir fichier</label>
                         <input type="file" id="file-input-${item.id}-generic" accept="image/*" style="display:none;">
