@@ -228,7 +228,7 @@
                         top: placement.y,
                         // Rendre visible seulement si la vue du logo correspond à la vue actuelle
                         visible: isLogoVisibleInView(viewForLogo, state.currentView),
-                        custom_placementKey: placementKey, // Stocker la clé de placement pour référence
+                        custom_view: viewForLogo, // Stocker la vue pour référence future
                         custom_id: checkbox.id, // Stocker l'ID de la checkbox pour référence
                         custom_placementBox: placement, // Stocker la boîte de placement
                         // Style des contrôles
@@ -311,7 +311,8 @@
 
             const desc = (item.personnalisation || '').toLowerCase();
 
-            if (desc.includes('gros design')) {
+            // Rendu conditionnel basé sur la description exacte pour plus de robustesse
+            if (desc === 'gros design') {
                 const personalizationKey = 'gros_design';
                 // Option pour le devant (sauf pour la veste)
                 if (tableNameRef !== 'inventaireveste') {
@@ -353,12 +354,12 @@
                         </div>
                     `;
                 }
-            } else if (desc.includes('petit design poitrine')) {
+            } else if (desc === 'petit design poitrine') {
                  const specificKey = 'petit_design_poitrine';
                  optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left" data-view="left" data-placement-key="${specificKey}_left"><label for="opt-${item.id}-left">Poitrine Gauche</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left" data-view="front" data-placement-key="${specificKey}_left"><label for="opt-${item.id}-left">Poitrine Gauche</label>
                       </div>
                       <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
                         <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
@@ -373,7 +374,7 @@
                     </div>
                     <div class="personalize-option-group">
                       <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right" data-view="right" data-placement-key="${specificKey}_right"><label for="opt-${item.id}-right">Poitrine Droite</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right" data-view="front" data-placement-key="${specificKey}_right"><label for="opt-${item.id}-right">Poitrine Droite</label>
                       </div>
                       <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
                         <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
@@ -387,7 +388,7 @@
                       </div>
                     </div>
                  `;
-            } else if (desc.includes('manche gauche')) {
+            } else if (desc === 'manche gauche') {
                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-sleeve-left" data-view="sleeve_left" data-placement-key="manche_gauche"><label for="opt-${item.id}-sleeve-left">${item.personnalisation}</label></div>
@@ -403,7 +404,7 @@
                       </div>
                     </div>
                 `;
-            } else if (desc.includes('manche droite')) {
+            } else if (desc === 'manche droite') {
                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-sleeve-right" data-view="sleeve_right" data-placement-key="manche_droite"><label for="opt-${item.id}-sleeve-right">${item.personnalisation}</label></div>
@@ -419,7 +420,7 @@
                       </div>
                     </div>
                 `;
-            } else if (item.personnalisation) { // Cas générique pour Tuque, Tote bag, etc.
+            } else { // Cas générique pour tout le reste (Tuque, Tote bag, etc.)
                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-default" data-view="front" data-placement-key="default_front"><label for="opt-${item.id}-default">${item.personnalisation}</label></div>
@@ -786,11 +787,11 @@
 
             // --- NOUVELLE LOGIQUE : Changer la vue de l'aperçu ---
             if (e.target.checked) { // On change la vue seulement quand on coche la case
-                const idParts = checkboxId.split('-');
                 const viewForCheckbox = e.target.dataset.view;
                 
                 // Simuler un clic sur le bouton de vue correspondant
-                const viewButton = viewSelectorEl.querySelector(`.view-btn[data-view="${viewForCheckbox}"]`);                if (viewButton && state.currentView !== viewForCheckbox) {
+                const viewButton = viewSelectorEl.querySelector(`.view-btn[data-view="${viewForCheckbox}"]`);
+                if (viewButton && state.currentView !== viewForCheckbox) {
                     viewButton.click();
                 }
             }
