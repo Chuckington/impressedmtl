@@ -116,7 +116,8 @@
         loadedImages: {},        // Cache pour les images déjà chargées
     logos: {},               // Pour stocker les objets Fabric.js des logos
     isInitialRender: true,   // Pour savoir si c'est le premier rendu
-    placementZones: {}       // Pour stocker les zones de placement depuis la DB
+    placementZones: {},      // Pour stocker les zones de placement depuis la DB
+    colorHasBeenSelected: false // NOUVEAU: Pour savoir si l'utilisateur a choisi une couleur
     };
 
     // --- Utilitaire de chargement d'image ---
@@ -163,8 +164,8 @@
             const canvasWidth = baseImg.width * scaleFactor;
             const canvasHeight = baseImg.height * scaleFactor;
 
-            // Si le produit n'a pas de masque, ou si c'est le rendu initial, on affiche juste l'image de base.
-            if (!maskImageUrl || state.isInitialRender) {
+            // Si le produit n'a pas de masque, ou si aucune couleur n'a été choisie, on affiche juste l'image de base.
+            if (!maskImageUrl || !state.colorHasBeenSelected) {
                 fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight });
                 fabricCanvas.setBackgroundImage(baseImg.src, fabricCanvas.renderAll.bind(fabricCanvas), {
                     scaleX: scaleFactor,
@@ -262,9 +263,20 @@
             return;
         }
 
-        // --- NOUVEAU: Gérer les produits simples sans options de personnalisation multiples ---
-        const simpleProducts = ['inventairesousverrerond', 'inventairesousverrecarre', 'inventairetapisdesouris'];
-        if (simpleProducts.includes(tableNameRef)) {
+        const { data: options, error } = await supa
+            .from(tableNameRef)
+            .select('*')
+            .order('nom', { ascending: true });
+
+        if (error) {
+            console.error("Erreur lors du chargement des options de personnalisation:", error);
+            customListEl.innerHTML = '<p>Erreur de chargement des options.</p>';
+            return;
+        }
+
+        // NOUVELLE LOGIQUE: Si aucune option de personnalisation n'est trouvée dans la table,
+        // on considère que c'est un produit simple avec une seule zone de design.
+        if (!options || options.length === 0) {
             customListEl.innerHTML = `
                 <div class="card">
                   <div class="card-content">
@@ -286,20 +298,8 @@
                       </div>
                     </div>
                   </div>
-                </div>
-            `;
+                </div>`;
             return; // On s'arrête ici pour ces produits
-        }
-
-        const { data: options, error } = await supa
-            .from(tableNameRef)
-            .select('*')
-            .order('nom', { ascending: true });
-
-        if (error) {
-            console.error("Erreur lors du chargement des options de personnalisation:", error);
-            customListEl.innerHTML = '<p>Erreur de chargement des options.</p>';
-            return;
         }
 
         customListEl.innerHTML = '';
@@ -638,6 +638,7 @@
     // --- Écouteurs d'événements ---
     colorSelectEl.addEventListener('change', (e) => {
         state.currentColor = e.target.value;
+        state.colorHasBeenSelected = true; // Indiquer qu'une couleur a été choisie
         document.getElementById('color-preview').style.backgroundColor = e.target.value;
         renderProductBase();
     });
