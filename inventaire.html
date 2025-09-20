@@ -88,7 +88,6 @@
       const { data, error } = await supa
         .from('products')
         .select('*')
-        .eq('is_active', true) // On affiche seulement les produits actifs
         .order('name', { ascending: true });
 
       if (error) {
@@ -119,7 +118,7 @@
         }
         card.innerHTML = `
           <div class="card-image">
-            <img src="${item.image_url}" alt="${item.nom}">
+            <img src="${item.image_url}" alt="${item.name}">
             ${isSpecialOffer ? '<div class="offer-badge">Offre<br>Spéciale!</div>' : ''}
           </div>
           <div class="card-content">
