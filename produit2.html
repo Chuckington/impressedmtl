@@ -310,11 +310,12 @@
             const modificationPrice = parseFloat(item.prix) || 0;
 
             const desc = (item.personnalisation || '').toLowerCase();
-            const personalizationKey = desc.replace(/[^a-z0-9]/gi, '_').replace(/_{2,}/g, '_').toLowerCase();
 
             if (desc.includes('gros design')) {
-                // Option pour le devant
-                optionsHtml = `
+                const personalizationKey = 'gros_design';
+                // Option pour le devant (sauf pour la veste)
+                if (tableNameRef !== 'inventaireveste') {
+                    optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize">
                         <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front" data-view="front" data-placement-key="${personalizationKey}_front"><label for="opt-${item.id}-front">Devant</label>
@@ -330,7 +331,8 @@
                         <div class="preview-wrapper"><img id="preview-${item.id}-front" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
-                `;
+                    `;
+                }
                 // Option pour le derrière (conditionnelle, pas pour le tablier)
                 if (tableNameRef !== 'inventairetablier') {
                     optionsHtml += `
@@ -353,7 +355,7 @@
                 }
             } else if (desc.includes('petit design poitrine')) {
                  const specificKey = 'petit_design_poitrine';
-                 optionsHtml = `
+                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize">
                         <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left" data-view="left" data-placement-key="${specificKey}_left"><label for="opt-${item.id}-left">Poitrine Gauche</label>
@@ -384,36 +386,52 @@
                         <div class="preview-wrapper"><img id="preview-${item.id}-right" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
-                `;
-            } else if (item.personnalisation) { // Cas générique (ex: manche, tuque, tablier)
-                let placementKey;
-                let viewKey;
-                let labelText = item.personnalisation;
-
-                if (desc.includes('manche gauche')) {
-                    placementKey = 'manche_gauche';
-                    viewKey = 'sleeve_left';
-                } else if (desc.includes('manche droite')) {
-                    placementKey = 'manche_droite';
-                    viewKey = 'sleeve_right';
-                } else {
-                    // Pour tout le reste (Tuque, Tablier, etc.), on utilise la zone par défaut.
-                    placementKey = 'default_front';
-                    viewKey = 'front';
-                }
-
-                 optionsHtml = `
+                 `;
+            } else if (desc.includes('manche gauche')) {
+                optionsHtml += `
                     <div class="personalize-option-group">
-                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-generic" data-view="${viewKey}" data-placement-key="${placementKey}"><label for="opt-${item.id}-generic">${labelText}</label></div>
-                      <div class="upload-section" id="upload-section-${item.id}-generic" style="display:none;">
-                        <label for="file-input-${item.id}-generic" class="btn btn-small">Choisir fichier</label>
-                        <input type="file" id="file-input-${item.id}-generic" accept="image/*" style="display:none;">
+                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-sleeve-left" data-view="sleeve_left" data-placement-key="manche_gauche"><label for="opt-${item.id}-sleeve-left">${item.personnalisation}</label></div>
+                      <div class="upload-section" id="upload-section-${item.id}-sleeve-left" style="display:none;">
+                        <label for="file-input-${item.id}-sleeve-left" class="btn btn-small">Choisir fichier</label>
+                        <input type="file" id="file-input-${item.id}-sleeve-left" accept="image/*" style="display:none;">
                         <div class="remove-bg-option">
-                          <input type="checkbox" id="remove-bg-${item.id}-generic" class="remove-bg-checkbox">
-                          <label for="remove-bg-${item.id}-generic">Enlever l'arrière-plan</label>
+                          <input type="checkbox" id="remove-bg-${item.id}-sleeve-left" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-sleeve-left">Enlever l'arrière-plan</label>
                         </div>
-                        <div class="quality-warning" id="quality-warning-${item.id}-generic" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
-                        <div class="preview-wrapper"><img id="preview-${item.id}-generic" src="#" alt="Aperçu" style="display:none;"></div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-sleeve-left" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
+                        <div class="preview-wrapper"><img id="preview-${item.id}-sleeve-left" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
+                `;
+            } else if (desc.includes('manche droite')) {
+                optionsHtml += `
+                    <div class="personalize-option-group">
+                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-sleeve-right" data-view="sleeve_right" data-placement-key="manche_droite"><label for="opt-${item.id}-sleeve-right">${item.personnalisation}</label></div>
+                      <div class="upload-section" id="upload-section-${item.id}-sleeve-right" style="display:none;">
+                        <label for="file-input-${item.id}-sleeve-right" class="btn btn-small">Choisir fichier</label>
+                        <input type="file" id="file-input-${item.id}-sleeve-right" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-${item.id}-sleeve-right" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-sleeve-right">Enlever l'arrière-plan</label>
+                        </div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-sleeve-right" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
+                        <div class="preview-wrapper"><img id="preview-${item.id}-sleeve-right" src="#" alt="Aperçu" style="display:none;"></div>
+                      </div>
+                    </div>
+                `;
+            } else if (item.personnalisation) { // Cas générique pour Tuque, Tote bag, etc.
+                optionsHtml += `
+                    <div class="personalize-option-group">
+                      <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-default" data-view="front" data-placement-key="default_front"><label for="opt-${item.id}-default">${item.personnalisation}</label></div>
+                      <div class="upload-section" id="upload-section-${item.id}-default" style="display:none;">
+                        <label for="file-input-${item.id}-default" class="btn btn-small">Choisir fichier</label>
+                        <input type="file" id="file-input-${item.id}-default" accept="image/*" style="display:none;">
+                        <div class="remove-bg-option">
+                          <input type="checkbox" id="remove-bg-${item.id}-default" class="remove-bg-checkbox">
+                          <label for="remove-bg-${item.id}-default">Enlever l'arrière-plan</label>
+                        </div>
+                        <div class="quality-warning" id="quality-warning-${item.id}-default" style="display:none;">⚠️ Qualité d'impression potentiellement réduite.</div>
+                        <div class="preview-wrapper"><img id="preview-${item.id}-default" src="#" alt="Aperçu" style="display:none;"></div>
                       </div>
                     </div>
                  `;
