@@ -311,8 +311,7 @@
 
             const desc = (item.personnalisation || '').toLowerCase();
 
-            // Rendu conditionnel basé sur la description exacte pour plus de robustesse
-            if (desc === 'gros design') {
+            if (desc.includes('gros design')) {
                 const personalizationKey = 'gros_design';
                 // Option pour le devant (sauf pour la veste)
                 if (tableNameRef !== 'inventaireveste') {
@@ -354,7 +353,7 @@
                         </div>
                     `;
                 }
-            } else if (desc === 'petit design poitrine') {
+            } else if (desc.includes('petit design poitrine')) {
                  const specificKey = 'petit_design_poitrine';
                  optionsHtml += `
                     <div class="personalize-option-group">
@@ -388,7 +387,7 @@
                       </div>
                     </div>
                  `;
-            } else if (desc === 'manche gauche') {
+            } else if (desc.includes('manche gauche')) {
                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-sleeve-left" data-view="sleeve_left" data-placement-key="manche_gauche"><label for="opt-${item.id}-sleeve-left">${item.personnalisation}</label></div>
@@ -404,7 +403,7 @@
                       </div>
                     </div>
                 `;
-            } else if (desc === 'manche droite') {
+            } else if (desc.includes('manche droite')) {
                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-sleeve-right" data-view="sleeve_right" data-placement-key="manche_droite"><label for="opt-${item.id}-sleeve-right">${item.personnalisation}</label></div>
@@ -420,7 +419,7 @@
                       </div>
                     </div>
                 `;
-            } else { // Cas générique pour tout le reste (Tuque, Tote bag, etc.)
+            } else if (item.personnalisation) { // Cas générique pour Tuque, Tote bag, etc.
                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-default" data-view="front" data-placement-key="default_front"><label for="opt-${item.id}-default">${item.personnalisation}</label></div>
