@@ -312,13 +312,18 @@
             const desc = (item.personnalisation || '').toLowerCase();
 
             if (desc.includes('gros design')) {
-                const personalizationKey = 'gros_design';
+                // Pour les produits simples, on force l'utilisation de 'default_front'
+                // même si la personnalisation s'appelle "Gros design".
+                const simpleFrontProducts = ['inventairetablier', 'inventairetuque', 'inventairetotebag'];
+                const frontPlacementKey = simpleFrontProducts.includes(tableNameRef) ? 'default_front' : 'gros_design_front';
+                const backPlacementKey = 'gros_design_back';
+
                 // Option pour le devant (sauf pour la veste)
                 if (tableNameRef !== 'inventaireveste') {
                     optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize">
-                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front" data-view="front" data-placement-key="${personalizationKey}_front"><label for="opt-${item.id}-front">Devant</label>
+                        <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front" data-view="front" data-placement-key="${frontPlacementKey}"><label for="opt-${item.id}-front">Devant</label>
                       </div>
                       <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
                         <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
@@ -338,7 +343,7 @@
                     optionsHtml += `
                         <div class="personalize-option-group">
                           <div class="personalize">
-                            <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back" data-view="back" data-placement-key="${personalizationKey}_back"><label for="opt-${item.id}-back">Derrière</label>
+                            <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back" data-view="back" data-placement-key="${backPlacementKey}"><label for="opt-${item.id}-back">Derrière</label>
                           </div>
                           <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
                             <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
