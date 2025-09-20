@@ -278,7 +278,15 @@
         fixedFeeMessageEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
       }
 
-      // NOUVEAU: Calcul du rabais du code promotionnel
+      // --- LOGIQUE DE CALCUL DU TOTAL FINAL ---
+
+      // 1. On calcule le total des articles, moins les rabais spéciaux déjà appliqués.
+      const itemsTotalAfterOffers = subTotalBeforeFixedFee - totalDiscount;
+
+      // 2. On calcule le total incluant tous les frais. C'est la base pour le code promo.
+      const totalBeforePromo = itemsTotalAfterOffers + fixedFee + maquetteFee;
+
+      // 3. On calcule la valeur du rabais promotionnel.
       let promoDiscountValue = 0;
       const promoDiscountSummaryEl = document.getElementById('promo-discount-summary');
 
@@ -286,14 +294,15 @@
       if (promoDiscountSummaryEl) {
         if (appliedPromoCode) {
           if (appliedPromoCode.discount_type === 'percentage') {
-            promoDiscountValue = subTotalBeforeFixedFee * (appliedPromoCode.discount_value / 100);
+            // On applique le pourcentage sur le total incluant les frais.
+            promoDiscountValue = totalBeforePromo * (appliedPromoCode.discount_value / 100);
           } else if (appliedPromoCode.discount_type === 'fixed') {
             promoDiscountValue = appliedPromoCode.discount_value;
           }
           
-          // S'assurer que le rabais ne rend pas le total négatif
-          if (promoDiscountValue > subTotalBeforeFixedFee) {
-            promoDiscountValue = subTotalBeforeFixedFee;
+          // On s'assure que le rabais ne rend pas le total négatif.
+          if (promoDiscountValue > totalBeforePromo) {
+            promoDiscountValue = totalBeforePromo;
           }
 
           promoDiscountSummaryEl.querySelector('span').textContent = `-${promoDiscountValue.toFixed(2)}`;
@@ -303,8 +312,11 @@
         }
       }
 
+      // 4. On calcule le total final à payer.
+      currentTotalForPayment = totalBeforePromo - promoDiscountValue;
+
+      // 5. On met à jour l'affichage.
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
-      currentTotalForPayment = subTotalBeforeFixedFee - totalDiscount - promoDiscountValue + fixedFee + maquetteFee; // Appliquer le rabais et les frais de maquette
       totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
     }
 
