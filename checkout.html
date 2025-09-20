@@ -42,6 +42,18 @@
       <div id="maquette-fee-summary" style="display: none; margin-top: 10px; padding-top:10px; border-top: 1px dashed #eee;">
         <p>Frais de maquette: <span>5.00</span> $</p>
       </div>
+      <!-- NOUVELLE SECTION POUR LE CODE PROMO -->
+      <div id="promo-code-section" style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #eee;">
+        <label for="promo-code-input" style="font-weight: normal; font-size: 0.9em;">Vous avez un code promotionnel ?</label>
+        <div style="display: flex; gap: 10px; margin-top: 5px;">
+          <input type="text" id="promo-code-input" placeholder="Entrez votre code" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+          <button id="apply-promo-btn" class="btn btn-small" type="button">Appliquer</button>
+        </div>
+        <p id="promo-code-message" style="font-size: 0.85em; margin-top: 5px; font-weight: bold;"></p>
+      </div>
+      <div id="promo-discount-summary" style="display: none; color: #28a745; font-weight: bold; margin-top: 5px;">
+        <p>Rabais promotionnel: <span id="promo-discount-amount">-0.00</span> $</p>
+      </div>
       <p><strong>Total à payer: <span id="total-amount">0.00</span> $</strong>
         <br><small style="font-weight:normal; color:#555;">(Taxes incluses)</small>
       </p>
@@ -269,22 +281,26 @@
       // NOUVEAU: Calcul du rabais du code promotionnel
       let promoDiscountValue = 0;
       const promoDiscountSummaryEl = document.getElementById('promo-discount-summary');
-      if (appliedPromoCode) {
-        if (appliedPromoCode.discount_type === 'percentage') {
-          promoDiscountValue = subTotalBeforeFixedFee * (appliedPromoCode.discount_value / 100);
-        } else if (appliedPromoCode.discount_type === 'fixed') {
-          promoDiscountValue = appliedPromoCode.discount_value;
-        }
-        
-        // S'assurer que le rabais ne rend pas le total négatif
-        if (promoDiscountValue > subTotalBeforeFixedFee) {
-          promoDiscountValue = subTotalBeforeFixedFee;
-        }
 
-        promoDiscountSummaryEl.querySelector('span').textContent = `-${promoDiscountValue.toFixed(2)}`;
-        promoDiscountSummaryEl.style.display = 'block';
-      } else {
-        promoDiscountSummaryEl.style.display = 'none';
+      // On s'assure que l'élément existe avant de l'utiliser pour éviter les erreurs
+      if (promoDiscountSummaryEl) {
+        if (appliedPromoCode) {
+          if (appliedPromoCode.discount_type === 'percentage') {
+            promoDiscountValue = subTotalBeforeFixedFee * (appliedPromoCode.discount_value / 100);
+          } else if (appliedPromoCode.discount_type === 'fixed') {
+            promoDiscountValue = appliedPromoCode.discount_value;
+          }
+          
+          // S'assurer que le rabais ne rend pas le total négatif
+          if (promoDiscountValue > subTotalBeforeFixedFee) {
+            promoDiscountValue = subTotalBeforeFixedFee;
+          }
+
+          promoDiscountSummaryEl.querySelector('span').textContent = `-${promoDiscountValue.toFixed(2)}`;
+          promoDiscountSummaryEl.style.display = 'block';
+        } else {
+          promoDiscountSummaryEl.style.display = 'none';
+        }
       }
 
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
@@ -296,6 +312,13 @@
         const codeInput = document.getElementById('promo-code-input');
         const code = codeInput.value.trim().toUpperCase();
         const messageEl = document.getElementById('promo-code-message');
+        const applyBtn = document.getElementById('apply-promo-btn');
+
+        // Sécurité : on vérifie que les éléments existent
+        if (!codeInput || !messageEl || !applyBtn) {
+            console.error("Les éléments du formulaire de code promo sont introuvables.");
+            return;
+        }
 
         if (!code) {
             messageEl.textContent = 'Veuillez entrer un code.';
@@ -303,18 +326,23 @@
             return;
         }
 
+        applyBtn.disabled = true;
+        applyBtn.textContent = '...';
+
         const { data, error } = await supa.from('promo_codes').select('*').eq('code', code).eq('is_active', true).single();
 
         if (error || !data || (data.expires_at && new Date(data.expires_at) < new Date())) {
             messageEl.textContent = 'Code promotionnel invalide ou expiré.';
             messageEl.style.color = 'red';
             appliedPromoCode = null;
+            applyBtn.disabled = false;
+            applyBtn.textContent = 'Appliquer';
         } else {
             messageEl.textContent = `Bonne nouvelle ! Rabais appliqué : ${data.discount_value}${data.discount_type === 'percentage' ? '%' : '$'}.`;
             messageEl.style.color = 'green';
             appliedPromoCode = data;
-            document.getElementById('promo-code-input').disabled = true;
-            document.getElementById('apply-promo-btn').disabled = true;
+            codeInput.disabled = true;
+            applyBtn.textContent = 'Appliqué ✓';
         }
         await loadOrderSummary(); // Recalculer le total
     }
@@ -443,7 +471,10 @@
     });
 
     // NOUVEAU: Écouteur pour le bouton du code promo
-    document.getElementById('apply-promo-btn').addEventListener('click', handleApplyPromoCode);
+    const applyPromoBtn = document.getElementById('apply-promo-btn');
+    if (applyPromoBtn) {
+      applyPromoBtn.addEventListener('click', handleApplyPromoCode);
+    }
 
   </script>
 </body>
