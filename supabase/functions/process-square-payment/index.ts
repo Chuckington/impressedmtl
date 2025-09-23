@@ -208,6 +208,7 @@ serve(async (req) => {
             product_name: item.product_name,
             quantity: item.quantity,
             base_price: item.base_price,
+            final_preview_url: item.final_preview_url, // NOUVEAU: Sauvegarder l'URL de l'aperçu final
             product_assets: item.product_assets, // Sauvegarder les assets avec la commande
             personalizations: item.personalizations,
             selected_color_name: item.selected_color_name,
@@ -292,6 +293,7 @@ interface CartItem {
     asset_base_sleeve_left?: string;
     asset_base_sleeve_right?: string;
   };
+  final_preview_url?: string;
 }
 
 interface PromoCode {
@@ -329,6 +331,14 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
       return detail;
     }).join('');
 
+    // NOUVEAU: Ajouter l'aperçu final s'il existe
+    const finalPreviewHtml = item.final_preview_url ? `
+      <div style="margin-top: 10px;">
+        <strong>Aperçu final:</strong><br>
+        <img src="${item.final_preview_url}" alt="Aperçu final pour ${item.product_name}" style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; margin-top: 5px;">
+      </div>
+    ` : '';
+
     const options = [];
     if (item.selected_color_name) options.push(`Couleur: ${item.selected_color_name}`);
     if (item.selected_size_name) options.push(`Taille: ${item.selected_size_name}`);
@@ -342,6 +352,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         Prix de base unitaire: ${item.base_price.toFixed(2)}$<br>
         ${itemPersonalizationsHtml ? `Personnalisations:<ul>${itemPersonalizationsHtml}</ul>` : 'Personnalisations: Aucune'}<br>
         ${itemOptionsHtml}
+        ${finalPreviewHtml}
       </div>
     `;
   }).join('');
@@ -382,9 +393,9 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         ${itemsHtml}
         <p>Sous-total: ${subTotal.toFixed(2)}$</p>
         ${specialOfferDiscount > 0 ? `<p style="color: #28a745;">Rabais Offre Spéciale: -${specialOfferDiscount.toFixed(2)}$</p>` : ''}
-        ${promoCodeHtml}
         ${fixedFee > 0 ? `<p>Frais de préparation: ${fixedFee.toFixed(2)}$</p>` : ''}
         <p>Maquette demandée: <strong>${maquetteRequested ? 'Oui' : 'Non'}</strong> (+${maquetteFee.toFixed(2)}$)</p>
+        ${promoCodeHtml}
         <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
         <h3>Adresse de livraison:</h3>
         <p>
