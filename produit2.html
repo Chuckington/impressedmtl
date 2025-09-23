@@ -32,6 +32,13 @@
 
   <div class="container configurator-container">
     <div class="configurator-options">
+      <!-- NOUVELLE SECTION POUR LA DESCRIPTION -->
+      <div id="product-description-box" class="card" style="display: none;">
+        <div class="card-content">
+          <h3>À propos de ce produit</h3>
+          <p id="product-description-text"></p>
+        </div>
+      </div>
       <!-- Les cartes de personnalisation seront générées ici -->
       <div id="custom-list-v2" class="grid-v2"></div>
     </div>
@@ -690,6 +697,15 @@
 
         state.product = data;
         pageTitleEl.textContent = state.product.name;
+
+        // NOUVEAU: Afficher la description du produit
+        const descriptionBox = document.getElementById('product-description-box');
+        const descriptionText = document.getElementById('product-description-text');
+        // On vérifie que les éléments existent et que la description n'est pas vide
+        if (descriptionBox && descriptionText && state.product.description && state.product.description.trim() !== '') {
+            descriptionText.textContent = state.product.description;
+            descriptionBox.style.display = 'block';
+        }
 
         // --- NOUVEAU: Charger les zones de placement depuis la base de données ---
         const { data: zonesData, error: zonesError } = await supa
