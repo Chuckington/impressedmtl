@@ -115,6 +115,7 @@
         currentView: 'front',    // Vue par défaut ('front', 'back', etc.)
         loadedImages: {},        // Cache pour les images déjà chargées
     logos: {},               // Pour stocker les objets Fabric.js des logos
+    logoTransforms: {},      // NOUVEAU: Pour stocker les transformations des logos
     isInitialRender: true,   // Pour savoir si c'est le premier rendu
     placementZones: {},      // Pour stocker les zones de placement depuis la DB
     colorHasBeenSelected: false // NOUVEAU: Pour savoir si l'utilisateur a choisi une couleur
@@ -221,11 +222,16 @@
             if (checkbox.dataset.imageUrl && placementKey && viewForLogo) {
                 try {
                     const logoImgElement = await loadImage(checkbox.dataset.imageUrl);
+                    
+                    const savedTransform = state.logoTransforms[checkbox.id];
                     const placement = getPlacementBox(placementKey, fabricCanvas.width, fabricCanvas.height);
 
                     const fabricImage = new fabric.Image(logoImgElement, {
-                        left: placement.x,
-                        top: placement.y,
+                        left: savedTransform ? savedTransform.left : placement.x,
+                        top: savedTransform ? savedTransform.top : placement.y,
+                        scaleX: savedTransform ? savedTransform.scaleX : undefined,
+                        scaleY: savedTransform ? savedTransform.scaleY : undefined,
+                        angle: savedTransform ? savedTransform.angle : 0,
                         // Rendre visible seulement si la vue du logo correspond à la vue actuelle
                         visible: isLogoVisibleInView(viewForLogo, state.currentView),
                         custom_view: viewForLogo, // Stocker la vue pour référence future
@@ -239,8 +245,11 @@
                         borderDashArray: [5, 5]
                     });
 
-                    // Redimensionner pour s'adapter à la boîte de placement initiale
-                    fabricImage.scaleToWidth(placement.width);
+                    // Si aucune transformation n'est sauvegardée, on applique l'échelle par défaut.
+                    if (!savedTransform) {
+                        fabricImage.scaleToWidth(placement.width);
+                    }
+
                     // Stocker l'échelle initiale pour la comparaison de qualité
                     fabricImage.set('initialScale', fabricImage.scaleX);
 
@@ -318,7 +327,7 @@
             if (desc.includes('gros design')) {
                 // Pour les produits simples, on force l'utilisation de 'default_front'
                 // même si la personnalisation s'appelle "Gros design".
-                const simpleFrontProducts = ['inventairetablier', 'inventairetuque', 'inventairetotebag'];
+                const simpleFrontProducts = ['inventairetablier', 'inventairetuque']; // Tote bag retiré pour utiliser gros_design_front
                 const frontPlacementKey = simpleFrontProducts.includes(tableNameRef) ? 'default_front' : 'gros_design_front';
                 const backPlacementKey = 'gros_design_back';
 
@@ -736,6 +745,20 @@
     });
 
     // --- NOUVEAU: Logique d'interaction avec le canvas ---
+
+    // NOUVEAU: Sauvegarder les transformations quand l'utilisateur modifie un logo
+    fabricCanvas.on('object:modified', (e) => {
+        const obj = e.target;
+        if (obj && obj.custom_id) {
+            state.logoTransforms[obj.custom_id] = {
+                left: obj.left,
+                top: obj.top,
+                scaleX: obj.scaleX,
+                scaleY: obj.scaleY,
+                angle: obj.angle
+            };
+        }
+    });
 
     // Contraint le logo à l'intérieur de sa zone de placement
     fabricCanvas.on('object:moving', (e) => {
