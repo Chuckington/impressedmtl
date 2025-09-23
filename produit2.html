@@ -229,8 +229,8 @@
                     const fabricImage = new fabric.Image(logoImgElement, {
                         left: savedTransform ? savedTransform.left : placement.x,
                         top: savedTransform ? savedTransform.top : placement.y,
-                        scaleX: savedTransform ? savedTransform.scaleX : undefined,
-                        scaleY: savedTransform ? savedTransform.scaleY : undefined,
+                        scaleX: savedTransform ? savedTransform.scaleX : 1,
+                        scaleY: savedTransform ? savedTransform.scaleY : 1,
                         angle: savedTransform ? savedTransform.angle : 0,
                         // Rendre visible seulement si la vue du logo correspond à la vue actuelle
                         visible: isLogoVisibleInView(viewForLogo, state.currentView),
