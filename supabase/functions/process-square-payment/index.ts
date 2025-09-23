@@ -37,7 +37,7 @@ serve(async (req) => {
     // C'est plus robuste que de se fier aux données envoyées par le client, qui peuvent être incomplètes.
     const productIds = (cartDetails || [])
         .map((item: CartItem) => item.product_id.startsWith('v2_') ? item.product_id.replace('v2_', '') : null)
-        .filter((id): id is string => id !== null);
+        .filter((id: string | null): id is string => id !== null);
 
     if (productIds.length > 0) {
         const { data: productsData, error: productsError } = await supabaseAdminClient
@@ -46,7 +46,13 @@ serve(async (req) => {
             .in('id', productIds);
 
         if (!productsError && productsData) {
-            const productsMap = new Map(productsData.map(p => [p.id, p]));
+            const productsMap = new Map(productsData.map((p: {
+                id: number;
+                asset_base_front: string | null;
+                asset_base_back: string | null;
+                asset_base_sleeve_left: string | null;
+                asset_base_sleeve_right: string | null;
+            }) => [p.id, p]));
             cartDetails.forEach((item: CartItem) => {
                 if (item.product_id.startsWith('v2_')) {
                     const productId = parseInt(item.product_id.replace('v2_', ''), 10);
@@ -288,10 +294,10 @@ interface CartItem {
   selected_gender_name?: string;
   product_assets?: {
     id: number;
-    asset_base_front?: string;
-    asset_base_back?: string;
-    asset_base_sleeve_left?: string;
-    asset_base_sleeve_right?: string;
+    asset_base_front: string | null;
+    asset_base_back: string | null;
+    asset_base_sleeve_left: string | null;
+    asset_base_sleeve_right: string | null;
   };
   final_preview_url?: string;
 }
