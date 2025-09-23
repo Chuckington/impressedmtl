@@ -24,7 +24,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteFee } = await req.json(); // Ajout de userId et maquetteFee
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteFee, promoCodeDetails, specialOfferDiscount } = await req.json(); // Ajout de promoCodeDetails et specialOfferDiscount
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteFee });
 
     // **Validation Côté Serveur**
@@ -196,8 +196,8 @@ serve(async (req) => {
       
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
-        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteFee || 0, fixedFeeApplied);
-        await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteFee || 0, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0);
+        await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody); // Envoi au client
         await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
       }
 
@@ -257,6 +257,12 @@ interface CartItem {
   // Ajoutez d'autres champs si présents dans vos objets cartItem
 }
 
+interface PromoCode {
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+}
+
 interface ShippingInfo {
   fullName: string;
   email: string;
@@ -268,13 +274,12 @@ interface ShippingInfo {
 }
 
 // Fonction pour formater le reçu en HTML
-function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteFee: number, fixedFee: number): string {
+function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteFee: number, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number): string {
   const itemsHtml = (cartItems || []).map(item => {
     const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
-      let detail = `<li>${p.spot_label}: ${p.spot_price.toFixed(2)}$`;
+      let detail = `<li><strong>${p.spot_label}</strong> (+${p.spot_price.toFixed(2)}$)`;
       if (p.image_url) {
-        // Pour l'email, une image directe peut être compliquée, un lien est plus sûr
-        detail += ` (Design: <a href="${p.image_url}" target="_blank" rel="noopener noreferrer">voir l'image</a>)`;
+        detail += `<br><img src="${p.image_url}" alt="Design pour ${p.spot_label}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;">`;
       }
       detail += `</li>`;
       return detail;
@@ -302,9 +307,26 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     return sum + (item.quantity * (item.base_price + itemExtraCost));
   }, 0);
 
-  const discount = (cartItems || []).length > 0 ? (subTotal + fixedFee + maquetteFee) - (totalAmountInCents / 100) : 0;
+  const totalBeforePromo = subTotal - specialOfferDiscount + fixedFee + maquetteFee;
+  let promoDiscountValue = 0;
+  if (promoCode) {
+      if (promoCode.discount_type === 'percentage') {
+          promoDiscountValue = totalBeforePromo * (promoCode.discount_value / 100);
+      } else if (promoCode.discount_type === 'fixed') {
+          promoDiscountValue = promoCode.discount_value;
+      }
+      if (promoDiscountValue > totalBeforePromo) {
+          promoDiscountValue = totalBeforePromo;
+      }
+  }
 
   const totalAmount = (totalAmountInCents / 100).toFixed(2);
+
+  const promoCodeHtml = promoCode ? `
+    <p style="color: #28a745;">
+      Code promotionnel appliqué (<strong>${promoCode.code}</strong>): -${promoDiscountValue.toFixed(2)}$
+    </p>
+  ` : '';
 
   return `
     <html>
@@ -314,9 +336,10 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         <h3>Articles:</h3>
         ${itemsHtml}
         <p>Sous-total: ${subTotal.toFixed(2)}$</p>
-        ${discount > 0.01 ? `<p style="color: #28a745;">Rabais Offre Spéciale: -${discount.toFixed(2)}$</p>` : ''}
+        ${specialOfferDiscount > 0 ? `<p style="color: #28a745;">Rabais Offre Spéciale: -${specialOfferDiscount.toFixed(2)}$</p>` : ''}
+        ${promoCodeHtml}
         ${fixedFee > 0 ? `<p>Frais de préparation: ${fixedFee.toFixed(2)}$</p>` : ''}
-        ${maquetteFee > 0 ? `<p>Frais de maquette: ${maquetteFee.toFixed(2)}$</p>` : ''}
+        ${maquetteFee > 0 ? `<p>Frais de maquette: ${maquetteFee.toFixed(2)}$</p>` : '<p>Maquette: Non demandée</p>'}
         <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
         <h3>Adresse de livraison:</h3>
         <p>

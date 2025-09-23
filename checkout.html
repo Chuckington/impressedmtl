@@ -408,7 +408,9 @@
                 locationId: SQUARE_LOCATION_ID,
                 idempotencyKey: crypto.randomUUID(), // Pour éviter les doubles paiements
                 cartDetails: currentCartForPayment, // Détails du panier
-                shippingDetails: shippingDetails // Nouvelles informations de livraison
+                shippingDetails: shippingDetails, // Nouvelles informations de livraison
+                promoCodeDetails: appliedPromoCode, // NOUVEAU: Envoyer les détails du code promo
+                specialOfferDiscount: totalDiscount // NOUVEAU: Envoyer le rabais de l'offre spéciale
               }
             });
 
