@@ -27,6 +27,38 @@ serve(async (req) => {
     const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount } = await req.json();
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteRequested });
 
+    // Initialiser le client admin Supabase (nécessaire pour l'enrichissement des données et la sauvegarde)
+    const supabaseAdminClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("MY_SERVICE_ROLE_KEY")!
+    );
+
+    // NOUVEAU: Enrichir les détails du panier avec les assets des produits
+    // C'est plus robuste que de se fier aux données envoyées par le client, qui peuvent être incomplètes.
+    const productIds = (cartDetails || [])
+        .map((item: CartItem) => item.product_id.startsWith('v2_') ? item.product_id.replace('v2_', '') : null)
+        .filter((id): id is string => id !== null);
+
+    if (productIds.length > 0) {
+        const { data: productsData, error: productsError } = await supabaseAdminClient
+            .from('products')
+            .select('id, asset_base_front, asset_base_back, asset_base_sleeve_left, asset_base_sleeve_right')
+            .in('id', productIds);
+
+        if (!productsError && productsData) {
+            const productsMap = new Map(productsData.map(p => [p.id, p]));
+            cartDetails.forEach((item: CartItem) => {
+                if (item.product_id.startsWith('v2_')) {
+                    const productId = parseInt(item.product_id.replace('v2_', ''), 10);
+                    const productAssets = productsMap.get(productId);
+                    if (productAssets) item.product_assets = productAssets;
+                }
+            });
+        } else if (productsError) {
+            console.error("Erreur lors de la récupération des assets des produits:", productsError);
+        }
+    }
+
     // **Validation Côté Serveur**
     // C'est une sécurité essentielle. Même si le client valide, il faut toujours vérifier côté serveur.
     if (!sourceId || !amount || !currency || !locationId || !idempotencyKey || !shippingDetails || !shippingDetails.fullName || !shippingDetails.email) {
@@ -118,11 +150,6 @@ serve(async (req) => {
       console.log("Paiement Square réussi:", paymentId);
 
       // Enregistrer la commande dans la base de données Supabase
-      const supabaseAdminClient = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("MY_SERVICE_ROLE_KEY")! // Rétablissement du nom de variable personnalisé, comme vous l'aviez indiqué.
-      ); 
-
       let fixedFeeApplied = 0;
       const totalItemCount = (cartDetails || []).reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
       if (totalItemCount === 1) fixedFeeApplied = 15;
@@ -181,6 +208,7 @@ serve(async (req) => {
             product_name: item.product_name,
             quantity: item.quantity,
             base_price: item.base_price,
+            product_assets: item.product_assets, // Sauvegarder les assets avec la commande
             personalizations: item.personalizations,
             selected_color_name: item.selected_color_name,
             selected_size_name: item.selected_size_name,
@@ -258,10 +286,11 @@ interface CartItem {
   selected_size_name?: string;
   selected_gender_name?: string;
   product_assets?: {
-    front?: string;
-    back?: string;
-    sleeve_left?: string;
-    sleeve_right?: string;
+    id: number;
+    asset_base_front?: string;
+    asset_base_back?: string;
+    asset_base_sleeve_left?: string;
+    asset_base_sleeve_right?: string;
   };
 }
 
@@ -292,7 +321,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         detail += `Design: <br><img src="${p.image_url}" alt="Design pour ${p.spot_label}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;"><br>`;
       }
       // Afficher la vue du produit pour le contexte du placement
-      const productViewUrl = p.view && item.product_assets ? (item.product_assets as any)[p.view] : null;
+      const productViewUrl = p.view && item.product_assets ? (item.product_assets as any)[`asset_base_${p.view}`] : null;
       if (productViewUrl) {
         detail += `Vue du placement: <br><img src="${productViewUrl}" alt="Vue ${p.view}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;">`;
       }
