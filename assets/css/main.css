@@ -601,11 +601,16 @@ footer a.social-link svg {
   width: 380px;
 }
 
-/* NOUVEAU: Style pour la boîte de description du produit */
+/* NOUVEAU: Style pour la section description en bas de page */
+.description-full-width-container {
+  padding-top: 0; /* On enlève le padding du haut pour le rapprocher du contenu */
+}
+
 #product-description-box {
-  margin-bottom: 20px; /* Espace avant les options de personnalisation */
+  width: 100%; /* Prend toute la largeur du container */
   background-color: #f8f9fa; /* Un fond légèrement différent pour la distinguer */
   border: 1px solid #e9ecef;
+  text-align: left; /* Aligner le texte à gauche */
 }
 
 #product-description-box h3 {
