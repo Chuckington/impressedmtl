@@ -24,8 +24,8 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteFee, promoCodeDetails, specialOfferDiscount } = await req.json(); // Ajout de promoCodeDetails et specialOfferDiscount
-    console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteFee });
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount } = await req.json();
+    console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteRequested });
 
     // **Validation Côté Serveur**
     // C'est une sécurité essentielle. Même si le client valide, il faut toujours vérifier côté serveur.
@@ -65,6 +65,8 @@ serve(async (req) => {
       environment: squareEnvironment,
     });
 
+    const maquetteFee = maquetteRequested === true ? 5 : 0;
+
     // Calculer les détails financiers pour la note de paiement Square
     const subTotalForNote = (cartDetails || []).reduce((sum: number, item: CartItem) => {
         const itemExtraCost = (item.personalizations || []).reduce((pSum, p) => pSum + p.spot_price, 0);
@@ -76,7 +78,7 @@ serve(async (req) => {
     if (totalItemCountForNote === 1) fixedFeeForNote = 15;
     else if (totalItemCountForNote >= 2 && totalItemCountForNote <= 9) fixedFeeForNote = 10;
 
-    const discountApplied = (cartDetails || []).length > 0 ? (subTotalForNote + fixedFeeForNote + (maquetteFee || 0)) - (amount / 100) : 0;
+    const discountApplied = (cartDetails || []).length > 0 ? (subTotalForNote + fixedFeeForNote + maquetteFee) - (amount / 100) : 0;
 
     const paymentNoteParts = [];
     if (maquetteFee > 0) paymentNoteParts.push(`Frais maquette: ${maquetteFee.toFixed(2)}$`);
@@ -196,8 +198,8 @@ serve(async (req) => {
       
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
-        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteFee || 0, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0);
-        await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody); // Envoi au client
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0);
+        await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
         await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
       }
 
@@ -243,6 +245,7 @@ interface PersonalizationDetail {
   spot_label: string;
   spot_price: number;
   image_url?: string;
+  view?: string;
 }
 
 interface CartItem {
@@ -254,7 +257,12 @@ interface CartItem {
   selected_color_name?: string;
   selected_size_name?: string;
   selected_gender_name?: string;
-  // Ajoutez d'autres champs si présents dans vos objets cartItem
+  product_assets?: {
+    front?: string;
+    back?: string;
+    sleeve_left?: string;
+    sleeve_right?: string;
+  };
 }
 
 interface PromoCode {
@@ -274,12 +282,19 @@ interface ShippingInfo {
 }
 
 // Fonction pour formater le reçu en HTML
-function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteFee: number, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number): string {
+function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteRequested: boolean, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number): string {
   const itemsHtml = (cartItems || []).map(item => {
     const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
-      let detail = `<li><strong>${p.spot_label}</strong> (+${p.spot_price.toFixed(2)}$)`;
+      let detail = `<li><strong>${p.spot_label}</strong> (+${p.spot_price.toFixed(2)}$)<br>`;
+      
+      // Afficher le design seul
       if (p.image_url) {
-        detail += `<br><img src="${p.image_url}" alt="Design pour ${p.spot_label}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;">`;
+        detail += `Design: <br><img src="${p.image_url}" alt="Design pour ${p.spot_label}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;"><br>`;
+      }
+      // Afficher la vue du produit pour le contexte du placement
+      const productViewUrl = p.view && item.product_assets ? (item.product_assets as any)[p.view] : null;
+      if (productViewUrl) {
+        detail += `Vue du placement: <br><img src="${productViewUrl}" alt="Vue ${p.view}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;">`;
       }
       detail += `</li>`;
       return detail;
@@ -307,6 +322,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     return sum + (item.quantity * (item.base_price + itemExtraCost));
   }, 0);
 
+  const maquetteFee = maquetteRequested ? 5 : 0;
   const totalBeforePromo = subTotal - specialOfferDiscount + fixedFee + maquetteFee;
   let promoDiscountValue = 0;
   if (promoCode) {
@@ -339,7 +355,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         ${specialOfferDiscount > 0 ? `<p style="color: #28a745;">Rabais Offre Spéciale: -${specialOfferDiscount.toFixed(2)}$</p>` : ''}
         ${promoCodeHtml}
         ${fixedFee > 0 ? `<p>Frais de préparation: ${fixedFee.toFixed(2)}$</p>` : ''}
-        ${maquetteFee > 0 ? `<p>Frais de maquette: ${maquetteFee.toFixed(2)}$</p>` : '<p>Maquette: Non demandée</p>'}
+        <p>Maquette demandée: <strong>${maquetteRequested ? 'Oui' : 'Non'}</strong> (+${maquetteFee.toFixed(2)}$)</p>
         <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
         <h3>Adresse de livraison:</h3>
         <p>

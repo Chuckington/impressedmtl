@@ -1046,6 +1046,7 @@
             for (const cbCheckbox of checkedPersonalizations) {
                 const labelElement = cbCheckbox.labels[0];
                 const label = labelElement ? labelElement.textContent.trim() : `Option ${cbCheckbox.id}`;
+                const view = cbCheckbox.dataset.view; // NOUVEAU: Récupérer la vue
                 const price = parseFloat(cbCheckbox.dataset.price) || 0;
 
                 // Trouver le logo correspondant sur le canvas
@@ -1070,7 +1071,8 @@
                     spot_label: label,
                     spot_price: price,
                     image_url: cbCheckbox.dataset.imageUrl || null,
-                    transform: transformData // Le "plan de montage" du logo
+                    transform: transformData, // Le "plan de montage" du logo
+                    view: view // NOUVEAU: Ajouter la vue
                 });
             }
 
@@ -1100,7 +1102,13 @@
                         base_price: state.product.base_price,
                         selected_color_name: selectedColor ? selectedColor.name : null,
                         selected_size_name: input.dataset.sizeName,
-                        selected_gender_name: selectedGender ? selectedGender.name : null
+                        selected_gender_name: selectedGender ? selectedGender.name : null,
+                        product_assets: { // NOUVEAU: Ajouter les assets du produit
+                            front: state.product.asset_base_front,
+                            back: state.product.asset_base_back,
+                            sleeve_left: state.product.asset_base_sleeve_left,
+                            sleeve_right: state.product.asset_base_sleeve_right
+                        }
                     });
                 }
             });

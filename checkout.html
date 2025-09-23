@@ -404,7 +404,7 @@
                 amount: Math.round(currentTotalForPayment * 100), // Montant en centimes
                 userId: user ? user.id : null, // Envoyer l'ID utilisateur s'il est connecté
                 currency: 'CAD',
-                maquetteFee: localStorage.getItem('maquetteRequested') === 'true' ? 5 : 0, // Envoyer les frais de maquette
+                maquetteRequested: localStorage.getItem('maquetteRequested') === 'true', // NOUVEAU: Envoyer le statut de la maquette
                 locationId: SQUARE_LOCATION_ID,
                 idempotencyKey: crypto.randomUUID(), // Pour éviter les doubles paiements
                 cartDetails: currentCartForPayment, // Détails du panier
