@@ -322,11 +322,6 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
       if (p.image_url) {
         detail += `Design: <br><img src="${p.image_url}" alt="Design pour ${p.spot_label}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;"><br>`;
       }
-      // Afficher la vue du produit pour le contexte du placement
-      const productViewUrl = p.view && item.product_assets ? (item.product_assets as any)[`asset_base_${p.view}`] : null;
-      if (productViewUrl) {
-        detail += `Vue du placement: <br><img src="${productViewUrl}" alt="Vue ${p.view}" style="max-width: 100px; max-height: 100px; border: 1px solid #ddd; margin-top: 5px; margin-bottom: 5px;">`;
-      }
       detail += `</li>`;
       return detail;
     }).join('');
@@ -334,7 +329,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     // NOUVEAU: Ajouter l'aperçu final s'il existe
     const finalPreviewHtml = item.final_preview_url ? `
       <div style="margin-top: 10px;">
-        <strong>Aperçu final:</strong><br>
+        <strong>Aperçu du produit final:</strong><br>
         <img src="${item.final_preview_url}" alt="Aperçu final pour ${item.product_name}" style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; margin-top: 5px;">
       </div>
     ` : '';

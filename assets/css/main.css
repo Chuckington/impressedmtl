@@ -641,6 +641,20 @@ footer a.social-link svg {
 }
 .remove-bg-checkbox { margin: 0; }
 
+.remove-bg-note {
+  font-size: 0.8rem;
+  color: #555;
+  margin-top: 8px;
+  font-style: italic;
+  line-height: 1.3;
+}
+.remove-bg-note a {
+  color: #007bff;
+  text-decoration: none;
+}
+.remove-bg-note a:hover {
+  text-decoration: underline;
+}
 /* Style pour le label du bouton d'upload lorsqu'il contient un spinner */
 .upload-section .btn-small {
     display: inline-flex; /* Permet d'aligner le spinner et le texte */
