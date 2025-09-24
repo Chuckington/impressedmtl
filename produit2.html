@@ -272,10 +272,15 @@
 
                     // Si aucune transformation n'est sauvegardée, on applique l'échelle par défaut.
                     if (!savedTransform) {
-                        // On adapte l'image à la boîte, puis on la réduit un peu
-                        // pour que l'utilisateur puisse l'agrandir dans toutes les directions.
-                        fabricImage.scaleToFit(placement.width, placement.height);
-                        fabricImage.scale(fabricImage.scaleX * 0.8);
+                        // NOUVELLE LOGIQUE CORRIGÉE:
+                        // On calcule le bon facteur d'échelle pour que l'image rentre dans la boîte.
+                        const scaleX = placement.width / fabricImage.width;
+                        const scaleY = placement.height / fabricImage.height;
+                        const scale = Math.min(scaleX, scaleY);
+
+                        // On applique l'échelle, puis on la réduit un peu pour que l'utilisateur
+                        // ait de la marge pour l'agrandir dans toutes les directions.
+                        fabricImage.scale(scale * 0.8);
                     }
 
                     // Stocker l'échelle initiale pour la comparaison de qualité
