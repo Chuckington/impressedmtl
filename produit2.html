@@ -878,14 +878,18 @@
         const box = obj.custom_placementBox;
         if (!box) return;
 
-        const objWidth = obj.getScaledWidth();
-        const objHeight = obj.getScaledHeight();
+        // NOUVELLE LOGIQUE: Permettre l'étirement tout en respectant les limites.
+        // On vérifie si la nouvelle largeur ou hauteur dépasse la boîte de placement.
+        const newWidth = obj.width * obj.scaleX;
+        const newHeight = obj.height * obj.scaleY;
 
-        // Empêcher le logo de devenir plus grand que la boîte
-        if (objWidth > box.width) {
+        // Si la nouvelle largeur est trop grande, on la limite à la largeur de la boîte.
+        if (newWidth > box.width) {
             obj.scaleX = box.width / obj.width;
         }
-        if (objHeight > box.height) {
+
+        // Si la nouvelle hauteur est trop grande, on la limite à la hauteur de la boîte.
+        if (newHeight > box.height) {
             obj.scaleY = box.height / obj.height;
         }
 
