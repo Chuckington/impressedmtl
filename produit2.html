@@ -196,6 +196,7 @@
                 fabricCanvas.setBackgroundImage(baseImg.src, fabricCanvas.renderAll.bind(fabricCanvas), {
                     scaleX: scaleFactor,
                     scaleY: scaleFactor,
+                    crossOrigin: 'anonymous' // NOUVEAU: Ajouter cette ligne est crucial pour la sécurité
                 });
                 await updateLogosOnCanvas();
                 drawPlacementZones();
