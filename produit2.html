@@ -878,18 +878,18 @@
         const box = obj.custom_placementBox;
         if (!box) return;
 
-        // NOUVELLE LOGIQUE: Permettre l'étirement tout en respectant les limites.
+        // NOUVELLE LOGIQUE: Permettre l'étirement non-uniforme tout en respectant les limites.
         // On vérifie si la nouvelle largeur ou hauteur dépasse la boîte de placement.
-        const newWidth = obj.width * obj.scaleX;
-        const newHeight = obj.height * obj.scaleY;
+        const scaledWidth = obj.getScaledWidth();
+        const scaledHeight = obj.getScaledHeight();
 
         // Si la nouvelle largeur est trop grande, on la limite à la largeur de la boîte.
-        if (newWidth > box.width) {
+        if (scaledWidth > box.width) {
             obj.scaleX = box.width / obj.width;
         }
 
         // Si la nouvelle hauteur est trop grande, on la limite à la hauteur de la boîte.
-        if (newHeight > box.height) {
+        if (scaledHeight > box.height) {
             obj.scaleY = box.height / obj.height;
         }
 
