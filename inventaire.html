@@ -82,19 +82,28 @@
 
     // Chargement de l'inventaire
     async function loadInventaire() {
-      const { data, error } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
+      // Étape 1: Récupérer les produits de la table 'products' pour faire la correspondance
+      const { data: productsData, error: productsError } = await supa.from('products').select('id, table_name_ref');
+      if (productsError) {
+        console.error("Erreur lors de la récupération de la table 'products':", productsError);
+      }
+      // Créer une map pour un accès rapide: 'inventairetshirtdebase' -> 1
+      const productMap = new Map(productsData.map(p => [p.table_name_ref, p.id]));
+
+      // Étape 2: Récupérer les informations d'affichage de la table 'inventaire'
+      const { data: inventaireData, error: inventaireError } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
       const container = document.getElementById('inventaire');
-      if (error) {
+      if (inventaireError) {
         container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement.</p>';
-        console.error('Erreur Supabase:', error);
+        console.error('Erreur Supabase:', inventaireError);
         return;
       }
-      if (!data || data.length === 0) {
+      if (!inventaireData || inventaireData.length === 0) {
         container.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Aucun produit disponible.</p>';
         return;
       }
       container.innerHTML = '';
-      data.forEach(item => {
+      inventaireData.forEach(item => {
         let tableTarget;
         const nomKey = item.nom.trim().toLowerCase();
         // Gestion Sous-verre
@@ -114,10 +123,20 @@
         }
         if (!tableTarget) return; // Ne rien afficher si le produit n'est pas mappé
 
+        // NOUVELLE LOGIQUE: Trouver l'ID correspondant et construire le lien
+        const productId = productMap.get(tableTarget);
+        let href;
+        if (productId) {
+          href = `produit2.html?id=${productId}`;
+        } else {
+          // Fallback vers l'ancien système si le produit n'est pas dans la nouvelle table
+          href = `produit.html?table=${tableTarget}`;
+        }
+
         const isSpecialOffer = nomKey === 't-shirt de base' || nomKey === 't-shirt premium - sport';
 
         const card = document.createElement('a');
-        card.href = `produit.html?table=${tableTarget}`;
+        card.href = href;
         card.className = 'card';
         if (isSpecialOffer) {
           card.classList.add('special-offer-card');
