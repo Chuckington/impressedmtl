@@ -129,6 +129,9 @@
     const genderSelectEl = document.getElementById('gender-select');
     const sizeInputsContainerEl = document.getElementById('size-inputs-container');
     const totalEl = document.getElementById('total-price');
+    const offerPopupOverlay = document.getElementById('offer-popup-overlay');
+    const closeOfferPopupBtn = document.getElementById('close-offer-popup-btn');
+    let hasShownOfferPopup = false;
 
     // --- App State ---
     const state = {
@@ -304,35 +307,6 @@
             customListEl.innerHTML = '<p>Erreur de chargement des options.</p>';
             return;
         }
-
-        // NOUVEAU: Logique pour vérifier les conditions de l'offre spéciale
-        function checkOfferConditionsAndShowPopup() {
-            if (hasShownOfferPopup) return;
-
-            const qty = parseInt(qtyInput.value) || 1;
-            const isEligibleProduct = state.product.table_name_ref === 'inventairetshirtdebase' || state.product.table_name_ref === 'inventairetshirtpremium';
-            
-            if (!isEligibleProduct || qty < 20) return;
-
-            // Vérifier si les options de personnalisation nécessaires sont cochées
-            const grosDesignItem = options.find(item => item.personnalisation?.toLowerCase().includes('gros design'));
-            const petitDesignItem = options.find(item => item.personnalisation?.toLowerCase().includes('petit design poitrine'));
-
-            if (!grosDesignItem || !petitDesignItem) return;
-
-            const hasGrosDerriere = document.getElementById(`opt-${grosDesignItem.id}-back`)?.checked;
-            const hasPetitPoitrineGauche = document.getElementById(`opt-${petitDesignItem.id}-left`)?.checked;
-            const hasPetitPoitrineDroite = document.getElementById(`opt-${petitDesignItem.id}-right`)?.checked;
-            const hasPetitPoitrine = hasPetitPoitrineGauche || hasPetitPoitrineDroite;
-
-            if (hasGrosDerriere && hasPetitPoitrine) {
-                offerPopupOverlay.style.display = 'flex';
-                hasShownOfferPopup = true;
-            }
-        }
-        // Ajouter les écouteurs pour vérifier l'offre
-        qtyInput.addEventListener('input', checkOfferConditionsAndShowPopup);
-        customListEl.addEventListener('change', checkOfferConditionsAndShowPopup);
 
         // NOUVELLE LOGIQUE: Si aucune option de personnalisation n'est trouvée dans la table,
         // on considère que c'est un produit simple avec une seule zone de design.
@@ -621,6 +595,34 @@
         fabricCanvas.renderAll();
     }
 
+    // NOUVEAU: Logique pour vérifier les conditions de l'offre spéciale
+    function checkOfferConditionsAndShowPopup() {
+        if (hasShownOfferPopup || !state.product) return;
+
+        const qty = parseInt(qtyInput.value) || 1;
+        const isEligibleProduct = state.product.table_name_ref === 'inventairetshirtdebase' || state.product.table_name_ref === 'inventairetshirtpremium';
+        
+        if (!isEligibleProduct || qty < 20) return;
+
+        // On a besoin des options pour trouver les bons IDs
+        const options = Array.from(customListEl.querySelectorAll('.card')).map(card => {
+            // Cette partie est une simplification, la logique complète est dans generatePersonalizationCards
+            // Pour une vérification robuste, il faudrait stocker les `options` dans `state`.
+            // Pour l'instant, on se base sur les IDs générés.
+            const grosDesignCheckbox = card.querySelector('input[id*="-back"]');
+            const petitDesignCheckbox = card.querySelector('input[id*="-left"], input[id*="-right"]');
+            return { grosDesignCheckbox, petitDesignCheckbox };
+        });
+
+        const hasGrosDerriere = !!document.querySelector('input[id*="-back"]:checked');
+        const hasPetitPoitrine = !!document.querySelector('input[id*="-left"]:checked, input[id*="-right"]:checked');
+
+        if (hasGrosDerriere && hasPetitPoitrine) {
+            offerPopupOverlay.style.display = 'flex';
+            hasShownOfferPopup = true;
+        }
+    }
+
     function isLogoVisibleInView(logoView, currentCanvasView) {
         if (logoView === currentCanvasView) {
             return true;
@@ -794,6 +796,11 @@
         await generatePersonalizationCards();
         await initializeOrderBar();
         await renderProductBase();
+
+        // Ajouter les écouteurs pour vérifier l'offre après que tout est chargé
+        qtyInput.addEventListener('input', checkOfferConditionsAndShowPopup);
+        customListEl.addEventListener('change', checkOfferConditionsAndShowPopup);
+
         state.isInitialRender = false; // On met le flag à false après le premier rendu
     }
 
@@ -819,11 +826,6 @@
             drawPlacementZones(); // Redessiner les zones pour la nouvelle vue
             fabricCanvas.renderAll();
         }
-    });
-
-    // Écouteur pour fermer le pop-up
-    closeOfferPopupBtn.addEventListener('click', () => {
-        offerPopupOverlay.style.display = 'none';
     });
 
     // --- NOUVEAU: Logique d'interaction avec le canvas ---
@@ -1163,6 +1165,11 @@
     }
 
     initializePage();
+
+    // Écouteur pour fermer le pop-up
+    closeOfferPopupBtn.addEventListener('click', () => {
+        offerPopupOverlay.style.display = 'none';
+    });
 
     document.getElementById('download-preview-btn').addEventListener('click', downloadCanvasAsImage);
   </script>
