@@ -268,7 +268,7 @@
                         transparentCorners: false,
                         borderColor: '#007bff',
                         borderDashArray: [5, 5]
-                    });
+                    }, { crossOrigin: 'anonymous' }); // NOUVEAU: Ajouter crossOrigin ici
 
                     // Si aucune transformation n'est sauvegardée, on applique l'échelle par défaut.
                     if (!savedTransform) {
