@@ -114,8 +114,10 @@
           // --- Helper function to check personalizations ---
           const checkPersonalizations = (item) => {
               const personalizations = (item.personalizations || []).map(p => p.spot_label.toLowerCase());
-              const hasGrosDerriere = personalizations.includes('gros design derrière');
-              const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('petit design poitrine droite');
+              // NOUVELLE LOGIQUE: Accepter les noms de V1 ("Gros design derrière") et V2 ("Derrière")
+              const hasGrosDerriere = personalizations.includes('gros design derrière') || personalizations.includes('derrière');
+              const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('poitrine gauche') ||
+                                       personalizations.includes('petit design poitrine droite') || personalizations.includes('poitrine droite');
               return hasGrosDerriere && hasPetitPoitrine;
           };
 
