@@ -886,26 +886,27 @@
         const box = obj.custom_placementBox;
         if (!box) return;
 
-        // NOUVELLE LOGIQUE PLUS ROBUSTE:
-        // Elle vérifie les coins de l'objet, même après rotation, pour s'assurer
-        // qu'ils restent dans la zone de placement.
-        const br = obj.getBoundingRect();
-        const isTooWide = br.left < box.x || (br.left + br.width) > (box.x + box.width);
-        const isTooTall = br.top < box.y || (br.top + br.height) > (box.y + box.height);
+        // NOUVELLE LOGIQUE ROBUSTE POUR LE REDIMENSIONNEMENT
+        // Garde les proportions et empêche de dépasser les limites, même avec rotation.
+        obj.setCoords();
+        const boundingRect = obj.getBoundingRect();
 
-        // Si l'objet dépasse horizontalement, on annule la dernière modification de l'échelle X.
-        if (isTooWide) {
-            obj.set('scaleX', obj.lastKnownScaleX || obj.scaleX);
-        } else {
-            obj.lastKnownScaleX = obj.scaleX; // On sauvegarde la dernière échelle valide.
+        const maxScaleX = box.width / (boundingRect.width / obj.scaleX);
+        const maxScaleY = box.height / (boundingRect.height / obj.scaleY);
+
+        let newScaleX = obj.scaleX;
+        let newScaleY = obj.scaleY;
+
+        if (boundingRect.width > box.width) {
+            newScaleX = (obj.scaleX * box.width) / boundingRect.width;
+        }
+        if (boundingRect.height > box.height) {
+            newScaleY = (obj.scaleY * box.height) / boundingRect.height;
         }
 
-        // Si l'objet dépasse verticalement, on annule la dernière modification de l'échelle Y.
-        if (isTooTall) {
-            obj.set('scaleY', obj.lastKnownScaleY || obj.scaleY);
-        } else {
-            obj.lastKnownScaleY = obj.scaleY; // On sauvegarde la dernière échelle valide.
-        }
+        // Pour conserver les proportions, on prend la plus petite des deux échelles calculées.
+        obj.scaleX = Math.min(newScaleX, newScaleY);
+        obj.scaleY = Math.min(newScaleX, newScaleY);
 
         // --- NOUVELLE LOGIQUE D'AVERTISSEMENT DE QUALITÉ ---
         const warningThreshold = 2.0; // Avertir si l'échelle est 2x plus grande que l'initiale
