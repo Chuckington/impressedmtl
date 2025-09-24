@@ -123,12 +123,12 @@
 
           // --- Group eligible items ---
           // NOUVELLE LOGIQUE: Gérer les produits V1 (ex: 'inventairetshirtdebase') et V2 (ex: 'v2_1')
-          const baseOfferItems = items.filter(item => 
-              (item.product_id === 'inventairetshirtdebase' || item.product_name === 'T-Shirt de base') && 
+          const baseOfferItems = items.filter(item =>
+              (item.product_id === 'inventairetshirtdebase' || (item.product_id.startsWith('v2_') && item.product_name === 'T-Shirt de base')) &&
               checkPersonalizations(item)
           );
-          const premiumOfferItems = items.filter(item => 
-              (item.product_id === 'inventairetshirtpremium' || item.product_name === 'T-Shirt Premium - Sport') && 
+          const premiumOfferItems = items.filter(item =>
+              (item.product_id === 'inventairetshirtpremium' || (item.product_id.startsWith('v2_') && item.product_name === 'T-Shirt Premium - Sport')) &&
               checkPersonalizations(item)
           );
 
