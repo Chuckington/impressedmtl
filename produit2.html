@@ -886,19 +886,25 @@
         const box = obj.custom_placementBox;
         if (!box) return;
 
-        // NOUVELLE LOGIQUE: Permettre l'étirement non-uniforme tout en respectant les limites.
-        // On vérifie si la nouvelle largeur ou hauteur dépasse la boîte de placement.
-        const scaledWidth = obj.getScaledWidth();
-        const scaledHeight = obj.getScaledHeight();
+        // NOUVELLE LOGIQUE PLUS ROBUSTE:
+        // Elle vérifie les coins de l'objet, même après rotation, pour s'assurer
+        // qu'ils restent dans la zone de placement.
+        const br = obj.getBoundingRect();
+        const isTooWide = br.left < box.x || (br.left + br.width) > (box.x + box.width);
+        const isTooTall = br.top < box.y || (br.top + br.height) > (box.y + box.height);
 
-        // Si la nouvelle largeur est trop grande, on la limite à la largeur de la boîte.
-        if (scaledWidth > box.width) {
-            obj.scaleX = box.width / obj.width;
+        // Si l'objet dépasse horizontalement, on annule la dernière modification de l'échelle X.
+        if (isTooWide) {
+            obj.set('scaleX', obj.lastKnownScaleX || obj.scaleX);
+        } else {
+            obj.lastKnownScaleX = obj.scaleX; // On sauvegarde la dernière échelle valide.
         }
 
-        // Si la nouvelle hauteur est trop grande, on la limite à la hauteur de la boîte.
-        if (scaledHeight > box.height) {
-            obj.scaleY = box.height / obj.height;
+        // Si l'objet dépasse verticalement, on annule la dernière modification de l'échelle Y.
+        if (isTooTall) {
+            obj.set('scaleY', obj.lastKnownScaleY || obj.scaleY);
+        } else {
+            obj.lastKnownScaleY = obj.scaleY; // On sauvegarde la dernière échelle valide.
         }
 
         // --- NOUVELLE LOGIQUE D'AVERTISSEMENT DE QUALITÉ ---
