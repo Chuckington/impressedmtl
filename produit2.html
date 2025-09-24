@@ -976,7 +976,7 @@
 
             if (uploadError) {
                 console.error("Erreur d'upload Supabase:", uploadError);
-                alert("Erreur lors de l'upload de l'image.");
+                alert(`Erreur lors de l'upload de l'image: ${uploadError.message}`);
                 if (uploadLabel) uploadLabel.textContent = 'Choisir fichier';
                 fileInput.disabled = false;
             } else {
@@ -1288,6 +1288,9 @@
             // --- Validation (identique à V1) ---
             if (qty > 0 && totalSizeQty !== qty) {
                 alert('La somme des quantités par taille ne correspond pas à la quantité totale demandée.');
+                // Réactiver le bouton en cas d'erreur de validation
+                addToCartBtn.disabled = false;
+                addToCartBtn.textContent = 'Ajouter au panier';
                 return;
             }
             if (qty > 0 && cartItemsToAdd.length === 0) {
@@ -1296,6 +1299,9 @@
             }
             if (qty === 0) {
                 alert('Veuillez choisir une quantité supérieure à 0.');
+                // Réactiver le bouton en cas d'erreur de validation
+                addToCartBtn.disabled = false;
+                addToCartBtn.textContent = 'Ajouter au panier';
                 return;
             }
 
@@ -1306,6 +1312,9 @@
                 if (insertError) {
                     console.error("Erreur lors de l'ajout au panier (Supabase):", insertError);
                     alert(`Erreur lors de l'ajout au panier: ${insertError.message}.`);
+                    // Réactiver le bouton en cas d'erreur
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.textContent = 'Ajouter au panier';
                     return;
                 }
             } else {
