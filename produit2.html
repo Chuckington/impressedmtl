@@ -95,6 +95,16 @@
     </div>
   </div>
 
+  <!-- NOUVEAU: Pop-up pour l'offre spéciale (identique à produit.html) -->
+  <div id="offer-popup-overlay" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <h2>🎉 Offre Spéciale Débloquée ! 🎉</h2>
+      <p>Vous avez sélectionné <strong>20 unités ou plus</strong> avec un "Gros design derrière" et un "Petit design poitrine".</p>
+      <p>Le rabais sera appliqué automatiquement dans votre panier.</p>
+      <button id="close-offer-popup-btn" class="btn">Super !</button>
+    </div>
+  </div>
+
   <script>
     const supa = supabase.createClient(
       'https://vwvvbtcatamszncjuiso.supabase.co',
@@ -294,6 +304,35 @@
             customListEl.innerHTML = '<p>Erreur de chargement des options.</p>';
             return;
         }
+
+        // NOUVEAU: Logique pour vérifier les conditions de l'offre spéciale
+        function checkOfferConditionsAndShowPopup() {
+            if (hasShownOfferPopup) return;
+
+            const qty = parseInt(qtyInput.value) || 1;
+            const isEligibleProduct = state.product.table_name_ref === 'inventairetshirtdebase' || state.product.table_name_ref === 'inventairetshirtpremium';
+            
+            if (!isEligibleProduct || qty < 20) return;
+
+            // Vérifier si les options de personnalisation nécessaires sont cochées
+            const grosDesignItem = options.find(item => item.personnalisation?.toLowerCase().includes('gros design'));
+            const petitDesignItem = options.find(item => item.personnalisation?.toLowerCase().includes('petit design poitrine'));
+
+            if (!grosDesignItem || !petitDesignItem) return;
+
+            const hasGrosDerriere = document.getElementById(`opt-${grosDesignItem.id}-back`)?.checked;
+            const hasPetitPoitrineGauche = document.getElementById(`opt-${petitDesignItem.id}-left`)?.checked;
+            const hasPetitPoitrineDroite = document.getElementById(`opt-${petitDesignItem.id}-right`)?.checked;
+            const hasPetitPoitrine = hasPetitPoitrineGauche || hasPetitPoitrineDroite;
+
+            if (hasGrosDerriere && hasPetitPoitrine) {
+                offerPopupOverlay.style.display = 'flex';
+                hasShownOfferPopup = true;
+            }
+        }
+        // Ajouter les écouteurs pour vérifier l'offre
+        qtyInput.addEventListener('input', checkOfferConditionsAndShowPopup);
+        customListEl.addEventListener('change', checkOfferConditionsAndShowPopup);
 
         // NOUVELLE LOGIQUE: Si aucune option de personnalisation n'est trouvée dans la table,
         // on considère que c'est un produit simple avec une seule zone de design.
@@ -780,6 +819,11 @@
             drawPlacementZones(); // Redessiner les zones pour la nouvelle vue
             fabricCanvas.renderAll();
         }
+    });
+
+    // Écouteur pour fermer le pop-up
+    closeOfferPopupBtn.addEventListener('click', () => {
+        offerPopupOverlay.style.display = 'none';
     });
 
     // --- NOUVEAU: Logique d'interaction avec le canvas ---
