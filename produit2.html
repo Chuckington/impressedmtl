@@ -701,6 +701,23 @@
         state.product = data;
         pageTitleEl.textContent = state.product.name;
 
+        // NOUVEAU: Afficher l'offre spéciale si applicable
+        const offerInfoBox = document.getElementById('offer-info-box');
+        const tableNameRef = state.product.table_name_ref;
+        if (offerInfoBox && tableNameRef === 'inventairetshirtdebase') {
+            offerInfoBox.style.display = 'block';
+            offerInfoBox.innerHTML = `
+              <h3>✨ Offre Spéciale ✨</h3>
+              <p>Commandez <strong>20 unités</strong> avec un "Gros design derrière" ET un "Petit design poitrine" (gauche ou droite) pour un prix fixe de <strong>300$</strong> ! Le rabais sera appliqué automatiquement dans le panier.</p>
+            `;
+        } else if (offerInfoBox && tableNameRef === 'inventairetshirtpremium') {
+            offerInfoBox.style.display = 'block';
+            offerInfoBox.innerHTML = `
+              <h3>✨ Offre Spéciale ✨</h3>
+              <p>Commandez <strong>20 unités</strong> avec un "Gros design derrière" ET un "Petit design poitrine" (gauche ou droite) pour un prix fixe de <strong>420$</strong> ! Le rabais sera appliqué automatiquement dans le panier.</p>
+            `;
+        }
+
         // NOUVEAU: Afficher la description du produit
         const descriptionBox = document.getElementById('product-description-box');
         const descriptionText = document.getElementById('product-description-text');
