@@ -852,61 +852,10 @@
         }
     });
 
-    // Contraint le logo à l'intérieur de sa zone de placement
-    fabricCanvas.on('object:moving', (e) => {
-        const obj = e.target;
-        const box = obj.custom_placementBox;
-        if (!box) return;
-
-        // Obtenir les dimensions de l'objet après mise à l'échelle
-        const objWidth = obj.getScaledWidth();
-        const objHeight = obj.getScaledHeight();
-
-        // Contraindre la limite gauche
-        if (obj.left < box.x) {
-            obj.left = box.x;
-        }
-        // Contraindre la limite droite
-        if (obj.left + objWidth > box.x + box.width) {
-            obj.left = box.x + box.width - objWidth;
-        }
-        // Contraindre la limite haute
-        if (obj.top < box.y) {
-            obj.top = box.y;
-        }
-        // Contraindre la limite basse
-        if (obj.top + objHeight > box.y + box.height) {
-            obj.top = box.y + box.height - objHeight;
-        }
-    });
-
-    // NOUVEAU: Contraint le redimensionnement du logo pour qu'il ne dépasse pas la boîte
+    // NOUVEAU: Logique simplifiée pour l'avertissement de qualité lors du redimensionnement
     fabricCanvas.on('object:scaling', (e) => {
         const obj = e.target;
-        const box = obj.custom_placementBox;
-        if (!box) return;
-
-        // NOUVELLE LOGIQUE ROBUSTE POUR LE REDIMENSIONNEMENT
-        // Garde les proportions et empêche de dépasser les limites, même avec rotation.
-        obj.setCoords();
-        const boundingRect = obj.getBoundingRect();
-
-        const maxScaleX = box.width / (boundingRect.width / obj.scaleX);
-        const maxScaleY = box.height / (boundingRect.height / obj.scaleY);
-
-        let newScaleX = obj.scaleX;
-        let newScaleY = obj.scaleY;
-
-        if (boundingRect.width > box.width) {
-            newScaleX = (obj.scaleX * box.width) / boundingRect.width;
-        }
-        if (boundingRect.height > box.height) {
-            newScaleY = (obj.scaleY * box.height) / boundingRect.height;
-        }
-
-        // Pour conserver les proportions, on prend la plus petite des deux échelles calculées.
-        obj.scaleX = Math.min(newScaleX, newScaleY);
-        obj.scaleY = Math.min(newScaleX, newScaleY);
+        if (!obj) return;
 
         // --- NOUVELLE LOGIQUE D'AVERTISSEMENT DE QUALITÉ ---
         const warningThreshold = 2.0; // Avertir si l'échelle est 2x plus grande que l'initiale
