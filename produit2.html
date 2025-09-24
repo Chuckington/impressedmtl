@@ -272,7 +272,10 @@
 
                     // Si aucune transformation n'est sauvegardée, on applique l'échelle par défaut.
                     if (!savedTransform) {
-                        fabricImage.scaleToWidth(placement.width);
+                        // On adapte l'image à la boîte, puis on la réduit un peu
+                        // pour que l'utilisateur puisse l'agrandir dans toutes les directions.
+                        fabricImage.scaleToFit(placement.width, placement.height);
+                        fabricImage.scale(fabricImage.scaleX * 0.8);
                     }
 
                     // Stocker l'échelle initiale pour la comparaison de qualité
