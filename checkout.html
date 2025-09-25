@@ -152,14 +152,22 @@
         // --- Helper function to check personalizations ---
         const checkPersonalizations = (item) => {
             const personalizations = (item.personalizations || []).map(p => p.spot_label.toLowerCase());
-            const hasGrosDerriere = personalizations.includes('gros design derrière');
-            const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('petit design poitrine droite');
+            // NOUVELLE LOGIQUE: Accepter les noms de V1 ("Gros design derrière") et V2 ("Derrière")
+            const hasGrosDerriere = personalizations.includes('gros design derrière') || personalizations.includes('derrière');
+            const hasPetitPoitrine = personalizations.includes('petit design poitrine gauche') || personalizations.includes('poitrine gauche') ||
+                                     personalizations.includes('petit design poitrine droite') || personalizations.includes('poitrine droite');
             return hasGrosDerriere && hasPetitPoitrine;
         };
 
         // --- Group eligible items ---
-        const baseOfferItems = items.filter(item => item.product_id === 'inventairetshirtdebase' && checkPersonalizations(item));
-        const premiumOfferItems = items.filter(item => item.product_id === 'inventairetshirtpremium' && checkPersonalizations(item));
+        const baseOfferItems = items.filter(item =>
+            (item.product_id === 'inventairetshirtdebase' || item.product_name === 'T-Shirt de base') &&
+            checkPersonalizations(item)
+        );
+        const premiumOfferItems = items.filter(item =>
+            (item.product_id === 'inventairetshirtpremium' || item.product_name === 'T-Shirt Premium - Sport') &&
+            checkPersonalizations(item)
+        );
 
         // --- Process Base T-Shirt Offer ---
         const baseTotalQty = baseOfferItems.reduce((sum, item) => sum + item.quantity, 0);
