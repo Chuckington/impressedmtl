@@ -17,15 +17,19 @@
 </head>
 <body>
   <header>
-    <a href="inventaire.html" class="btn header-back-btn">← Inventaire</a>
+    <button class="hamburger-btn" id="hamburger-btn">☰</button>
+    <div class="header-left">
+      <a href="index.html" class="header-logo">
+        <img src="assets/logo2.png" alt="Logo Impressed MTL">
+      </a>
+    </div>
     <div class="header-title">
       <h1>Votre Panier</h1>
       <p>Revoyez vos articles avant paiement</p>
     </div>
-    <div style="display: flex; align-items: center; gap: 8px;">
-        <a href="index.html" class="btn">Accueil</a>
-        <span id="user-email" style="color: #333;"></span>
+    <div class="header-actions">
         <button id="auth-button" class="btn">Se connecter</button>
+        <span id="user-email" style="color: #333;"></span>
       </div>
   </header>
   <!-- NOUVEAU: Menu de navigation mobile -->
@@ -355,11 +359,9 @@
     loadCart();
 
     // --- Logique du menu Hamburger ---
+    // Le script est maintenant standardisé
     document.addEventListener('DOMContentLoaded', () => {
-      const hamburgerBtn = document.createElement('button');
-      hamburgerBtn.innerHTML = '☰';
-      hamburgerBtn.className = 'hamburger-btn';
-      document.querySelector('header').prepend(hamburgerBtn);
+      const hamburgerBtn = document.getElementById('hamburger-btn');
       const mobileNav = document.getElementById('mobile-nav');
       hamburgerBtn.addEventListener('click', () => {
         mobileNav.classList.toggle('is-active');
