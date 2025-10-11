@@ -796,12 +796,6 @@ footer a.social-link svg {
   .header-back-btn {
     display: none;
   }
-
-  .header-nav-mobile {
-    display: flex; /* NOUVEAU: Rendre le menu mobile fonctionnel */
-    position: fixed;
-    top: 0;
-  }
   .header-nav-mobile {
     position: fixed;
     top: 0;
