@@ -550,6 +550,13 @@ footer a.social-link svg {
   }
 }
 
+/* NOUVEAU: Wrapper pour la page produit V2 pour avoir le padding de 100px */
+.main-content-wrapper-v2 {
+  padding: 40px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px; /* Espace entre le configurateur et la description */
+}
 /* --- NOUVEAUX STYLES POUR LA PAGE PRODUIT V2 (produit2.html) --- */
 .configurator-container {
   display: flex;
@@ -751,6 +758,11 @@ footer a.social-link svg {
   /* --- Styles Globaux --- */
   .container {
     padding: 20px 15px;
+  }
+  /* NOUVEAU: Annuler le padding horizontal sur mobile pour le wrapper V2 */
+  .main-content-wrapper-v2 {
+    padding: 20px 15px;
+    gap: 20px;
   }
   header {
     padding: 15px 20px;
