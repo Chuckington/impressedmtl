@@ -587,11 +587,6 @@ footer a.social-link svg {
   gap: 20px;
 }
 
-/* Assurer que les cartes dans la V2 ont la même taille que dans la V1 */
-.grid-v2 .card {
-  width: 380px;
-}
-
 /* NOUVEAU: Style pour la section description en bas de page */
 .description-full-width-container {
   padding-top: 0; /* On enlève le padding du haut pour le rapprocher du contenu */
