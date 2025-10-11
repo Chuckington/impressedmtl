@@ -768,6 +768,11 @@ footer a.social-link svg {
     padding: 15px 20px;
   }
 
+  /* NOUVEAU: Forcer les colonnes du configurateur à s'empiler sur mobile */
+  .configurator-container {
+    flex-direction: column;
+  }
+
   /* --- Header & Navigation --- */
   .header-nav-links {
     display: none; /* Cache les liens sur desktop */
