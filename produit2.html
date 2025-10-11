@@ -1180,6 +1180,20 @@
 
     document.getElementById('download-preview-btn').addEventListener('click', downloadCanvasAsImage);
 
+    // --- Logique du menu Hamburger (RÉINTÉGRÉE) ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const hamburgerBtn = document.getElementById('hamburger-btn');
+      const mobileNav = document.getElementById('mobile-nav');
+      const closeNavBtn = document.getElementById('close-nav-btn');
+
+      hamburgerBtn.addEventListener('click', () => {
+        mobileNav.classList.add('is-active');
+      });
+
+      closeNavBtn.addEventListener('click', () => {
+        mobileNav.classList.remove('is-active');
+      });
+    });
   </script>
   <script>
     // --- NOUVEAU: Logique "Ajouter au Panier" pour la V2 ---
