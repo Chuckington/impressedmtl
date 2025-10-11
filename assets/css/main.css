@@ -831,10 +831,12 @@ footer a.social-link svg {
     right: 20px;
     background: none;
     border: none;
-    font-size: 28px; /* Plus grand pour être facile à cliquer */
-    color: #333;
+    font-size: 1.8rem; /* Taille alignée sur les liens du menu */
+    color: #000; /* Couleur noire */
+    font-weight: bold; /* Même graisse que les liens */
     cursor: pointer;
     z-index: 1003; /* Au-dessus du menu */
+    line-height: 1; /* Pour un meilleur centrage vertical */
   }
   .hamburger-btn {
     order: 1; /* Met le hamburger à gauche */
