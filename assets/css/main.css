@@ -780,6 +780,11 @@ footer a.social-link svg {
     z-index: 1002;
     color: #000; /* NOUVEAU: Assure que l'icône est noire */
   }
+  /* NOUVEAU: Cacher le bouton de retour sur mobile */
+  .header-back-btn {
+    display: none;
+  }
+
   .header-nav-mobile {
     display: flex; /* NOUVEAU: Rendre le menu mobile fonctionnel */
     position: fixed;
@@ -814,6 +819,7 @@ footer a.social-link svg {
     order: 2; /* Met le logo au milieu */
     flex-grow: 1;
     justify-content: center;
+    gap: 0; /* Annule le gap pour un centrage parfait du logo */
   }
   .header-actions {
     order: 3; /* Met les actions à droite */
