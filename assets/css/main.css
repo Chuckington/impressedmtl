@@ -852,26 +852,6 @@ footer a.social-link svg {
     gap: 20px;
   }
 
-  /* --- Configurateur V2 (produit2.html) --- */
-  .configurator-container {
-    flex-direction: column;
-    gap: 20px;
-  }
-  .configurator-options, .configurator-preview {
-    position: static; /* Annule le sticky sur mobile */
-    width: 100%;
-    /* NOUVEAU: Annuler la largeur fixe de la version ordinateur */
-    min-width: 0;
-  }
-  /* CORRIGÉ: Règle plus spécifique pour le mobile */
-  .configurator-options .grid-v2 .card {
-    width: 100%; /* La carte prend toute la largeur */
-  }
-  /* NOUVEAU: Annuler la largeur fixe de la boîte d'offre sur mobile */
-  #offer-info-box {
-    width: 100%;
-  }
-
   /* --- Barre de commande (produit.html & produit2.html) --- */
   #order-summary {
     position: static; /* Annule le sticky */
