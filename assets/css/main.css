@@ -777,6 +777,7 @@ footer a.social-link svg {
   .configurator-preview {
     position: static; /* Annule le positionnement "sticky" du desktop */
     width: 100%; /* Force chaque colonne à prendre toute la largeur */
+  }
 
   /* --- Header & Navigation --- */
   .header-nav-links {
