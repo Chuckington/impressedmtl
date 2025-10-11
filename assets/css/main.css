@@ -562,7 +562,8 @@ footer a.social-link svg {
   flex: 1;
   position: sticky; /* La colonne reste visible au défilement */
   top: 120px; /* Ajustez selon la hauteur de votre header */
-  width: 380px; /* RESTAURÉ: Redonne sa largeur à la colonne des options sur desktop */
+  /* NOUVEAU: La largeur fixe ne s'applique que sur les grands écrans */
+  min-width: 380px;
 }
 
 /* Grille pour les cartes de personnalisation V2 */
