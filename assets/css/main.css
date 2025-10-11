@@ -571,6 +571,11 @@ footer a.social-link svg {
   gap: 20px;
 }
 
+/* NOUVEAU: Assurer que les cartes dans la V2 ont la même taille que la boîte d'offre */
+.grid-v2 .card {
+  width: 380px;
+}
+
 /* NOUVEAU: Style pour la boîte d'offre, largeur fixe uniquement sur desktop */
 #offer-info-box {
   background-color: #eef7ff;
