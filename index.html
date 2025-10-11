@@ -17,47 +17,21 @@
   <link rel="manifest" href="/site.webmanifest">
   <!-- =============== -->
   <style>
-    .popup-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-    .popup-content {
-      background-color: #fff;
-      padding: 20px 30px;
-      border-radius: 8px;
-      text-align: center;
-      max-width: 90%;
-      width: 400px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .popup-content h2 { margin-top: 0; }
-    .popup-content p { margin-bottom: 20px; line-height: 1.5; }
+    /* Le popup d'avertissement mobile est maintenant inutile, on peut le retirer */
   </style>
 </head>
 <body>
-  <div id="mobile-warning-popup" class="popup-overlay" style="display: none;">
-    <div class="popup-content">
-      <h2>Avertissement</h2>
-      <p>Ce site n'est pas encore optimisé pour les appareils mobiles. Pour une meilleure expérience, nous vous recommandons de le consulter sur un ordinateur.</p>
-      <button id="close-popup-btn" class="btn">Compris</button>
-    </div>
-  </div>
   <header>
+    <button class="hamburger-btn" id="hamburger-btn">☰</button>
     <div class="header-left">
       <a href="index.html" class="header-logo">
         <img src="assets/logo2.png" alt="Logo Impressed MTL">
       </a>
-      <a href="inventaire.html" class="btn">Inventaire</a>
-      <a href="contact.html" class="btn">Nous contacter</a>
-      <a href="about.html" class="btn">À propos</a>
+      <nav class="header-nav-links">
+        <a href="inventaire.html" class="btn">Inventaire</a>
+        <a href="contact.html" class="btn">Nous contacter</a>
+        <a href="about.html" class="btn">À propos</a>
+      </nav>
     </div>
 
     <div class="header-actions">
@@ -66,6 +40,14 @@
       <span id="user-email" style="margin-left: 10px; color:#333; font-size: 0.9rem;"></span>
     </div>
   </header>
+  <!-- NOUVEAU: Menu de navigation mobile -->
+  <nav class="header-nav-mobile" id="mobile-nav">
+    <a href="index.html">Accueil</a>
+    <a href="inventaire.html">Inventaire</a>
+    <a href="contact.html">Nous contacter</a>
+    <a href="about.html">À propos</a>
+    <a href="panier.html">Panier</a>
+  </nav>
 
   <div class="intro-text-section">
     <h1>Créez facilement des pièces uniques, conçues pour être portées avec fierté.</h1>
@@ -155,25 +137,14 @@
     // Appel initial pour mettre à jour l'UI au chargement de la page
     updateAuthUI();
 
-    // --- POPUP POUR MOBILE ---
+    // --- Logique du menu Hamburger ---
     document.addEventListener('DOMContentLoaded', () => {
-      const popup = document.getElementById('mobile-warning-popup');
-      const closeBtn = document.getElementById('close-popup-btn');
-      const wasPopupShown = sessionStorage.getItem('mobileWarningShown');
+      const hamburgerBtn = document.getElementById('hamburger-btn');
+      const mobileNav = document.getElementById('mobile-nav');
 
-      // Détecter si c'est un appareil mobile (basé sur la largeur de l'écran)
-      const isMobile = window.innerWidth <= 768;
-
-      if (isMobile && !wasPopupShown) {
-        popup.style.display = 'flex';
-      }
-
-      if(closeBtn) {
-        closeBtn.addEventListener('click', () => {
-          popup.style.display = 'none';
-          // Mémoriser que le popup a été montré pour cette session
-          sessionStorage.setItem('mobileWarningShown', 'true');
-        });
+      hamburgerBtn.addEventListener('click', () => {
+        mobileNav.classList.toggle('is-active');
+        hamburgerBtn.textContent = mobileNav.classList.contains('is-active') ? '✕' : '☰';
       }
     });
   </script>

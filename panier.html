@@ -17,7 +17,7 @@
 </head>
 <body>
   <header>
-    <a href="inventaire.html" class="btn">← Inventaire</a>
+    <a href="inventaire.html" class="btn" style="visibility: hidden;">← Inventaire</a> <!-- Caché pour l'alignement -->
     <div class="header-title">
       <h1>Votre Panier</h1>
       <p>Revoyez vos articles avant paiement</p>
@@ -28,6 +28,15 @@
         <button id="auth-button" class="btn">Se connecter</button>
       </div>
   </header>
+  <!-- NOUVEAU: Menu de navigation mobile -->
+  <nav class="header-nav-mobile" id="mobile-nav">
+    <a href="index.html">Accueil</a>
+    <a href="inventaire.html">Inventaire</a>
+    <a href="contact.html">Nous contacter</a>
+    <a href="about.html">À propos</a>
+    <a href="panier.html">Panier</a>
+  </nav>
+
   <div class="container">
     <table id="cart-table">
       <thead>
@@ -222,11 +231,11 @@
           const optionsText = optionsDisplay.length > 0 ? optionsDisplay.join('<br>') : 'Aucune';
 
           row.innerHTML = `
-            <td>${item.product_name || 'Produit inconnu'}</td>
-            <td>${item.quantity}</td>
-            <td>${optionsText}</td>
-            <td>${subtotal.toFixed(2)} $</td>
-            <td><span class="remove-btn" data-id="${item.id}">X</span></td>
+            <td data-label="Produit">${item.product_name || 'Produit inconnu'}</td>
+            <td data-label="Quantité">${item.quantity}</td>
+            <td data-label="Options">${optionsText}</td>
+            <td data-label="Sous-total">${subtotal.toFixed(2)} $</td>
+            <td data-label="Action"><span class="remove-btn" data-id="${item.id}">X</span></td>
           `;
           cartTable.appendChild(row);
         });
@@ -274,11 +283,11 @@
           const optionsText = optionsDisplay.length > 0 ? optionsDisplay.join('<br>') : 'Aucune';
 
           row.innerHTML = `
-            <td>${item.product_name || 'Produit inconnu'}</td>
-            <td>${item.quantity}</td>
-            <td>${optionsText}</td>
-            <td>${subtotal.toFixed(2)} $</td>
-            <td><span class="remove-btn" data-index="${index}">X</span></td>
+            <td data-label="Produit">${item.product_name || 'Produit inconnu'}</td>
+            <td data-label="Quantité">${item.quantity}</td>
+            <td data-label="Options">${optionsText}</td>
+            <td data-label="Sous-total">${subtotal.toFixed(2)} $</td>
+            <td data-label="Action"><span class="remove-btn" data-index="${index}">X</span></td>
           `;
           cartTable.appendChild(row);
         });
@@ -344,6 +353,19 @@
     });
 
     loadCart();
+
+    // --- Logique du menu Hamburger ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const hamburgerBtn = document.createElement('button');
+      hamburgerBtn.innerHTML = '☰';
+      hamburgerBtn.className = 'hamburger-btn';
+      document.querySelector('header').prepend(hamburgerBtn);
+      const mobileNav = document.getElementById('mobile-nav');
+      hamburgerBtn.addEventListener('click', () => {
+        mobileNav.classList.toggle('is-active');
+        hamburgerBtn.textContent = mobileNav.classList.contains('is-active') ? '✕' : '☰';
+      });
+    });
   </script>
 </body>
 </html>

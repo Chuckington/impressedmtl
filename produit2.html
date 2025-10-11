@@ -19,7 +19,7 @@
 </head>
 <body>
   <header>
-    <a href="inventaire.html" class="btn">← Retour à l’inventaire</a>
+    <a href="inventaire.html" class="btn" style="visibility: hidden;">← Retour</a> <!-- Caché pour l'alignement -->
     <div class="header-title">
       <h1 id="page-title">Chargement...</h1>
     </div>
@@ -29,6 +29,14 @@
       <button id="auth-button" class="btn">Se connecter</button>
     </div>
   </header>
+  <!-- NOUVEAU: Menu de navigation mobile -->
+  <nav class="header-nav-mobile" id="mobile-nav">
+    <a href="index.html">Accueil</a>
+    <a href="inventaire.html">Inventaire</a>
+    <a href="contact.html">Nous contacter</a>
+    <a href="about.html">À propos</a>
+    <a href="panier.html">Panier</a>
+  </nav>
 
   <div class="container configurator-container">
     <div class="configurator-options">
@@ -48,16 +56,6 @@
         <button class="btn view-btn" data-view="sleeve_right">Manche Droite</button>
       </div>
       <button id="download-preview-btn" class="btn" style="margin-top: 20px;">Télécharger l'aperçu</button>
-    </div>
-  </div>
-
-  <!-- NOUVELLE SECTION POUR LA DESCRIPTION EN BAS -->
-  <div class="container description-full-width-container">
-    <div id="product-description-box" class="card" style="display: none;">
-      <div class="card-content">
-        <h3>À propos de ce produit</h3>
-        <p id="product-description-text"></p>
-      </div>
     </div>
   </div>
 
@@ -95,6 +93,16 @@
     </div>
   </div>
 
+  <!-- NOUVELLE SECTION POUR LA DESCRIPTION EN BAS (déplacée après la barre de commande) -->
+  <div class="container description-full-width-container">
+    <div id="product-description-box" class="card" style="display: none;">
+      <div class="card-content">
+        <h3>À propos de ce produit</h3>
+        <p id="product-description-text"></p>
+      </div>
+    </div>
+  </div>
+
   <!-- NOUVEAU: Pop-up pour l'offre spéciale (identique à produit.html) -->
   <div id="offer-popup-overlay" class="popup-overlay" style="display: none;">
     <div class="popup-content">
@@ -112,7 +120,31 @@
     );
 
     // --- Auth Logic (identique à V1) ---
-    // ... (le code d'authentification peut être copié/collé ici si nécessaire)
+    const authBtn = document.getElementById('auth-button');
+    const userEmailEl = document.getElementById('user-email');
+
+    async function updateAuthUI() {
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        userEmailEl.textContent = user.email;
+        authBtn.textContent = 'Se déconnecter';
+      } else {
+        userEmailEl.textContent = '';
+        authBtn.textContent = 'Se connecter';
+      }
+    }
+
+    authBtn.addEventListener('click', async () => {
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        await supa.auth.signOut();
+      } else {
+        window.location.href = 'login2.html';
+      }
+      updateAuthUI();
+    });
+    supa.auth.onAuthStateChange(updateAuthUI);
+    updateAuthUI();
 
     // --- DOM Elements ---
     // Remplacer le contexte 2D natif par une instance de Fabric.js
@@ -1141,6 +1173,19 @@
     });
 
     document.getElementById('download-preview-btn').addEventListener('click', downloadCanvasAsImage);
+
+    // --- Logique du menu Hamburger ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const hamburgerBtn = document.createElement('button');
+      hamburgerBtn.innerHTML = '☰';
+      hamburgerBtn.className = 'hamburger-btn';
+      document.querySelector('header').prepend(hamburgerBtn);
+      const mobileNav = document.getElementById('mobile-nav');
+      hamburgerBtn.addEventListener('click', () => {
+        mobileNav.classList.toggle('is-active');
+        hamburgerBtn.textContent = mobileNav.classList.contains('is-active') ? '✕' : '☰';
+      });
+    });
   </script>
   <script>
     // --- NOUVEAU: Logique "Ajouter au Panier" pour la V2 ---
