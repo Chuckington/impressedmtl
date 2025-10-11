@@ -19,7 +19,8 @@
 </head>
 <body>
   <header>
-    <a href="panier.html" class="btn">← Panier</a>
+    <button class="hamburger-btn" id="hamburger-btn">☰</button>
+    <a href="panier.html" class="btn" style="visibility: hidden;">← Panier</a> <!-- Caché pour l'alignement -->
     <div class="header-title">
       <h1>Finaliser la commande</h1>
     </div>
@@ -28,6 +29,14 @@
         <button id="auth-button" class="btn">Se connecter</button>
       </div>
   </header>
+  <!-- NOUVEAU: Menu de navigation mobile -->
+  <nav class="header-nav-mobile" id="mobile-nav">
+    <a href="index.html">Accueil</a>
+    <a href="inventaire.html">Inventaire</a>
+    <a href="contact.html">Nous contacter</a>
+    <a href="about.html">À propos</a>
+    <a href="panier.html">Panier</a>
+  </nav>
 
   <div class="checkout-container">
     <div class="section order-summary">
@@ -497,6 +506,17 @@
     if (applyPromoBtn) {
       applyPromoBtn.addEventListener('click', handleApplyPromoCode);
     }
+
+    // --- Logique du menu Hamburger ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const hamburgerBtn = document.getElementById('hamburger-btn');
+      const mobileNav = document.getElementById('mobile-nav');
+
+      hamburgerBtn.addEventListener('click', () => {
+        mobileNav.classList.toggle('is-active');
+        hamburgerBtn.textContent = mobileNav.classList.contains('is-active') ? '✕' : '☰';
+      });
+    });
 
   </script>
 </body>

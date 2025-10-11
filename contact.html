@@ -63,7 +63,8 @@
 </head>
 <body>
   <header>
-    <a href="index.html" class="btn">← Accueil</a>
+    <button class="hamburger-btn" id="hamburger-btn">☰</button>
+    <a href="index.html" class="btn" style="visibility: hidden;">← Accueil</a> <!-- Caché pour l'alignement -->
     <div class="header-title"><h1>Contactez-nous</h1></div>
     <div class="header-actions">
       <a href="panier.html" class="btn">Panier</a>
@@ -71,6 +72,14 @@
       <span id="user-email" style="margin-left: 10px; color:#333; font-size: 0.9rem;"></span>
     </div>
   </header>
+  <!-- NOUVEAU: Menu de navigation mobile -->
+  <nav class="header-nav-mobile" id="mobile-nav">
+    <a href="index.html">Accueil</a>
+    <a href="inventaire.html">Inventaire</a>
+    <a href="contact.html">Nous contacter</a>
+    <a href="about.html">À propos</a>
+    <a href="panier.html">Panier</a>
+  </nav>
 
   <div class="form-wrapper container">
     <p class="intro-text">
@@ -153,6 +162,17 @@
       }, (err) => {
         console.error(err);
         alert('Oups… Une erreur est survenue. Réessayez plus tard.');
+      });
+    });
+
+    // --- Logique du menu Hamburger ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const hamburgerBtn = document.getElementById('hamburger-btn');
+      const mobileNav = document.getElementById('mobile-nav');
+
+      hamburgerBtn.addEventListener('click', () => {
+        mobileNav.classList.toggle('is-active');
+        hamburgerBtn.textContent = mobileNav.classList.contains('is-active') ? '✕' : '☰';
       });
     });
   </script>

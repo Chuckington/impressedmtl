@@ -515,27 +515,14 @@ footer a.social-link svg {
 }
 
 @media (max-width: 768px) {
+  /* --- NOUVELLE DISPOSITION DU HEADER SUR UNE LIGNE --- */
   header {
-    flex-direction: column;
-    padding: 15px;
-    gap: 15px;
-  }
-  .header-left {
-    order: 1;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .header-logo img {
-    height: 32px; /* Taille ajustée pour mobile */
-    margin: 0; /* On retire les marges négatives */
-  }
-  .header-actions {
-    order: 2;
-    width: 100%;
-    justify-content: center;
+    padding: 10px 15px; /* Moins de padding vertical */
+    gap: 10px; /* Réduire l'espace entre les éléments */
   }
 
   .intro-text-section { padding: 40px 20px; }
+
   .intro-text-section h1 { font-size: 2rem; }
   .intro-text-section p { font-size: 1rem; }
   
