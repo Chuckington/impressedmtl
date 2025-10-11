@@ -768,17 +768,14 @@ footer a.social-link svg {
     padding: 15px 20px;
   }
 
-  /* NOUVEAU: Forcer les colonnes du configurateur à s'empiler sur mobile */
+  /* CORRIGÉ: Consolidation des styles pour le configurateur V2 sur mobile */
   .configurator-container {
     flex-direction: column; /* Fait en sorte que les colonnes s'empilent */
     gap: 20px; /* Réduit l'espace entre les blocs sur mobile */
   }
-
-  /* NOUVEAU: Assurer que chaque colonne prend toute la largeur sur mobile */
   .configurator-options, .configurator-preview {
     position: static; /* Annule le positionnement "sticky" du desktop */
     width: 100%; /* Force chaque colonne à prendre toute la largeur */
-    max-width: 100%; /* Empêche tout débordement */
   }
 
   /* --- Header & Navigation --- */
