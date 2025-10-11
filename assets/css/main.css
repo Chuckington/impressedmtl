@@ -562,6 +562,7 @@ footer a.social-link svg {
   flex: 1;
   position: sticky; /* La colonne reste visible au défilement */
   top: 120px; /* Ajustez selon la hauteur de votre header */
+  width: 380px; /* RESTAURÉ: Redonne sa largeur à la colonne des options sur desktop */
 }
 
 /* Grille pour les cartes de personnalisation V2 */
@@ -861,7 +862,8 @@ footer a.social-link svg {
     position: static; /* Annule le sticky sur mobile */
     width: 100%;
   }
-  .grid-v2 .card {
+  /* CORRIGÉ: Règle plus spécifique pour le mobile */
+  .configurator-options .grid-v2 .card {
     width: 100%; /* La carte prend toute la largeur */
   }
   /* NOUVEAU: Annuler la largeur fixe de la boîte d'offre sur mobile */
