@@ -137,15 +137,16 @@
     // Appel initial pour mettre à jour l'UI au chargement de la page
     updateAuthUI();
 
-    // --- Logique du menu Hamburger ---
+    // --- Logique de la page ---
     document.addEventListener('DOMContentLoaded', () => {
+      // --- Logique du menu Hamburger (CORRIGÉ) ---
       const hamburgerBtn = document.getElementById('hamburger-btn');
       const mobileNav = document.getElementById('mobile-nav');
 
       hamburgerBtn.addEventListener('click', () => {
         mobileNav.classList.toggle('is-active');
         hamburgerBtn.textContent = mobileNav.classList.contains('is-active') ? '✕' : '☰';
-      }
+      });
     });
   </script>
 </body>
