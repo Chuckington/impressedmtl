@@ -363,9 +363,14 @@
     document.addEventListener('DOMContentLoaded', () => {
       const hamburgerBtn = document.getElementById('hamburger-btn');
       const mobileNav = document.getElementById('mobile-nav');
+      const closeNavBtn = document.getElementById('close-nav-btn');
+
       hamburgerBtn.addEventListener('click', () => {
-        mobileNav.classList.toggle('is-active');
-        hamburgerBtn.textContent = mobileNav.classList.contains('is-active') ? '✕' : '☰'; // Change l'icône
+        mobileNav.classList.add('is-active');
+      });
+
+      closeNavBtn.addEventListener('click', () => {
+        mobileNav.classList.remove('is-active');
       });
     });
   </script>

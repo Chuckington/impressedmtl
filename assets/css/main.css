@@ -816,6 +816,19 @@ footer a.social-link svg {
     font-weight: bold;
   }
   .header-left {
+    /* NOUVEAU: Style pour le bouton de fermeture du menu mobile */
+    .close-nav-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 28px; /* Plus grand pour être facile à cliquer */
+      color: #333;
+      cursor: pointer;
+      z-index: 1003; /* Au-dessus du menu */
+    }
+    
     order: 2; /* Met le logo au milieu */
     flex-grow: 1;
     justify-content: center;
