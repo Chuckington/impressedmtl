@@ -861,8 +861,8 @@ footer a.social-link svg {
   .configurator-options, .configurator-preview {
     position: static; /* Annule le sticky sur mobile */
     width: 100%;
-    /* CORRIGÉ: Forcer la largeur à s'appliquer correctement */
-    flex-basis: 100%; 
+    /* NOUVEAU: Annuler la largeur fixe de la version ordinateur */
+    min-width: 0;
   }
   /* CORRIGÉ: Règle plus spécifique pour le mobile */
   .configurator-options .grid-v2 .card {
