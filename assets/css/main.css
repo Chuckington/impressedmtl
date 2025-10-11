@@ -332,22 +332,6 @@ header {
   text-align: center;
   width: 380px; /* Assure la même largeur que les cartes de personnalisation */
 }
-#offer-info-box h3 { margin-top: 0; margin-bottom: 10px; color: #1976d2; }
-#offer-info-box p { line-height: 1.5; color: #333; }
-
-/* Styles pour le pop-up */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
 .popup-content {
   background-color: #fff;
   padding: 30px;
@@ -585,6 +569,16 @@ footer a.social-link svg {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* NOUVEAU: Style pour la boîte d'offre, largeur fixe uniquement sur desktop */
+#offer-info-box {
+  background-color: #eef7ff;
+  border: 2px solid #90caf9;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  width: 380px;
 }
 
 /* NOUVEAU: Style pour la section description en bas de page */
@@ -869,6 +863,10 @@ footer a.social-link svg {
   }
   .grid-v2 .card {
     width: 100%; /* La carte prend toute la largeur */
+  }
+  /* NOUVEAU: Annuler la largeur fixe de la boîte d'offre sur mobile */
+  #offer-info-box {
+    width: 100%;
   }
 
   /* --- Barre de commande (produit.html & produit2.html) --- */
