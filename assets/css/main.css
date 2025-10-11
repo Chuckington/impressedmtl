@@ -564,13 +564,6 @@ footer a.social-link svg {
   top: 120px; /* Ajustez selon la hauteur de votre header */
 }
 
-/* NOUVEAU: La largeur fixe de la colonne d'options ne s'applique que sur les grands écrans */
-@media (min-width: 1025px) {
-  .configurator-options {
-    width: 380px;
-  }
-}
-
 /* Grille pour les cartes de personnalisation V2 */
 .grid-v2 {
   display: flex;
@@ -614,7 +607,7 @@ footer a.social-link svg {
 
 /* Colonne de droite pour l'aperçu */
 .configurator-preview {
-  flex: 2;
+  flex: 2; /* RESTAURÉ: Redonne la bonne proportion à la colonne de l'aperçu */
   display: flex;
   flex-direction: column;
   justify-content: center;
