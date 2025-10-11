@@ -515,12 +515,6 @@ footer a.social-link svg {
 }
 
 @media (max-width: 768px) {
-  /* --- NOUVELLE DISPOSITION DU HEADER SUR UNE LIGNE --- */
-  header {
-    padding: 10px 15px; /* Moins de padding vertical */
-    gap: 10px; /* Réduire l'espace entre les éléments */
-  }
-
   .intro-text-section { padding: 40px 20px; }
 
   .intro-text-section h1 { font-size: 2rem; }
@@ -784,6 +778,12 @@ footer a.social-link svg {
     cursor: pointer;
     font-size: 24px;
     z-index: 1002;
+    color: #000; /* NOUVEAU: Assure que l'icône est noire */
+  }
+  .header-nav-mobile {
+    display: flex; /* NOUVEAU: Rendre le menu mobile fonctionnel */
+    position: fixed;
+    top: 0;
   }
   .header-nav-mobile {
     position: fixed;
@@ -823,6 +823,11 @@ footer a.social-link svg {
   }
   .header-title {
     display: none; /* On cache le titre central pour faire de la place */
+  }
+
+  /* NOUVEAU: Assurer que le header reste sur une ligne */
+  header {
+    flex-direction: row;
   }
 
   /* --- Page d'accueil --- */
