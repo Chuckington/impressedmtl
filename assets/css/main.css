@@ -888,8 +888,11 @@ footer a.social-link svg {
     padding: 0; /* On enlève le padding */
     margin: 0;
   }
-  /* NOUVEAU: Style de bloc pour chaque option sur mobile */
+  /* CORRIGÉ: Réorganisation finale pour mobile */
+  .order-summary-top-row { display: contents; } /* "Aplatit" la structure pour que les enfants soient directs */
+  .order-summary-bottom-row { order: 2; } /* Les tailles viennent en 2ème */
   #order-summary .option-group {
+    order: 1; /* Les options (Quantité, Couleur, Sexe) viennent en 1er */
     background-color: #fff;
     padding: 15px;
     border-radius: 12px;
@@ -916,12 +919,48 @@ footer a.social-link svg {
     align-items: stretch;
     width: 100%;
     gap: 10px;
-    order: 3; /* Le total vient en dernier */
+    order: 99; /* Force le total à être le dernier élément dans la colonne top-row */
     margin-top: 10px; /* Espace au-dessus du total */
   }
   .total-price-display {
     text-align: center;
     font-size: 1.8rem; /* Plus gros */
+  }
+  /* NOUVEAU: Styles pour les contrôles de quantité +/- */
+  .quantity-stepper {
+    position: relative;
+  }
+  .quantity-stepper input[type="number"] {
+    text-align: center;
+    -moz-appearance: textfield; /* Cache les flèches sur Firefox */
+  }
+  .quantity-stepper input[type="number"]::-webkit-outer-spin-button,
+  .quantity-stepper input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Cache les flèches sur Chrome/Safari */
+    margin: 0;
+  }
+  .quantity-stepper .quantity-btn {
+    position: absolute;
+    bottom: 15px; /* Aligné avec le bas de la carte */
+    width: 44px;
+    height: 49px; /* Hauteur de l'input + padding */
+    background-color: #e9ecef;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    line-height: 49px;
+  }
+  .quantity-stepper .quantity-btn.minus {
+    left: 15px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+  .quantity-stepper .quantity-btn.plus {
+    right: 15px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
   }
   .size-inputs-wrapper {
     justify-content: center;

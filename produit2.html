@@ -81,7 +81,7 @@
   <!-- Barre de commande identique à produit.html -->
   <div id="order-summary">
     <div class="order-summary-top-row">
-      <div class="option-group">
+      <div class="option-group quantity-stepper">
         <label for="quantity">Quantité:</label>
         <input type="number" id="quantity" value="1" min="1">
       </div>
@@ -104,7 +104,7 @@
 
     <div class="order-summary-bottom-row">
       <div class="option-group" id="size-option-group">
-        <label>Tailles :</label>
+        <label>Tailles:</label>
         <div class="size-inputs-column">
           <div id="size-inputs-container" class="size-inputs-wrapper"></div>
           <div id="size-validation-message"></div>
@@ -724,9 +724,7 @@
                 sizeInputGroup.className = 'size-input-group';
                 sizeInputGroup.innerHTML = ` <!-- NOUVEAU: Ajout de la classe quantity-stepper -->
                     <label for="size-qty-${size.id}">${size.name}</label>
-                    <div class="quantity-stepper">
-                      <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
-                    </div>
+                    <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
                 `;
                 sizeInputsContainerEl.appendChild(sizeInputGroup);
             });
@@ -747,8 +745,6 @@
         }
 
         // Mettre à jour le total
-        // CORRIGÉ: Appeler la fonction pour créer les boutons +/- après avoir ajouté les tailles
-        setupQuantitySteppers();
         updateTotal();
     }
 
