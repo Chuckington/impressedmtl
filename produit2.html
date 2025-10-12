@@ -1207,42 +1207,6 @@
       closeNavBtn.addEventListener('click', () => {
         mobileNav.classList.remove('is-active');
       });
-
-      // --- NOUVEAU: Logique pour les boutons de quantité +/- ---
-      function setupQuantitySteppers() {
-        const steppers = document.querySelectorAll('.quantity-stepper');
-        steppers.forEach(container => {
-          const input = container.querySelector('input[type="number"]');
-          if (!input) return;
-
-          // Éviter d'ajouter les boutons plusieurs fois
-          if (container.querySelector('.quantity-btn')) return;
-
-          const minusBtn = document.createElement('button');
-          minusBtn.textContent = '−';
-          minusBtn.className = 'quantity-btn minus';
-          minusBtn.type = 'button';
-
-          const plusBtn = document.createElement('button');
-          plusBtn.textContent = '+';
-          plusBtn.className = 'quantity-btn plus';
-          plusBtn.type = 'button';
-
-          container.appendChild(minusBtn);
-          container.appendChild(plusBtn);
-
-          minusBtn.addEventListener('click', () => {
-            input.stepDown();
-            input.dispatchEvent(new Event('input', { bubbles: true })); // Déclenche la mise à jour du total
-          });
-
-          plusBtn.addEventListener('click', () => {
-            input.stepUp();
-            input.dispatchEvent(new Event('input', { bubbles: true })); // Déclenche la mise à jour du total
-          });
-        });
-      }
-      setupQuantitySteppers(); // Appel initial
     });
   </script>
   <script>
