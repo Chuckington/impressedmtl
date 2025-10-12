@@ -749,8 +749,6 @@
         }
 
         // Mettre à jour le total
-        // CORRIGÉ: Appeler la fonction pour créer les boutons +/- après avoir ajouté les tailles
-        setupQuantitySteppers();
         updateTotal();
     }
 
@@ -1208,38 +1206,43 @@
         mobileNav.classList.remove('is-active');
       });
     });
-  </script>
-  <script>
-    // --- NOUVEAU: Logique "Ajouter au Panier" pour la V2 ---
+
+    // --- CORRIGÉ: Logique pour les boutons de quantité +/- (déplacée hors du DOMContentLoaded) ---
+    function setupQuantitySteppers() {
+      const steppers = document.querySelectorAll('.quantity-stepper');
+      steppers.forEach(container => {
+        const input = container.querySelector('input[type="number"]');
+        if (!input || container.querySelector('.quantity-btn')) return; // Ne rien faire si déjà initialisé
+
+        const minusBtn = document.createElement('button');
+        minusBtn.textContent = '−';
+        minusBtn.className = 'quantity-btn minus';
+        minusBtn.type = 'button';
+
+        const plusBtn = document.createElement('button');
+        plusBtn.textContent = '+';
+        plusBtn.className = 'quantity-btn plus';
+        plusBtn.type = 'button';
+
+        // Insérer les boutons avant et après l'input
+        container.insertBefore(minusBtn, input);
+        container.appendChild(plusBtn);
+
+        minusBtn.addEventListener('click', () => {
+          input.stepDown();
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        plusBtn.addEventListener('click', () => {
+          input.stepUp();
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      });
+    }
+
+    // --- CORRIGÉ: Logique "Ajouter au Panier" pour la V2 ---
     document.getElementById('add-to-cart').addEventListener('click', async () => {
         try {
-            const addToCartBtn = document.getElementById('add-to-cart');
-            addToCartBtn.disabled = true;
-            addToCartBtn.innerHTML = `<div class="spinner"></div>`;
-
-            // NOUVEAU: Générer et uploader l'image d'aperçu final
-            let finalPreviewPublicUrl = null;
-            // Cacher les zones de placement avant de générer l'image
-            fabricCanvas.getObjects().forEach(obj => {
-                if (obj.custom_type === 'placement_box') obj.set('visible', false);
-            });
-            fabricCanvas.renderAll();
-            
-            const dataUrl = fabricCanvas.toDataURL({ format: 'png', quality: 0.8 });
-            const blob = await (await fetch(dataUrl)).blob();
-            const fileName = `final-preview-${Date.now()}.png`;
-            const { data: { user: authUser } } = await supa.auth.getUser();
-            const filePath = authUser ? `${authUser.id}/previews/${fileName}` : `public/previews/${fileName}`;
-
-            const { data: uploadData, error: uploadError } = await supa.storage.from('designs-clients').upload(filePath, blob);
-
-            if (uploadError) {
-                console.error("Erreur lors de l'upload de l'aperçu final:", uploadError);
-            } else {
-                const { data: publicURLData } = supa.storage.from('designs-clients').getPublicUrl(uploadData.path);
-                finalPreviewPublicUrl = publicURLData.publicUrl;
-            }
-
             const qty = parseInt(qtyInput.value) || 1;
             if (!state.product) {
                 alert("Erreur: les données du produit n'ont pas pu être chargées.");

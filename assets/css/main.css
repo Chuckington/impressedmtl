@@ -750,18 +750,19 @@ footer a.social-link svg {
   font-weight: bold;
 }
 
-/* CORRIGÉ: Styles universels pour les contrôles de quantité +/- */
+/* CORRIGÉ: Styles universels pour les contrôles de quantité +/- (web et mobile) */
 .quantity-stepper {
   display: flex;
   align-items: center;
 }
 .quantity-stepper input[type="number"] {
+  order: 2; /* L'input vient au milieu */
   text-align: center;
   border: 1px solid #000;
   border-left: none;
   border-right: none;
   border-radius: 0;
-  padding: 0 5px;
+  padding: 10px 5px;
   height: 40px;
   width: 50px; /* Largeur fixe pour la case */
   -moz-appearance: textfield; /* Cache les flèches sur Firefox */
@@ -774,26 +775,28 @@ footer a.social-link svg {
   margin: 0;
 }
 .quantity-stepper .quantity-btn {
-  width: 38px; /* Largeur ajustée */
-  height: 40px; /* Même hauteur que l'input */
+  width: 40px;
+  height: 40px;
   background-color: #fff; /* Fond blanc */
   border: 1px solid #000; /* Bordure noire */
   cursor: pointer;
   font-size: 1.5rem;
   font-weight: bold;
   color: #333;
-  line-height: 36px; /* Centrage vertical du symbole */
+  line-height: 38px;
   padding: 0;
   flex-shrink: 0;
   transition: background-color 0.2s;
 }
 .quantity-stepper .quantity-btn:hover {
-  background-color: #f2f2f2;
+  background-color: #f0f0f0;
 }
 .quantity-stepper .quantity-btn.minus {
+  order: 1; /* Le bouton moins vient en premier */
   border-radius: 5px 0 0 5px;
 }
 .quantity-stepper .quantity-btn.plus {
+  order: 3; /* Le bouton plus vient en dernier */
   border-radius: 0 5px 5px 0;
 }
 
