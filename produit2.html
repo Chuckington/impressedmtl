@@ -1206,6 +1206,31 @@
     // --- CORRIGÉ: Logique "Ajouter au Panier" pour la V2 ---
     document.getElementById('add-to-cart').addEventListener('click', async () => {
         try {
+            const addToCartBtn = document.getElementById('add-to-cart');
+            addToCartBtn.disabled = true;
+            addToCartBtn.innerHTML = `<div class="spinner"></div>`;
+
+            // NOUVEAU: Générer et uploader l'image d'aperçu final
+            let finalPreviewPublicUrl = null;
+            // Cacher les zones de placement avant de générer l'image
+            fabricCanvas.getObjects().forEach(obj => {
+                if (obj.custom_type === 'placement_box') obj.set('visible', false);
+            });
+            fabricCanvas.renderAll();
+            
+            const dataUrl = fabricCanvas.toDataURL({ format: 'png', quality: 0.8 });
+            const blob = await (await fetch(dataUrl)).blob();
+            const fileName = `final-preview-${Date.now()}.png`;
+            const { data: { user: authUser } } = await supa.auth.getUser();
+            const filePath = authUser ? `${authUser.id}/previews/${fileName}` : `public/previews/${fileName}`;
+
+            const { data: uploadData, error: uploadError } = await supa.storage.from('designs-clients').upload(filePath, blob);
+
+            if (!uploadError) {
+                const { data: publicURLData } = supa.storage.from('designs-clients').getPublicUrl(uploadData.path);
+                finalPreviewPublicUrl = publicURLData.publicUrl;
+            }
+
             const qty = parseInt(qtyInput.value) || 1;
             if (!state.product) {
                 alert("Erreur: les données du produit n'ont pas pu être chargées.");
