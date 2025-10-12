@@ -320,6 +320,11 @@ header {
   align-items: center;
   gap: 8px; /* Espace entre le label et l'input */
 }
+.size-input-group .quantity-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espace entre le label et l'input */
+}
 .size-input-group label { font-size: 0.85rem; font-weight: 500; }
 .size-quantity-input { width: 60px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
 #size-validation-message { font-weight: bold; width: 100%; text-align: left; font-size: 0.9em; }
@@ -927,11 +932,16 @@ footer a.social-link svg {
     font-size: 1.8rem; /* Plus gros */
   }
   /* NOUVEAU: Styles pour les contrôles de quantité +/- */
+  /* CORRIGÉ: Styles universels pour les steppers */
   .quantity-stepper {
-    position: relative;
+    display: flex;
+    align-items: center;
   }
   .quantity-stepper input[type="number"] {
     text-align: center;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
     -moz-appearance: textfield; /* Cache les flèches sur Firefox */
   }
   .quantity-stepper input[type="number"]::-webkit-outer-spin-button,
@@ -940,27 +950,25 @@ footer a.social-link svg {
     margin: 0;
   }
   .quantity-stepper .quantity-btn {
-    position: absolute;
-    bottom: 15px; /* Aligné avec le bas de la carte */
-    width: 44px;
-    height: 49px; /* Hauteur de l'input + padding */
+    width: 38px;
+    height: 38px;
     background-color: #e9ecef;
-    border: none;
+    border: 1px solid #ccc;
     cursor: pointer;
     font-size: 1.5rem;
     font-weight: bold;
     color: #333;
-    line-height: 49px;
+    line-height: 36px;
+    padding: 0;
+    flex-shrink: 0;
   }
   .quantity-stepper .quantity-btn.minus {
-    left: 15px;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    order: 1; /* Le bouton moins vient en premier */
+    border-radius: 4px 0 0 4px;
   }
   .quantity-stepper .quantity-btn.plus {
-    right: 15px;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
+    order: 3; /* Le bouton plus vient en dernier */
+    border-radius: 0 4px 4px 0;
   }
   .size-inputs-wrapper {
     justify-content: center;

@@ -81,9 +81,11 @@
   <!-- Barre de commande identique à produit.html -->
   <div id="order-summary">
     <div class="order-summary-top-row">
-      <div class="option-group quantity-stepper">
+      <div class="option-group">
         <label for="quantity">Quantité:</label>
-        <input type="number" id="quantity" value="1" min="1">
+        <div class="quantity-stepper">
+          <input type="number" id="quantity" value="1" min="1">
+        </div>
       </div>
       <div class="option-group" id="color-option-group">
         <label for="color-select">Couleur:</label>
@@ -722,9 +724,11 @@
                 const size = item.sizes;
                 const sizeInputGroup = document.createElement('div');
                 sizeInputGroup.className = 'size-input-group';
-                sizeInputGroup.innerHTML = ` <!-- NOUVEAU: Ajout de la classe quantity-stepper -->
+                sizeInputGroup.innerHTML = `
                     <label for="size-qty-${size.id}">${size.name}</label>
-                    <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
+                     <div class="quantity-stepper">
+                       <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
+                     </div>
                 `;
                 sizeInputsContainerEl.appendChild(sizeInputGroup);
             });
