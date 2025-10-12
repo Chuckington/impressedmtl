@@ -942,6 +942,11 @@ footer a.social-link svg {
     font-size: 1.8rem; /* Plus gros */
   }
   .size-inputs-wrapper {
+    /* CORRECTION: Le conteneur des tailles devient la grille */
+    display: grid;
+    grid-template-columns: 1fr 4fr; /* Colonne des noms (20%) et colonne des inputs (80%) */
+    gap: 10px 20px; /* Espace vertical et horizontal */
+    align-items: center;
     /* CORRECTION: Mise en page en deux colonnes pour les tailles */
     display: grid;
     grid-template-columns: 1fr 4fr; /* CORRIGÉ: Colonne des noms (20%) et colonne des inputs (80%) */
@@ -950,6 +955,7 @@ footer a.social-link svg {
     align-items: center;
   }
   .size-input-group {
+    /* CORRECTION: Le groupe d'input s'aligne dans la grille */
     display: contents; /* Permet aux enfants de s'aligner directement dans la grille */
   }
   .size-input-group label {
