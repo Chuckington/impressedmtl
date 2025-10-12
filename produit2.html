@@ -749,6 +749,8 @@
         }
 
         // Mettre à jour le total
+        // CORRIGÉ: Appeler la fonction pour créer les boutons +/- après avoir ajouté les tailles
+        setupQuantitySteppers();
         updateTotal();
     }
 
@@ -1205,40 +1207,40 @@
       closeNavBtn.addEventListener('click', () => {
         mobileNav.classList.remove('is-active');
       });
+
+      // --- CORRIGÉ: Logique pour les boutons de quantité +/- (déplacée hors du DOMContentLoaded) ---
+      function setupQuantitySteppers() {
+        const steppers = document.querySelectorAll('.quantity-stepper');
+        steppers.forEach(container => {
+          const input = container.querySelector('input[type="number"]');
+          if (!input || container.querySelector('.quantity-btn')) return; // Ne rien faire si déjà initialisé
+
+          const minusBtn = document.createElement('button');
+          minusBtn.textContent = '−';
+          minusBtn.className = 'quantity-btn minus';
+          minusBtn.type = 'button';
+
+          const plusBtn = document.createElement('button');
+          plusBtn.textContent = '+';
+          plusBtn.className = 'quantity-btn plus';
+          plusBtn.type = 'button';
+
+          // Insérer les boutons avant et après l'input
+          container.insertBefore(minusBtn, input);
+          container.appendChild(plusBtn);
+
+          minusBtn.addEventListener('click', () => {
+            input.stepDown();
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          });
+
+          plusBtn.addEventListener('click', () => {
+            input.stepUp();
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          });
+        });
+      }
     });
-
-    // --- CORRIGÉ: Logique pour les boutons de quantité +/- (déplacée hors du DOMContentLoaded) ---
-    function setupQuantitySteppers() {
-      const steppers = document.querySelectorAll('.quantity-stepper');
-      steppers.forEach(container => {
-        const input = container.querySelector('input[type="number"]');
-        if (!input || container.querySelector('.quantity-btn')) return; // Ne rien faire si déjà initialisé
-
-        const minusBtn = document.createElement('button');
-        minusBtn.textContent = '−';
-        minusBtn.className = 'quantity-btn minus';
-        minusBtn.type = 'button';
-
-        const plusBtn = document.createElement('button');
-        plusBtn.textContent = '+';
-        plusBtn.className = 'quantity-btn plus';
-        plusBtn.type = 'button';
-
-        // Insérer les boutons avant et après l'input
-        container.insertBefore(minusBtn, input);
-        container.appendChild(plusBtn);
-
-        minusBtn.addEventListener('click', () => {
-          input.stepDown();
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-        });
-
-        plusBtn.addEventListener('click', () => {
-          input.stepUp();
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-        });
-      });
-    }
 
     // --- CORRIGÉ: Logique "Ajouter au Panier" pour la V2 ---
     document.getElementById('add-to-cart').addEventListener('click', async () => {
