@@ -224,7 +224,11 @@
             // --- NOUVELLE LOGIQUE DE REDIMENSIONNEMENT ---
             // Obtenir la largeur du conteneur parent pour rendre le canvas responsive
             const previewContainer = document.querySelector('.configurator-preview');
-            const containerWidth = previewContainer.clientWidth - 40; // -40 pour le padding (20px de chaque côté)
+            
+            // CORRECTION: Utiliser le bon padding pour mobile vs desktop
+            const isMobile = window.innerWidth <= 1024;
+            const containerPadding = isMobile ? 30 : 40; // 15px*2 sur mobile, 20px*2 sur desktop
+            const containerWidth = previewContainer.clientWidth - containerPadding;
 
             // Calculer le facteur d'échelle et les nouvelles dimensions du canvas
             const scaleFactor = containerWidth / baseImg.width;
