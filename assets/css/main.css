@@ -944,7 +944,7 @@ footer a.social-link svg {
   .size-inputs-wrapper {
     /* CORRECTION: Mise en page en deux colonnes pour les tailles */
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Deux colonnes de largeur égale */
+    grid-template-columns: 1fr 4fr; /* CORRIGÉ: Colonne des noms (20%) et colonne des inputs (80%) */
     gap: 10px 20px; /* Espace vertical et horizontal */
     justify-content: stretch;
     align-items: center;
