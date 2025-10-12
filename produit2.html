@@ -722,9 +722,11 @@
                 const size = item.sizes;
                 const sizeInputGroup = document.createElement('div');
                 sizeInputGroup.className = 'size-input-group';
-                sizeInputGroup.innerHTML = `
+                sizeInputGroup.innerHTML = ` <!-- NOUVEAU: Ajout de la classe quantity-stepper -->
                     <label for="size-qty-${size.id}">${size.name}</label>
-                    <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
+                    <div class="quantity-stepper">
+                      <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
+                    </div>
                 `;
                 sizeInputsContainerEl.appendChild(sizeInputGroup);
             });
@@ -745,6 +747,8 @@
         }
 
         // Mettre à jour le total
+        // CORRIGÉ: Appeler la fonction pour créer les boutons +/- après avoir ajouté les tailles
+        setupQuantitySteppers();
         updateTotal();
     }
 

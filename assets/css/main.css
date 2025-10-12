@@ -898,12 +898,6 @@ footer a.social-link svg {
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
-  /* CORRIGÉ: Réorganisation des éléments pour mobile */
-  .order-summary-top-row {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch; /* CORRECTION: Force les cartes à prendre toute la largeur */
-  }
   #order-summary .option-group label {
     font-size: 0.9rem;
     font-weight: bold;
@@ -922,7 +916,7 @@ footer a.social-link svg {
     align-items: stretch;
     width: 100%;
     gap: 10px;
-    order: 99; /* Force le total à être le dernier élément dans la colonne top-row */
+    order: 3; /* Le total vient en dernier */
     margin-top: 10px; /* Espace au-dessus du total */
   }
   .total-price-display {
