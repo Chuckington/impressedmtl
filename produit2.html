@@ -83,9 +83,7 @@
     <div class="order-summary-top-row">
       <div class="option-group">
         <label for="quantity">Quantité:</label>
-        <div class="quantity-stepper">
-          <input type="number" id="quantity" value="1" min="1">
-        </div>
+        <input type="number" id="quantity" value="1" min="1">
       </div>
       <div class="option-group" id="color-option-group">
         <label for="color-select">Couleur:</label>
@@ -725,10 +723,8 @@
                 const sizeInputGroup = document.createElement('div');
                 sizeInputGroup.className = 'size-input-group';
                 sizeInputGroup.innerHTML = `
-                    <label for="size-qty-${size.id}">${size.name}</label>
-                     <div class="quantity-stepper">
-                       <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
-                     </div>
+                  <label for="size-qty-${size.id}">${size.name}</label>
+                  <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
                 `;
                 sizeInputsContainerEl.appendChild(sizeInputGroup);
             });
