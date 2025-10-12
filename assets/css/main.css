@@ -320,11 +320,6 @@ header {
   align-items: center;
   gap: 8px; /* Espace entre le label et l'input */
 }
-.size-input-group .quantity-stepper {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Espace entre le label et l'input */
-}
 .size-input-group label { font-size: 0.85rem; font-weight: 500; }
 .size-quantity-input { width: 60px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
 #size-validation-message { font-weight: bold; width: 100%; text-align: left; font-size: 0.9em; }
@@ -755,6 +750,54 @@ footer a.social-link svg {
   font-weight: bold;
 }
 
+/* CORRIGÉ: Styles universels pour les contrôles de quantité +/- (web et mobile) */
+.quantity-stepper {
+  display: flex;
+  align-items: center;
+}
+.quantity-stepper input[type="number"] {
+  order: 2; /* L'input vient au milieu */
+  text-align: center;
+  border: 1px solid #000;
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+  padding: 10px 5px;
+  height: 40px;
+  width: 50px; /* Largeur fixe pour la case */
+  -moz-appearance: textfield; /* Cache les flèches sur Firefox */
+}
+.quantity-stepper input[type="number"]::-webkit-outer-spin-button,
+.quantity-stepper input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none; /* Cache les flèches sur Chrome/Safari */
+  margin: 0;
+}
+.quantity-stepper .quantity-btn {
+  width: 40px;
+  height: 40px;
+  background-color: #fff;
+  border: 1px solid #000; /* Bordure noire */
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  line-height: 38px;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+.quantity-stepper .quantity-btn:hover {
+  background-color: #f0f0f0;
+}
+.quantity-stepper .quantity-btn.minus {
+  order: 1; /* Le bouton moins vient en premier */
+  border-radius: 5px 0 0 5px;
+}
+.quantity-stepper .quantity-btn.plus {
+  order: 3; /* Le bouton plus vient en dernier */
+  border-radius: 0 5px 5px 0;
+}
+
 /* ==========================================================================
    ===               STYLES RESPONSIVES POUR MOBILE/TABLETTE              ===
    ========================================================================== */
@@ -930,55 +973,6 @@ footer a.social-link svg {
   .total-price-display {
     text-align: center;
     font-size: 1.8rem; /* Plus gros */
-  }
-  /* NOUVEAU: Styles pour les contrôles de quantité +/- */
-  /* CORRIGÉ: Styles universels pour les steppers */
-  .quantity-stepper {
-    display: flex;
-    align-items: center;
-    width: 150px; /* Largeur fixe pour le composant */
-  }
-  .quantity-stepper input[type="number"] {
-    order: 2; /* L'input vient au milieu */
-    text-align: center;
-    border: 1px solid #000; /* Bordure noire */
-    border-left: none; /* La bordure est sur les boutons */
-    border-right: none; /* La bordure est sur les boutons */
-    border-radius: 0;
-    padding: 10px 5px; /* Ajustement du padding */
-    height: 40px; /* Hauteur standardisée */
-    width: 100%; /* Prend l'espace restant */
-    -moz-appearance: textfield; /* Cache les flèches sur Firefox */
-  }
-  .quantity-stepper input[type="number"]::-webkit-outer-spin-button,
-  .quantity-stepper input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none; /* Cache les flèches sur Chrome/Safari */
-    margin: 0;
-  }
-  .quantity-stepper .quantity-btn {
-    width: 40px; /* Largeur standardisée */
-    height: 40px; /* Hauteur standardisée */
-    background-color: #fff; /* Fond blanc comme l'input */
-    border: 1px solid #000; /* Bordure noire */
-    cursor: pointer;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-    line-height: 38px; /* Centrage vertical */
-    padding: 0;
-    flex-shrink: 0;
-    transition: background-color 0.2s;
-  }
-  .quantity-stepper .quantity-btn:hover {
-    background-color: #f0f0f0;
-  }
-  .quantity-stepper .quantity-btn.minus {
-    order: 1; /* Le bouton moins vient en premier */
-    border-radius: 5px 0 0 5px; /* Coins arrondis à l'extérieur */
-  }
-  .quantity-stepper .quantity-btn.plus {
-    order: 3; /* Le bouton plus vient en dernier */
-    border-radius: 0 5px 5px 0; /* Coins arrondis à l'extérieur */
   }
   .size-inputs-wrapper {
     justify-content: center;
