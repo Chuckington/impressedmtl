@@ -888,10 +888,6 @@ footer a.social-link svg {
     padding: 0; /* On enlève le padding */
     margin: 0;
   }
-  /* CORRECTION: Assurer que les groupes d'options s'étirent sur mobile */
-  .order-summary-top-row .option-group {
-    align-self: stretch;
-  }
   /* NOUVEAU: Style de bloc pour chaque option sur mobile */
   #order-summary .option-group {
     background-color: #fff;
@@ -906,6 +902,7 @@ footer a.social-link svg {
   .order-summary-top-row {
     display: flex;
     flex-direction: column;
+    align-items: stretch; /* CORRECTION: Force les cartes à prendre toute la largeur */
   }
   #order-summary .option-group label {
     font-size: 0.9rem;
