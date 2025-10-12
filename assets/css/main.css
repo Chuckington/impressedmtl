@@ -912,6 +912,10 @@ footer a.social-link svg {
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
+  /* CORRECTION: Assurer que les groupes d'options s'étirent sur mobile */
+  .order-summary-top-row .option-group {
+    align-self: stretch;
+  }
   #order-summary .option-group label {
     font-size: 0.9rem;
     font-weight: bold;
@@ -938,7 +942,21 @@ footer a.social-link svg {
     font-size: 1.8rem; /* Plus gros */
   }
   .size-inputs-wrapper {
-    justify-content: center;
+    /* CORRECTION: Mise en page en deux colonnes pour les tailles */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Deux colonnes de largeur égale */
+    gap: 10px 20px; /* Espace vertical et horizontal */
+    justify-content: stretch;
+    align-items: center;
+  }
+  .size-input-group {
+    display: contents; /* Permet aux enfants de s'aligner directement dans la grille */
+  }
+  .size-input-group label {
+    text-align: right; /* Aligne les noms de taille à droite */
+  }
+  .size-input-group input[type="number"] {
+    width: 100%; /* L'input prend toute la largeur de sa colonne */
   }
   #order-summary .btn {
     padding: 15px; /* Bouton plus gros */
