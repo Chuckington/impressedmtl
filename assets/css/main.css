@@ -880,20 +880,51 @@ footer a.social-link svg {
   .order-summary-top-row, .order-summary-bottom-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 15px;
+    gap: 0; /* On gère l'espacement sur les .option-group */
+    border: none; /* On enlève la bordure du bas */
+    padding: 0; /* On enlève le padding */
+    margin: 0;
+  }
+  /* NOUVEAU: Style de bloc pour chaque option sur mobile */
+  #order-summary .option-group {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  #order-summary .option-group label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  #order-summary .option-group input[type="number"],
+  #order-summary .option-group select {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+    border-radius: 8px;
   }
   .summary-actions-container {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
     gap: 10px;
+    margin-top: 10px; /* Espace au-dessus du total */
   }
   .total-price-display {
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 1.8rem; /* Plus gros */
   }
   .size-inputs-wrapper {
     justify-content: center;
+  }
+  #order-summary .btn {
+    padding: 15px; /* Bouton plus gros */
+    font-size: 1.1rem;
   }
 
   /* --- Page Panier (panier.html) --- */
