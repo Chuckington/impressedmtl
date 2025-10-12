@@ -882,18 +882,11 @@ footer a.social-link svg {
     gap: 10px; /* Espace entre les blocs réorganisés */
   }
   .order-summary-top-row, .order-summary-bottom-row {
-    flex-direction: column;
     align-items: stretch;
     gap: 0; /* On gère l'espacement sur les .option-group */
     border: none; /* On enlève la bordure du bas */
     padding: 0; /* On enlève le padding */
     margin: 0;
-  }
-  /* NOUVEAU: Réorganisation visuelle pour mobile */
-  .order-summary-top-row { order: 1; }
-  .order-summary-bottom-row { order: 2; }
-  #order-summary .summary-actions-container {
-    order: 3;
   }
   /* NOUVEAU: Style de bloc pour chaque option sur mobile */
   #order-summary .option-group {
@@ -905,9 +898,10 @@ footer a.social-link svg {
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
-  /* NOUVEAU: Cacher les actions dans leur position originale sur mobile */
-  .order-summary-top-row .summary-actions-container {
-    display: none;
+  /* CORRIGÉ: Réorganisation des éléments pour mobile */
+  .order-summary-top-row {
+    display: flex;
+    flex-direction: column;
   }
   #order-summary .option-group label {
     font-size: 0.9rem;
@@ -927,6 +921,7 @@ footer a.social-link svg {
     align-items: stretch;
     width: 100%;
     gap: 10px;
+    order: 99; /* Force le total à être le dernier élément dans la colonne top-row */
     margin-top: 10px; /* Espace au-dessus du total */
   }
   .total-price-display {
