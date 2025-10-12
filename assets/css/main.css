@@ -936,12 +936,18 @@ footer a.social-link svg {
   .quantity-stepper {
     display: flex;
     align-items: center;
+    width: 150px; /* Largeur fixe pour le composant */
   }
   .quantity-stepper input[type="number"] {
+    order: 2; /* L'input vient au milieu */
     text-align: center;
-    border-left: none;
-    border-right: none;
+    border: 1px solid #000; /* Bordure noire */
+    border-left: none; /* La bordure est sur les boutons */
+    border-right: none; /* La bordure est sur les boutons */
     border-radius: 0;
+    padding: 10px 5px; /* Ajustement du padding */
+    height: 40px; /* Hauteur standardisée */
+    width: 100%; /* Prend l'espace restant */
     -moz-appearance: textfield; /* Cache les flèches sur Firefox */
   }
   .quantity-stepper input[type="number"]::-webkit-outer-spin-button,
@@ -950,25 +956,29 @@ footer a.social-link svg {
     margin: 0;
   }
   .quantity-stepper .quantity-btn {
-    width: 38px;
-    height: 38px;
-    background-color: #e9ecef;
-    border: 1px solid #ccc;
+    width: 40px; /* Largeur standardisée */
+    height: 40px; /* Hauteur standardisée */
+    background-color: #fff; /* Fond blanc comme l'input */
+    border: 1px solid #000; /* Bordure noire */
     cursor: pointer;
     font-size: 1.5rem;
     font-weight: bold;
     color: #333;
-    line-height: 36px;
+    line-height: 38px; /* Centrage vertical */
     padding: 0;
     flex-shrink: 0;
+    transition: background-color 0.2s;
+  }
+  .quantity-stepper .quantity-btn:hover {
+    background-color: #f0f0f0;
   }
   .quantity-stepper .quantity-btn.minus {
     order: 1; /* Le bouton moins vient en premier */
-    border-radius: 4px 0 0 4px;
+    border-radius: 5px 0 0 5px; /* Coins arrondis à l'extérieur */
   }
   .quantity-stepper .quantity-btn.plus {
     order: 3; /* Le bouton plus vient en dernier */
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 5px 5px 0; /* Coins arrondis à l'extérieur */
   }
   .size-inputs-wrapper {
     justify-content: center;
