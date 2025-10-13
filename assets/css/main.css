@@ -899,7 +899,10 @@ footer a.social-link svg {
     padding: 0; /* On enlève le padding */
     margin: 0;
   }
-  /* CORRIGÉ: Réorganisation finale pour mobile */
+  /* CORRIGÉ: Réorganisation et alignement pour mobile */
+  .order-summary-bottom-row {
+    align-self: stretch; /* Force la rangée du bas (contenant les tailles) à s'étirer */
+  }
   .order-summary-top-row { display: contents; } /* "Aplatit" la structure pour que les enfants soient directs */
   .order-summary-bottom-row { order: 2; } /* Les tailles viennent en 2ème */
   #order-summary .option-group {
