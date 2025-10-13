@@ -226,7 +226,10 @@
             // Obtenir la largeur du conteneur parent pour rendre le canvas responsive
             const previewContainer = document.querySelector('.configurator-preview');
             // CORRECTION: Utiliser directement la largeur du conteneur, qui est déjà correcte.
-            const containerWidth = previewContainer.clientWidth;
+            // CORRECTION (2): Utiliser la largeur du contenu (sans padding) pour un alignement parfait.
+            const style = window.getComputedStyle(previewContainer);
+            const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+            const containerWidth = previewContainer.clientWidth - paddingX;
 
             // Calculer le facteur d'échelle et les nouvelles dimensions du canvas
             const scaleFactor = containerWidth / baseImg.width;
