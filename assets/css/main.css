@@ -954,6 +954,7 @@ footer a.social-link svg {
   }
   /* CORRECTION: Assurer que TOUS les groupes d'options s'étirent sur mobile */
   #order-summary .option-group {
+    /* CORRIGÉ: S'applique maintenant à TOUS les .option-group dans #order-summary */
     align-self: stretch;
   }
   #order-summary .option-group label {
