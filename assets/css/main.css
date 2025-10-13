@@ -283,13 +283,26 @@ header {
 #order-summary label { font-size: 0.9rem; color: #333; }
 #quantity { width:60px; padding:5px; border:1px solid #ccc; border-radius:4px; }
 /* CORRIGÉ: Standardisation des styles pour les listes déroulantes */
-#order-summary select { 
-  padding: 8px; 
+/* CORRECTION SAFARI: Forcer un style uniforme pour les listes déroulantes */
+#order-summary select {
+  /* 1. Réinitialiser l'apparence native du navigateur (surtout pour Safari) */
+  -webkit-appearance: none;
+  appearance: none;
+
+  /* 2. Appliquer nos styles de base */
+  background-color: #fff; /* Fond blanc explicite */
+  padding: 8px 30px 8px 12px; /* Espace à droite pour la flèche personnalisée */
   border: 1px solid #000; 
   border-radius: 5px; 
   font-family: inherit; 
   font-size: 1rem;
   min-width: 120px; 
+
+  /* 3. Ajouter notre propre flèche en image de fond */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
 }
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
