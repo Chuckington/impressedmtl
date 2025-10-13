@@ -812,6 +812,11 @@ footer a.social-link svg {
     width: 100%; /* Force chaque colonne à prendre toute la largeur */
   }
 
+  /* NOUVEAU: Assurer que la boîte d'offre prend toute la largeur sur mobile */
+  #offer-info-box {
+    width: 100%;
+  }
+
   /* --- Header & Navigation --- */
   .header-nav-links {
     display: none; /* Cache les liens sur desktop */
