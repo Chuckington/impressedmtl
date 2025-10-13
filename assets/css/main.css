@@ -963,12 +963,21 @@ footer a.social-link svg {
     color: #555;
     margin-bottom: 10px;
   }
+  /* CORRECTION: Standardiser la taille de TOUS les inputs et selects sur mobile */
   #order-summary .option-group input[type="number"],
   #order-summary .option-group select {
     width: 100%;
     padding: 12px;
     font-size: 1.1rem;
     border-radius: 8px;
+    height: 50px; /* Hauteur fixe pour tous les champs */
+  }
+  /* CORRECTION: Assurer que le wrapper de couleur s'étire et s'aligne */
+  #order-summary .color-input-wrapper {
+    display: flex;
+  }
+  #order-summary .color-input-wrapper #color-preview {
+    height: 50px; /* Même hauteur que le select */
   }
   .summary-actions-container {
     flex-direction: column;
