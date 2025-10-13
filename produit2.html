@@ -83,7 +83,7 @@
     <div class="order-summary-top-row">
       <div class="option-group">
         <label for="quantity">Quantité:</label>
-        <input type="number" id="quantity" value="1" min="1">
+        <input type="number" id="quantity" value="1" min="1" inputmode="numeric">
       </div>
       <div class="option-group" id="color-option-group">
         <label for="color-select">Couleur:</label>
@@ -723,8 +723,8 @@
                 const sizeInputGroup = document.createElement('div');
                 sizeInputGroup.className = 'size-input-group';
                 sizeInputGroup.innerHTML = `
-                  <label for="size-qty-${size.id}">${size.name}</label>
-                  <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}">
+                      <label for="size-qty-${size.id}">${size.name}</label>
+                      <input type="number" id="size-qty-${size.id}" class="size-quantity-input" min="0" value="0" data-size-id="${size.id}" data-size-name="${size.name}" inputmode="numeric">
                 `;
                 sizeInputsContainerEl.appendChild(sizeInputGroup);
             });
@@ -1201,6 +1201,13 @@
       closeNavBtn.addEventListener('click', () => {
         mobileNav.classList.remove('is-active');
       });
+    });
+
+    // --- NOUVEAU: Sélectionner le contenu de l'input au focus pour une saisie facile ---
+    document.getElementById('order-summary').addEventListener('focusin', (e) => {
+        if (e.target.matches('input[type="number"]')) {
+            e.target.select();
+        }
     });
 
     // --- CORRIGÉ: Logique "Ajouter au Panier" pour la V2 ---
