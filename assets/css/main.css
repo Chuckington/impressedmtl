@@ -912,8 +912,8 @@ footer a.social-link svg {
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
-  /* CORRECTION: Assurer que les groupes d'options s'étirent sur mobile */
-  .order-summary-top-row .option-group {
+  /* CORRECTION: Assurer que TOUS les groupes d'options s'étirent sur mobile */
+  #order-summary .option-group {
     align-self: stretch;
   }
   #order-summary .option-group label {
