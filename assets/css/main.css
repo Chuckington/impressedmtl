@@ -915,6 +915,16 @@ footer a.social-link svg {
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
+  /* NOUVELLE RÈGLE: Appliquer le même style à la boîte des tailles */
+  .order-summary-bottom-row .option-group {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
   /* CORRECTION: Assurer que TOUS les groupes d'options s'étirent sur mobile */
   #order-summary .option-group {
     align-self: stretch;
