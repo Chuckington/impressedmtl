@@ -282,19 +282,28 @@ header {
 }
 #order-summary label { font-size: 0.9rem; color: #333; }
 #quantity { width:60px; padding:5px; border:1px solid #ccc; border-radius:4px; }
-#order-summary select { padding: 5px; border:1px solid #ccc; border-radius:4px; font-family: inherit; min-width: 120px; }
+/* CORRIGÉ: Standardisation des styles pour les listes déroulantes */
+#order-summary select { 
+  padding: 8px; 
+  border: 1px solid #000; 
+  border-radius: 5px; 
+  font-family: inherit; 
+  font-size: 1rem;
+  min-width: 120px; 
+}
 .summary-actions-container { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
 .total-price-display { text-align: right; min-width: 120px; font-weight:bold; font-size:1.2rem; }
 /* Wrapper pour le sélecteur de couleur et son aperçu */
 .color-input-wrapper {
   display: flex;
+  align-items: center; /* NOUVEAU: Aligner verticalement le select et l'aperçu */
 }
 #color-preview {
   display: block;
-  width: 35px; /* Largeur du carré de couleur */
-  align-self: stretch; /* S'étire pour avoir la même hauteur que le select */
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 38px; /* Largeur ajustée */
+  height: 38px; /* Hauteur ajustée pour correspondre au select */
+  border: 1px solid #000; /* Bordure standardisée */
+  border-radius: 5px; /* Coins arrondis standardisés */
   margin-left: 5px;
 }
 /* Styles pour la sélection de tailles multiples */
