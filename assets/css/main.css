@@ -899,10 +899,6 @@ footer a.social-link svg {
     padding: 0; /* On enlève le padding */
     margin: 0;
   }
-  /* CORRECTION: Assurer que la rangée du bas s'étire aussi */
-  .order-summary-bottom-row {
-    align-self: stretch;
-  }
   /* CORRIGÉ: Réorganisation finale pour mobile */
   .order-summary-top-row { display: contents; } /* "Aplatit" la structure pour que les enfants soient directs */
   .order-summary-bottom-row { order: 2; } /* Les tailles viennent en 2ème */
@@ -915,6 +911,10 @@ footer a.social-link svg {
     display: flex;
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  /* CORRECTION: Assurer que TOUS les groupes d'options s'étirent sur mobile */
+  #order-summary .option-group {
+    align-self: stretch;
   }
   #order-summary .option-group label {
     font-size: 0.9rem;
