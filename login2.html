@@ -18,6 +18,12 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 20px 40px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index: 1000;
     }
+    /* Styles du logo ajoutés pour la cohérence */
+    .header-logo img {
+      height: 50px;
+      width: auto;
+      vertical-align: middle;
+    }
     .btn {
       /* Updated .btn style to match index.html */
       display: inline-block;
@@ -44,9 +50,11 @@
 </head>
 <body>
   <header>
-    <a href="index.html" class="btn">← Accueil</a>
+    <a href="index.html" class="header-logo">
+      <img src="assets/logo2.png" alt="Logo Impressed MTL">
+    </a>
     <div class="header-title"><h1>Votre compte</h1></div>
-    <a href="panier.html" class="btn">Panier</a>
+    <a href="index.html" class="btn">← Retour à l'accueil</a>
   </header>
 
   <div class="coming-soon">
