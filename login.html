@@ -18,7 +18,7 @@
 <body>
   <header>
     <a href="index.html" class="btn">← Accueil</a>
-    <div class="header-title"><h1>Votre compte</h1></div>
+    <div class="header-title"><h1>Ton compte</h1></div>
     <a href="panier.html" class="btn">Panier</a>
   </header>
 
@@ -32,7 +32,7 @@
         </div>
         <div class="form-group">
           <label for="password">Mot de passe</label>
-          <input type="password" id="password" placeholder="Votre mot de passe" required>
+          <input type="password" id="password" placeholder="Ton mot de passe" required>
         </div>
         <button type="submit" class="btn" id="form-button">Se connecter</button>
       </form>
@@ -105,7 +105,7 @@
     authForm.addEventListener('submit', async e => {
       e.preventDefault();
       try {
-        const { data: { user } } = await supa.auth.getUser();
+        const { data: { user } } = await supa.auth.getUser(); // 'user' est déjà déclaré dans la portée externe, mais c'est ok ici.
         if (user) {
           // déconnexion via form
           await supa.auth.signOut();
@@ -126,12 +126,12 @@
     document.getElementById('sign-up').addEventListener('click', async e => {
       e.preventDefault();
       try {
-        const email = prompt('Entrez votre e‑mail');
+        const email = prompt('Entre ton courriel');
         const password = prompt('Choisissez un mot de passe');
         if (!email || !password) return;
         const { error } = await supa.auth.signUp({ email, password });
         if (error) return alert(error.message);
-        alert('Un e‑mail de confirmation a été envoyé.');
+        alert('Un courriel de confirmation a été envoyé.');
       } catch (error) {
         console.error('Erreur lors de l\'inscription :', error);
       }
@@ -141,11 +141,11 @@
     document.getElementById('reset-password').addEventListener('click', async e => {
       e.preventDefault();
       try {
-        const email = prompt('Entrez votre e‑mail');
+        const email = prompt('Entre ton courriel');
         if (!email) return;
         const { error } = await supa.auth.resetPasswordForEmail(email);
         if (error) return alert(error.message);
-        alert('Un e‑mail de réinitialisation a été envoyé.');
+        alert('Un courriel de réinitialisation a été envoyé.');
       } catch (error) {
         console.error('Erreur lors de la réinitialisation du mot de passe :', error);
       }

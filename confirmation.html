@@ -15,10 +15,10 @@
 </head>
 <body class="confirmation-page">
     <div class="confirmation-container">
-        <h1>Merci pour votre commande !</h1>
-        <p class="success-message">Votre paiement a été traité avec succès.</p>
+        <h1>Merci pour ta commande !</h1>
+        <p class="success-message">Ton paiement a été traité avec succès.</p>
         <p id="order-id-display" style="font-size: 0.9em; color: #333;"></p> <!-- Élément pour afficher l'ID -->
-        <p>Nous vous enverrons bientôt un email de confirmation avec les détails de votre commande.</p>
+        <p>On t'enverra bientôt un courriel de confirmation avec les détails de ta commande.</p>
         <p><a href="index.html">Retourner à l'accueil</a></p>
     </div>
 
@@ -29,7 +29,7 @@
             const orderIdDisplay = document.getElementById('order-id-display');
 
             if (orderNumber && orderIdDisplay) {
-                orderIdDisplay.textContent = `Votre numéro de commande est le #${orderNumber}.`;
+                orderIdDisplay.textContent = `Ton numéro de commande est le #${orderNumber}.`;
             } else if (orderIdDisplay) {
                 orderIdDisplay.textContent = 'Numéro de commande non disponible.';
             }

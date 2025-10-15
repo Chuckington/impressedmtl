@@ -24,7 +24,7 @@
       </a>
     </div>
     <div class="header-title">
-      <h1>Votre Panier</h1>
+      <h1>Ton Panier</h1>
     </div>
     <div class="header-actions">
         <a href="panier.html" class="btn">Panier</a>
@@ -71,6 +71,7 @@
           <strong>Demander une maquette (+5.00$)</strong>
         </label>
         <p>Assurez-vous que tout est parfait ! Recevez un aperçu visuel par courriel pour approbation avant que nous lancions l'impression.</p>
+        <p>Assure-toi que tout est parfait ! Reçois un aperçu visuel par courriel pour approbation avant qu'on lance l'impression.</p>
       </div>
       Total général : <span id="grand-total">0.00</span> $
     </div>
@@ -194,7 +195,7 @@
           .select('id, quantity, base_price, personalizations, product_name, selected_color_name, selected_size_name, selected_gender_name, product_id')
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
-          cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
+          cartTable.innerHTML = '<tr><td colspan="5">Ton panier est vide.</td></tr>';
           grandTotal.textContent = '0.00';
           fixedFeeAmountCartEl.textContent = '0.00';
           fixedFeeMessageCartEl.textContent = '';
@@ -247,7 +248,7 @@
       } else {
         cartItems = JSON.parse(localStorage.getItem('cart')) || [];
         if (cartItems.length === 0) {
-          cartTable.innerHTML = '<tr><td colspan="5">Votre panier est vide.</td></tr>';
+          cartTable.innerHTML = '<tr><td colspan="5">Ton panier est vide.</td></tr>';
           grandTotal.textContent = '0.00';
           fixedFeeAmountCartEl.textContent = '0.00';
           fixedFeeMessageCartEl.textContent = '';

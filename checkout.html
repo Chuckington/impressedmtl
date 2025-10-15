@@ -59,9 +59,9 @@
       </div>
       <!-- NOUVELLE SECTION POUR LE CODE PROMO -->
       <div id="promo-code-section" style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #eee;">
-        <label for="promo-code-input" style="font-weight: normal; font-size: 0.9em;">Vous avez un code promotionnel ?</label>
+        <label for="promo-code-input" style="font-weight: normal; font-size: 0.9em;">Tu as un code promotionnel ?</label>
         <div style="display: flex; gap: 10px; margin-top: 5px;">
-          <input type="text" id="promo-code-input" placeholder="Entrez votre code" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+          <input type="text" id="promo-code-input" placeholder="Entre ton code" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
           <button id="apply-promo-btn" class="btn btn-small" type="button">Appliquer</button>
         </div>
         <p id="promo-code-message" style="font-size: 0.85em; margin-top: 5px; font-weight: bold;"></p>
@@ -356,7 +356,7 @@
         }
 
         if (!code) {
-            messageEl.textContent = 'Veuillez entrer un code.';
+            messageEl.textContent = 'Entre un code.';
             messageEl.style.color = 'red';
             return;
         }
@@ -489,7 +489,7 @@
       const phone = document.getElementById('phone').value.trim();
 
       if (!fullName || !address || !city || !postalCode || !email) { // Ajout de la validation pour l'email
-        formValidationErrorEl.textContent = 'Veuillez remplir tous les champs obligatoires (adresse et courriel).';
+        formValidationErrorEl.textContent = 'Remplis tous les champs obligatoires (adresse et courriel).';
         formValidationErrorEl.style.display = 'block';
         return null;
       }
