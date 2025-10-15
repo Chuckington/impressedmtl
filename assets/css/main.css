@@ -1,7 +1,10 @@
+/* --- Importation de la police --- */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+
 /* --- Styles Globaux & Reset --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { 
-  font-family: 'Fredoka', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background-color: #f7f7f7; 
   min-height: 100%; 
   display: flex;
