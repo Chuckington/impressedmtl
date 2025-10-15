@@ -388,8 +388,8 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
   return `
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <h2>Merci pour votre commande, ${shippingInfo.fullName} !</h2>
-        <p>Voici le récapitulatif de votre commande <strong>#${orderNumber}</strong> :</p>
+        <h2>Merci pour ta commande, ${shippingInfo.fullName} !</h2>
+        <p>Voici le récapitulatif de ta commande <strong>#${orderNumber}</strong> :</p>
         <h3>Articles:</h3>
         ${itemsHtml}
         <p>Sous-total: ${subTotal.toFixed(2)}$</p>
@@ -406,7 +406,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
           ${shippingInfo.city}, ${shippingInfo.postalCode}<br>
           Téléphone: ${shippingInfo.phone || 'Non fourni'}
         </p>
-        <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+        <p>Si tu as des questions, n'hésite pas à nous contacter.</p>
         <p>L'équipe Impressed MTL</p>
       </body>
     </html>

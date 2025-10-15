@@ -85,7 +85,7 @@
   <div id="offer-popup-overlay" class="popup-overlay" style="display: none;">
     <div class="popup-content">
       <h2>🎉 Offre Spéciale Débloquée ! 🎉</h2>
-      <p>Vous avez sélectionné <strong>20 unités ou plus</strong> avec un "Gros design derrière" et un "Petit design poitrine".</p>
+      <p>Tu as sélectionné <strong>20 unités ou plus</strong> avec un "Gros design derrière" et un "Petit design poitrine".</p>
       <p>Le rabais sera appliqué automatiquement dans votre panier.</p>
       <button id="close-offer-popup-btn" class="btn">Super !</button>
     </div>
@@ -705,15 +705,15 @@
 
             // Validation avant l'ajout
             if (qty > 0 && totalSizeQty !== qty) {
-                alert('La somme des quantités par taille ne correspond pas à la quantité totale demandée.');
+                alert('La somme des quantités par taille ne correspond pas à la quantité totale que tu as demandée.');
                 return;
             }
             if (qty > 0 && cartItemsToAdd.length === 0) {
-                alert('Veuillez spécifier les quantités pour au moins une taille.');
+                alert('Spécifie les quantités pour au moins une taille.');
                 return;
             }
             if (qty === 0) {
-                alert('Veuillez choisir une quantité supérieure à 0.');
+                alert('Choisis une quantité supérieure à 0.');
                 return;
             }
 
