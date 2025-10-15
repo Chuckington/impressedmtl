@@ -234,7 +234,7 @@ serve(async (req) => {
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
         const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0);
-        await sendReceiptEmail(shippingDetails.email, `Confirmation de votre commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
+        await sendReceiptEmail(shippingDetails.email, `Confirmation de ta commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
         await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
       }
 
