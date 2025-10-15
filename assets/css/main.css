@@ -17,7 +17,7 @@ header {
   display: flex; 
   align-items: center; 
   justify-content: space-between;
-  padding: 20px 40px; /* Hauteur standardisée comme sur login2.html */
+  padding: 0 40px; /* Padding vertical retiré pour un header plus fin */
   box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
   z-index:1000; 
   flex-shrink: 0;
