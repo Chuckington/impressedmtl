@@ -391,7 +391,7 @@ header {
 .faq-item h4 { font-size: 1.2rem; margin-bottom: 8px; color: #000; }
 .faq-item p { font-size: 1rem; color: #555; line-height: 1.6; }
 .final-notes { margin-top: 40px; text-align: center; font-size: 1.1rem; line-height: 1.8; }
-.final-notes a { color: #007BFF; font-weight: bold; text-decoration: none; }
+.final-notes a { color: #EC642D; font-weight: bold; text-decoration: none; }
 .final-notes a:hover { text-decoration: underline; }
 
 /* --- Page Panier (panier.html) --- */
