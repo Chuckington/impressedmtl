@@ -605,8 +605,8 @@ footer a.social-link svg {
 
 /* NOUVEAU: Style pour la boîte d'offre, largeur fixe uniquement sur desktop */
 #offer-info-box {
-  background-color: #eef7ff;
-  border: 2px solid #90caf9;
+  background-color: #FFF5F0; /* Orange très pâle */
+  border: 2px solid #EC642D; /* Couleur du logo */
   border-radius: 8px;
   padding: 20px;
   text-align: center;
