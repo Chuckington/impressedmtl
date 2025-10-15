@@ -70,7 +70,6 @@
           <input type="checkbox" id="maquette-checkbox">
           <strong>Demander une maquette (+5.00$)</strong>
         </label>
-        <p>Assurez-vous que tout est parfait ! Recevez un aperçu visuel par courriel pour approbation avant que nous lancions l'impression.</p>
         <p>Assure-toi que tout est parfait ! Reçois un aperçu visuel par courriel pour approbation avant qu'on lance l'impression.</p>
       </div>
       Total général : <span id="grand-total">0.00</span> $
@@ -317,7 +316,7 @@
         fixedFeeMessageCartEl.textContent = "Frais de préparation: 15$. (Pour 2-9 articles: 10$. Gratuit dès 10 articles !)";
       } else if (totalItemCount >= 2 && totalItemCount <= 9) {
         fixedFee = 10;
-        fixedFeeMessageCartEl.textContent = "Des frais de préparation de 10$ s'appliquent. Achetez 10 articles ou plus pour économiser ces frais !";
+        fixedFeeMessageCartEl.textContent = "Des frais de préparation de 10$ s'appliquent. Achete 10 articles ou plus pour économiser ces frais !";
       } else { // 10 articles ou plus
         fixedFee = 0;
         fixedFeeMessageCartEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
