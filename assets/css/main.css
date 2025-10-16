@@ -49,6 +49,19 @@ header {
   align-items: center;
   gap: 15px;
 }
+/* NOUVEAU: Style pour les boutons icônes dans le header */
+.header-icon-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-icon-link img {
+  height: 32px; /* Taille des icônes */
+}
 .header-title { /* Pour les pages qui ont un titre au centre */
   flex: 1; 
   text-align: center;
