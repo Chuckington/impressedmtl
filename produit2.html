@@ -240,12 +240,12 @@
 
             // Si le produit n'a pas de masque, ou si aucune couleur n'a été choisie, on affiche juste l'image de base.
             if (!maskImageUrl || !state.colorHasBeenSelected) {
-                fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 }); // Ajuster la taille du canvas
-                // CORRIGÉ: Utiliser une fonction de rappel pour s'assurer que les logos sont mis à jour APRÈS le chargement du fond.
-                fabricCanvas.setBackgroundImage(baseImg.src, async () => {
+                fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 });
+                fabricCanvas.setBackgroundImage(baseImg.src, () => {
+                    fabricCanvas.renderAll(); // Rendu initial du fond
+                    // On met à jour les logos après, dans le même "tick"
                     await updateLogosOnCanvas();
                     drawPlacementZones();
-                    fabricCanvas.renderAll();
                 }, {
                     scaleX: scaleFactor,
                     scaleY: scaleFactor,
@@ -270,12 +270,12 @@
             offscreenCtx.drawImage(baseImg, 0, 0);
 
             // Mettre à jour le canvas Fabric.js avec les nouvelles dimensions et l'image de fond redimensionnée
-            fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 }); // Ajuster la taille du canvas
-            // CORRIGÉ: Utiliser une fonction de rappel ici aussi.
-            fabricCanvas.setBackgroundImage(offscreenCanvas.toDataURL(), async () => {
+            fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 });
+            fabricCanvas.setBackgroundImage(offscreenCanvas.toDataURL(), () => {
+                fabricCanvas.renderAll(); // Rendu initial du fond
+                // On met à jour les logos après
                 await updateLogosOnCanvas();
                 drawPlacementZones();
-                fabricCanvas.renderAll();
             }, {
                 scaleX: scaleFactor,
                 scaleY: scaleFactor,
