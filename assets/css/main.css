@@ -1096,6 +1096,18 @@ footer a.social-link svg {
   }
 }
 
+/* --- Page "Bientôt disponible" (login2.html) --- */
+.coming-soon {
+  flex-grow: 1; /* Prend l'espace restant */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 1.5rem;
+  color: #555;
+  }
+}
+
 @media (max-width: 480px) {
   /* Styles pour les très petits écrans */
   .header-actions .btn {
