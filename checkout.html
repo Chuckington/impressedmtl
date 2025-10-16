@@ -139,10 +139,8 @@
       const { data: { user } } = await supa.auth.getUser();
       if (user) {
         userEmailEl.textContent = user.email;
-        authBtn.textContent = 'Se déconnecter';
       } else {
         userEmailEl.textContent = '';
-        authBtn.textContent = 'Se connecter';
       }
     }
     authBtn.addEventListener('click', async () => {

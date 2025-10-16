@@ -93,10 +93,8 @@
       const { data: { user } } = await supa.auth.getUser();
       if (user) {
         userEmail.textContent = user.email;
-        authBtn.textContent = 'Se déconnecter';
       } else {
         userEmail.textContent = '';
-        authBtn.textContent = 'Se connecter';
       }
     }
 
