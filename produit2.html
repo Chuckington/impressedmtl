@@ -240,14 +240,17 @@
 
             // Si le produit n'a pas de masque, ou si aucune couleur n'a été choisie, on affiche juste l'image de base.
             if (!maskImageUrl || !state.colorHasBeenSelected) {
-                fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 });
-                fabricCanvas.setBackgroundImage(baseImg.src, fabricCanvas.renderAll.bind(fabricCanvas), {
+                fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 }); // Ajuster la taille du canvas
+                // CORRIGÉ: Utiliser une fonction de rappel pour s'assurer que les logos sont mis à jour APRÈS le chargement du fond.
+                fabricCanvas.setBackgroundImage(baseImg.src, async () => {
+                    await updateLogosOnCanvas();
+                    drawPlacementZones();
+                    fabricCanvas.renderAll();
+                }, {
                     scaleX: scaleFactor,
                     scaleY: scaleFactor,
                     crossOrigin: 'anonymous' // NOUVEAU: Ajouter cette ligne est crucial pour la sécurité
                 });
-                await updateLogosOnCanvas();
-                drawPlacementZones();
                 return; // On s'arrête ici pour ces produits
             }
 
@@ -267,15 +270,16 @@
             offscreenCtx.drawImage(baseImg, 0, 0);
 
             // Mettre à jour le canvas Fabric.js avec les nouvelles dimensions et l'image de fond redimensionnée
-            fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 });
-            fabricCanvas.setBackgroundImage(offscreenCanvas.toDataURL(), fabricCanvas.renderAll.bind(fabricCanvas), {
+            fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 }); // Ajuster la taille du canvas
+            // CORRIGÉ: Utiliser une fonction de rappel ici aussi.
+            fabricCanvas.setBackgroundImage(offscreenCanvas.toDataURL(), async () => {
+                await updateLogosOnCanvas();
+                drawPlacementZones();
+                fabricCanvas.renderAll();
+            }, {
                 scaleX: scaleFactor,
                 scaleY: scaleFactor,
             });
-
-            // Mettre à jour les logos
-            await updateLogosOnCanvas();
-            drawPlacementZones(); // Affiche les zones pour les options déjà cochées
 
         } catch (error) {
             console.error("Erreur lors du rendu du canvas:", error);
@@ -875,13 +879,8 @@
             // Mettre à jour le bouton actif
             document.querySelector('.view-btn.active')?.classList.remove('active');
             e.target.classList.add('active');
-            // Changer le fond et la visibilité des logos
+            // Changer le fond. La mise à jour des logos se fera dans le callback de setBackgroundImage.
             renderProductBase();
-            fabricCanvas.getObjects('image').forEach(obj => {
-                obj.set('visible', isLogoVisibleInView(obj.custom_view, state.currentView));
-            });
-            drawPlacementZones(); // Redessiner les zones pour la nouvelle vue
-            fabricCanvas.renderAll();
         }
     });
 
