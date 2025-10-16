@@ -222,27 +222,29 @@
         }
 
         try {
-            const baseImg = await loadImage(baseImageUrl);
+            // CORRECTION: Toujours utiliser l'image de face comme référence pour la taille
+            // afin d'éviter les redimensionnements incorrects lors du changement de couleur sur une autre vue.
+            const referenceImg = await loadImage(state.product.asset_base_front);
+            const currentViewImg = await loadImage(baseImageUrl);
+            if (!referenceImg || !currentViewImg) throw new Error("Image de référence ou de vue actuelle manquante.");
 
             // --- NOUVELLE LOGIQUE DE REDIMENSIONNEMENT ---
             // Obtenir la largeur du conteneur parent pour rendre le canvas responsive
             const previewContainer = document.querySelector('.configurator-preview');
-            // CORRECTION: Utiliser directement la largeur du conteneur, qui est déjà correcte.
-            // CORRECTION (2): Utiliser la largeur du contenu (sans padding) pour un alignement parfait.
             const style = window.getComputedStyle(previewContainer);
             const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
             const containerWidth = previewContainer.clientWidth - paddingX;
 
-            // Calculer le facteur d'échelle et les nouvelles dimensions du canvas
-            const scaleFactor = containerWidth > 0 ? containerWidth / baseImg.width : 0;
+            // Calculer le facteur d'échelle et les nouvelles dimensions du canvas en se basant sur l'image de référence
+            const scaleFactor = containerWidth > 0 ? containerWidth / referenceImg.width : 0;
             const canvasWidth = containerWidth > 0 ? containerWidth : 0;
-            const canvasHeight = baseImg.height * scaleFactor;
+            const canvasHeight = referenceImg.height * scaleFactor;
 
             // Si le produit n'a pas de masque, ou si aucune couleur n'a été choisie, on affiche juste l'image de base.
             if (!maskImageUrl || !state.colorHasBeenSelected) {
                 fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 }); // Ajuster la taille du canvas
                 // CORRIGÉ: La fonction de rappel doit être 'async' pour utiliser 'await'
-                fabricCanvas.setBackgroundImage(baseImg.src, async () => {
+                fabricCanvas.setBackgroundImage(currentViewImg.src, async () => {
                     await updateLogosOnCanvas();
                     drawPlacementZones();
                     fabricCanvas.renderAll(); // Rendu final après mise à jour des logos
@@ -259,15 +261,15 @@
             // Utiliser un canvas temporaire pour créer l'image de fond
             const offscreenCanvas = document.createElement('canvas');
             const offscreenCtx = offscreenCanvas.getContext('2d');
-            offscreenCanvas.width = baseImg.width;
-            offscreenCanvas.height = baseImg.height;
+            offscreenCanvas.width = currentViewImg.width;
+            offscreenCanvas.height = currentViewImg.height;
 
             offscreenCtx.drawImage(maskImg, 0, 0);
             offscreenCtx.globalCompositeOperation = 'source-in';
             offscreenCtx.fillStyle = state.currentColor;
             offscreenCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
             offscreenCtx.globalCompositeOperation = 'multiply';
-            offscreenCtx.drawImage(baseImg, 0, 0);
+            offscreenCtx.drawImage(currentViewImg, 0, 0);
 
             // Mettre à jour le canvas Fabric.js avec les nouvelles dimensions et l'image de fond redimensionnée
             fabricCanvas.setDimensions({ width: canvasWidth, height: canvasHeight || 0 }); // Ajuster la taille du canvas
