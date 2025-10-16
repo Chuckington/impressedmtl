@@ -54,13 +54,13 @@ header {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px; /* Ajout d'un léger padding pour l'espacement */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .header-icon-link img {
-  height: 32px; /* Taille des icônes */
+  height: 32px; /* Taille ajustée pour correspondre aux anciens boutons */
 }
 .header-title { /* Pour les pages qui ont un titre au centre */
   flex: 1; 
