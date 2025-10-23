@@ -51,7 +51,7 @@ header {
 }
 /* NOUVEAU: Style pour le widget Trustpilot dans le header */
 .header-trustpilot-widget {
-  margin-right: 15px; /* Espace identique au gap entre les icônes */
+  /* La marge est maintenant gérée par la propriété 'gap' du conteneur parent '.header-actions' */
   min-width: 220px; /* Largeur ajustée pour le nouveau widget */
   align-self: center; /* Assure un bon alignement vertical */
 }
