@@ -49,6 +49,12 @@ header {
   align-items: center;
   gap: 15px;
 }
+/* NOUVEAU: Style pour le widget Trustpilot dans le header */
+.header-trustpilot-widget {
+  margin-right: 10px; /* Espace entre le widget et l'icône du panier */
+  min-width: 150px; /* Empêche le widget de devenir trop petit */
+  align-self: center; /* Assure un bon alignement vertical */
+}
 /* NOUVEAU: Style pour les boutons icônes dans le header */
 .header-icon-link {
   background: none;
@@ -902,6 +908,11 @@ footer a.social-link svg {
   }
   .header-title {
     display: none; /* On cache le titre central pour faire de la place */
+  }
+
+  /* NOUVEAU: Cacher le widget Trustpilot sur mobile */
+  .header-trustpilot-widget {
+    display: none;
   }
 
   /* NOUVEAU: Assurer que le header reste sur une ligne */
