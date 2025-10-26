@@ -68,9 +68,9 @@
     display: none; /* Caché par défaut */
     flex-direction: column;
     overflow: hidden;
-    position: absolute; /* Positionné par rapport au conteneur */
+    position: fixed; /* CORRIGÉ: La fenêtre reste fixe à l'écran lors du défilement */
     bottom: 80px; /* Au-dessus de la bulle */
-    right: 0;
+    right: 20px; /* CORRIGÉ: Aligné avec la bulle */
   }
   
   .chat-window.is-open {
