@@ -1,0 +1,167 @@
+/* assets/css/chatbot.css */
+
+/* Conteneur principal pour le chatbot en bas à droite */
+#impressed-chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+  }
+  
+  /* La bulle principale cliquable */
+  #chat-bubble {
+    width: 60px;
+    height: 60px;
+    background-color: #000;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  }
+  
+  #chat-bubble:hover {
+    transform: scale(1.1);
+  }
+  
+  /* La bulle de bienvenue (visible sur index.html) */
+  .chat-welcome-bubble {
+    background-color: #fff;
+    padding: 15px 20px;
+    border-radius: 20px 20px 0 20px; /* Style "bulle de BD" */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-width: 250px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #333;
+    /* Animation d'apparition */
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInWelcome 0.5s 0.5s ease forwards;
+    display: none; /* Caché par défaut, affiché par JS */
+  }
+  
+  @keyframes fadeInWelcome {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* La fenêtre de chat (cachée par défaut) */
+  .chat-window {
+    width: 350px;
+    max-width: 90vw;
+    height: 500px;
+    max-height: 70vh;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    display: none; /* Caché par défaut */
+    flex-direction: column;
+    overflow: hidden;
+    position: absolute; /* Positionné par rapport au conteneur */
+    bottom: 80px; /* Au-dessus de la bulle */
+    right: 0;
+  }
+  
+  .chat-window.is-open {
+    display: flex;
+  }
+  
+  .chat-header {
+    background-color: #000;
+    color: #fff;
+    padding: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* NOUVEAU: Wrapper pour le titre et le tag BETA */
+  .chat-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* NOUVEAU: Style pour le tag BETA */
+  .beta-tag {
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: #000;
+    background-color: #FFC200; /* Jaune pour attirer l'oeil */
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  
+  #close-chat-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  
+  .chat-body {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+  }
+  
+  .chat-footer {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #eee;
+  }
+  
+  #chat-input {
+    flex-grow: 1;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+  }
+  
+  #chat-input:focus {
+    outline: none;
+  }
+  
+  #chat-send-btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 0 15px;
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  
+  /* Responsive pour mobile */
+  @media (max-width: 768px) {
+    #impressed-chatbot {
+      right: 15px;
+      bottom: 15px;
+    }
+    .chat-welcome-bubble {
+      max-width: calc(100vw - 100px);
+    }
+    .chat-window {
+      width: calc(100vw - 30px);
+      height: calc(100vh - 100px);
+      bottom: 75px;
+    }
+  }
+  
