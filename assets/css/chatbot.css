@@ -160,9 +160,21 @@
       max-width: calc(100vw - 100px);
     }
     .chat-window {
-      width: calc(100vw - 30px);
-      height: min(550px, 75vh); /* Ajusté pour une hauteur plus raisonnable sur mobile */
-      bottom: 75px;
+      /* NOUVEAU: Style plein écran en bas pour une meilleure expérience mobile */
+      width: 100vw;
+      height: 100vh; /* Prend toute la hauteur disponible */
+      max-height: 100vh; /* Annule la limite précédente */
+      bottom: 0;
+      right: 0;
+      border-radius: 0; /* Pas de coins arrondis en mode plein écran */
+    }
+
+    /* NOUVEAU: Empêche le zoom sur iOS en mettant la police à 16px */
+    #chat-input {
+      font-size: 16px;
+    }
+    .chat-window.is-open {
+      bottom: 0; /* S'assure qu'il est bien collé en bas quand ouvert */
     }
   }
   
