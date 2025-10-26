@@ -1,12 +1,6 @@
 // assets/js/chatbot.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // CORRECTION: Initialiser le client Supabase ici, pour être sûr que la librairie est chargée.
-    const supa = supabase.createClient(
-        'https://vwvvbtcatamszncjuiso.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
-    );
-
     // --- 1. Créer les éléments de l'interface du chatbot ---
     const chatbotContainer = document.createElement('div');
     chatbotContainer.id = 'impressed-chatbot';

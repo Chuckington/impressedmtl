@@ -105,13 +105,9 @@
     <p>Copyright © 2025 Impressed MTL - Tous droits réservés. | Paiement sécurisé par Square® Payment Processing</p>
   </footer>
 
+  <!-- NOUVEAU: Charger le client Supabase en premier -->
+  <script src="assets/js/supabase-client.js"></script>
   <script>
-    // Initialise Supabase client
-    const supa = supabase.createClient(
-      'https://vwvvbtcatamszncjuiso.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dnZidGNhdGFtc3puY2p1aXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NzM4ODksImV4cCI6MjA1ODI0OTg4OX0.Vnk3723jDNQdcl7HfVXZRtL6z0KxOLV4l872azuyEWA'
-    );
-
     // Auth logic (similaire aux autres pages)
     const authBtn = document.getElementById('auth-button');
     const userEmailEl = document.getElementById('user-email');
