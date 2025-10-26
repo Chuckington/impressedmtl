@@ -69,7 +69,7 @@
     flex-direction: column;
     overflow: hidden;
     position: fixed; /* CORRIGÉ: La fenêtre reste fixe à l'écran lors du défilement */
-    bottom: 80px; /* Au-dessus de la bulle */
+    bottom: 90px; /* Au-dessus de la bulle + 10px d'espacement */
     right: 20px; /* CORRIGÉ: Aligné avec la bulle */
   }
   
@@ -214,13 +214,13 @@
       max-width: calc(100vw - 100px);
     }
     .chat-window {
-      /* NOUVEAU: Style plein écran en bas pour une meilleure expérience mobile */
-      width: 100vw;
-      height: 100vh; /* Prend toute la hauteur disponible */
-      max-height: 100vh; /* Annule la limite précédente */
-      bottom: 0;
-      right: 0;
-      border-radius: 0; /* Pas de coins arrondis en mode plein écran */
+      /* CORRECTION: Fenêtre flottante plus petite pour mobile */
+      width: calc(100vw - 30px); /* Prend toute la largeur moins 15px de chaque côté */
+      height: 350px; /* Hauteur suffisante pour voir quelques messages */
+      max-height: 50vh; /* Ne prendra jamais plus de la moitié de l'écran en hauteur */
+      bottom: 85px; /* Positionné 10px au-dessus de la bulle (60px de bulle + 15px de marge) */
+      right: 15px; /* Aligné avec la bulle */
+      border-radius: 15px; /* On remet les coins arrondis */
     }
 
     /* NOUVEAU: Empêche le zoom sur iOS en mettant la police à 16px */
@@ -228,7 +228,7 @@
       font-size: 16px;
     }
     .chat-window.is-open {
-      bottom: 0; /* S'assure qu'il est bien collé en bas quand ouvert */
+      /* Cette règle n'est plus nécessaire avec la nouvelle position */
     }
   }
   
