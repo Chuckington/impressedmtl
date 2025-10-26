@@ -120,6 +120,35 @@
     padding: 15px;
     overflow-y: auto;
     background-color: #f9f9f9;
+  /* NOUVEAU: Utiliser flexbox pour aligner les bulles */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* NOUVEAU: Style de base pour toutes les bulles de message */
+.chat-message {
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 80%;
+  line-height: 1.5;
+  word-wrap: break-word; /* Pour que les longs mots aillent à la ligne */
+}
+
+/* NOUVEAU: Style pour les messages de l'utilisateur (à droite) */
+.user-message {
+  background-color: #007bff; /* Bleu, comme Messenger */
+  color: #fff;
+  border-radius: 18px 18px 5px 18px; /* Bulle avec une "queue" */
+  align-self: flex-end; /* Aligne à droite */
+}
+
+/* NOUVEAU: Style pour les messages du bot (à gauche) */
+.bot-message {
+  background-color: #e4e6eb; /* Gris clair, comme Messenger */
+  color: #000;
+  border-radius: 18px 18px 18px 5px; /* Bulle avec une "queue" de l'autre côté */
+  align-self: flex-start; /* Aligne à gauche */
   }
   
   .chat-footer {

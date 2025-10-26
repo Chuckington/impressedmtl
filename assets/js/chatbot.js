@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="chat-body" id="chat-body">
             <!-- Les messages de la conversation apparaîtront ici -->
+            <!-- Le message de bienvenue du bot sera ajouté ici par JS -->
         </div>
         <div class="chat-footer">
             <input type="text" id="chat-input" placeholder="Pose ta question...">
@@ -60,7 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
     chatBubble.addEventListener('click', () => {
         chatWindow.classList.add('is-open');
         // Cacher la bulle de bienvenue si elle est visible
-        welcomeBubble.style.display = 'none'; 
+        welcomeBubble.style.display = 'none';
+        // Si le chat est vide, ajoute le message de bienvenue du bot
+        if (chatBody.children.length === 0) {
+            addMessageToChat("Bonjour ! Je suis l'assistant virtuel d'Impressed. Comment puis-je t'aider ?", 'bot');
+        }
     });
 
     // Fermer la fenêtre de chat
@@ -74,17 +79,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chat-input');
     const chatBody = document.getElementById('chat-body');
 
+    // Fonction pour ajouter un message (utilisateur ou bot) à la fenêtre de chat
+    const addMessageToChat = (text, sender) => {
+        const messageElement = document.createElement('div');
+        messageElement.textContent = text;
+        // Applique la bonne classe CSS en fonction de l'expéditeur
+        messageElement.className = `chat-message ${sender}-message`;
+        chatBody.appendChild(messageElement);
+        // Fait défiler automatiquement vers le bas pour voir le dernier message
+        chatBody.scrollTop = chatBody.scrollHeight;
+    };
+
     const handleSendMessage = () => {
         const userMessage = chatInput.value.trim();
         if (userMessage) {
-            // 1. Créer et afficher le message de l'utilisateur
-            const userMessageElement = document.createElement('div');
-            userMessageElement.textContent = userMessage;
-            userMessageElement.className = 'chat-message user-message'; // On ajoutera le style pour ça plus tard
-            chatBody.appendChild(userMessageElement);
+            // 1. Afficher le message de l'utilisateur
+            addMessageToChat(userMessage, 'user');
 
-            // 2. Vider le champ de saisie
+            // 2. Vider le champ de saisie et y remettre le focus
             chatInput.value = '';
+            chatInput.focus();
         }
     };
 
