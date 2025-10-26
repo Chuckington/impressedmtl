@@ -15,12 +15,13 @@
   #chat-bubble {
     width: 60px;
     height: 60px;
-    background-color: #000;
-    color: white;
+    background-color: #fff; /* Changé pour blanc */
+    color: #000; /* Changé pour noir */
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 2px solid #000; /* Ajout d'une bordure noire */
     font-size: 28px;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -160,7 +161,7 @@
     }
     .chat-window {
       width: calc(100vw - 30px);
-      height: calc(100vh - 100px);
+      height: min(550px, 75vh); /* Ajusté pour une hauteur plus raisonnable sur mobile */
       bottom: 75px;
     }
   }
