@@ -227,8 +227,5 @@
     #chat-input {
       font-size: 16px;
     }
-    .chat-window.is-open {
-      /* Cette règle n'est plus nécessaire avec la nouvelle position */
-    }
   }
   

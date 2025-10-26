@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. Logique d'affichage et d'interaction ---
 
     // Variable pour stocker l'historique de la conversation
-    let conversationHistory = [];
+    const conversationHistory = [];
 
     // Afficher la bulle de bienvenue SEULEMENT sur la page d'accueil
-    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
+    if (globalThis.location.pathname === '/index.html' || globalThis.location.pathname === '/') {
         welcomeBubble.style.display = 'block';
     }
 
