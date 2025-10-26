@@ -104,13 +104,13 @@ serve(async (req) => {
 
     // 4. Appeler l'API d'OpenAI
     const chatCompletion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // Modèle rapide et économique, parfait pour commencer
+      model: "gpt-4o-mini", // Modèle plus récent, intelligent et rapide.
       messages: [
         { role: "system", content: systemPrompt },
         ...conversationHistory, // Intégrer l'historique de la conversation
       ],
       temperature: 0.5, // Un peu de créativité, mais pas trop
-      max_tokens: 150, // Limite la longueur de la réponse pour être concis
+      max_tokens: 250, // Augmenter la limite pour des réponses potentiellement plus complètes.
     });
 
     const botResponse = chatCompletion.choices[0].message.content;
