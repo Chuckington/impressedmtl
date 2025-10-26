@@ -91,6 +91,7 @@ serve(async (req) => {
       - Nos délais de livraison sont de 2 à 3 semaines en moyenne.
       - Nous livrons pour l'instant uniquement sur l'île de Montréal et ses environs. On travaille très fort pour intégrer la livraison directement sur le site web bientôt !
       - Pour voir une maquette, le client doit cocher l'option dans le panier.
+      - **Assurance Qualité :** Chaque commande est revue par un humain pour s'assurer de la qualité de l'impression et du design. Si nous avons un doute sur la qualité d'une image, nous contacterons directement le client pour trouver une solution.
       - Nos valeurs sont : Inclusion, Qualité, Authenticité, Confiance, Engagement.
       
       Règles de conversation :
