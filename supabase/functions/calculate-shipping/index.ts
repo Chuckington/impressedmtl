@@ -2,7 +2,7 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import EasyPost from 'https://esm.sh/@easypost/api@7.2.0'; // CORRIGÉ: Import via esm.sh
+import EasyPostClient from 'https://esm.sh/@easypost/api@7.2.0'; // CORRECTION: Renommer l'import
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,8 +38,8 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // CORRECTION FINALE: La librairie s'initialise directement avec `new EasyPost()`.
-    const easyPostClient = new EasyPost(easyPostApiKey);
+    // CORRECTION FINALE: L'objet importé est la classe elle-même.
+    const easyPostClient = new EasyPostClient(easyPostApiKey);
 
     // --- 3. Calculer le poids total du colis ---
     // CORRECTION: Extraire uniquement les nombres des ID de produits (ex: "v2_1" -> "1")
