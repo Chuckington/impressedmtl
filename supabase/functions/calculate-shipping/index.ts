@@ -60,13 +60,14 @@ serve(async (req) => {
     
     // Votre adresse d'expédition (l'origine)
     const fromAddress = await easyPostClient.Address.create({
-      street1: '123 Rue Fictive', // **À CHANGER**
-      city: 'Montréal',           // **À CHANGER**
-      state: 'QC',                // **À CHANGER**
-      zip: 'H1H 1H1',             // **À CHANGER**
+      street1: '765 Rue Bourget',
+      street2: 'App 112',
+      city: 'Montréal',
+      state: 'QC',
+      zip: 'H4C 0A5',
       country: 'CA',
       company: 'Impressed MTL',
-      phone: '514-555-1234'       // **À CHANGER**
+      phone: '514-966-5837'
     });
 
     // L'adresse du client (la destination)
