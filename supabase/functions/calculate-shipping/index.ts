@@ -33,7 +33,8 @@ serve(async (req) => {
     if (!easyPostApiKey) {
       throw new Error("La clé API EasyPost (EASYPOST_API_KEY) n'est pas configurée dans les secrets de la fonction.");
     }
-    const easyPostClient = new EasyPost(easyPostApiKey);
+    // CORRECTION: La librairie EasyPost s'initialise avec `new EasyPost.Client()`.
+    const easyPostClient = new EasyPost.Client(easyPostApiKey);
 
     // --- 3. Calculer le poids total du colis ---
     // CORRECTION: Extraire uniquement les nombres des ID de produits (ex: "v2_1" -> "1")
