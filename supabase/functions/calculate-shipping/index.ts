@@ -48,11 +48,14 @@ serve(async (req) => {
 
     if (productsError) throw productsError;
 
-    const productsWeightMap = new Map(productsData.map(p => [p.id, p.weight_grams]));
+    // CORRECTION: S'assurer que les clés de la Map sont des nombres.
+    const productsWeightMap = new Map(productsData.map(p => [Number(p.id), p.weight_grams]));
     
     let totalWeightGrams = 0;
     cart.forEach((item: { product_id: string; quantity: number }) => {
-      const weight = productsWeightMap.get(parseInt(item.product_id.replace('v2_', ''), 10)) || 150; // 150g par défaut
+      // CORRECTION: Utiliser un nombre pour la recherche dans la Map.
+      const productIdNumber = parseInt(item.product_id.replace('v2_', ''), 10);
+      const weight = productsWeightMap.get(productIdNumber) || 150; // 150g par défaut
       totalWeightGrams += weight * item.quantity;
     });
 
