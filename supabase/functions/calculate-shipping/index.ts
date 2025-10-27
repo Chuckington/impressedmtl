@@ -23,16 +23,21 @@ serve(async (req) => {
       throw new Error("Les détails du panier ou l'adresse de livraison sont manquants.");
     }
 
-    // --- 2. Initialiser les clients (Supabase & EasyPost) ---
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? '',
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ''
-    );
-
+    // --- 2. Vérifier les secrets et initialiser les clients ---
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const easyPostApiKey = Deno.env.get("EASYPOST_API_KEY");
-    if (!easyPostApiKey) {
-      throw new Error("La clé API EasyPost (EASYPOST_API_KEY) n'est pas configurée dans les secrets de la fonction.");
+
+    if (!supabaseUrl || !supabaseServiceKey || !easyPostApiKey) {
+      const missingKeys: string[] = [];
+      if (!supabaseUrl) missingKeys.push("SUPABASE_URL");
+      if (!supabaseServiceKey) missingKeys.push("SUPABASE_SERVICE_ROLE_KEY");
+      if (!easyPostApiKey) missingKeys.push("EASYPOST_API_KEY");
+      throw new Error(`Configuration serveur incomplète. Clés secrètes manquantes: ${missingKeys.join(', ')}`);
     }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
     // CORRECTION FINALE: La librairie s'initialise directement avec `new EasyPost()`.
     const easyPostClient = new EasyPost(easyPostApiKey);
 
