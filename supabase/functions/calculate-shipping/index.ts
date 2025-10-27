@@ -41,15 +41,22 @@ serve(async (req) => {
       .map((item: { product_id: string }) => item.product_id.startsWith('v2_') ? item.product_id.replace('v2_', '') : null)
       .filter((id: string | null): id is string => id !== null);
     
-    const { data: productsData, error: productsError } = await supabaseAdmin
-      .from('products')
-      .select('id, weight_grams')
-      .in('id', productIds);
+    let productsWeightMap = new Map<number, number>();
 
-    if (productsError) throw productsError;
+    // CORRECTION: Ne faire la requête que si on a des produits V2
+    if (productIds.length > 0) {
+      const { data: productsData, error: productsError } = await supabaseAdmin
+        .from('products')
+        .select('id, weight_grams')
+        .in('id', productIds);
 
-    // CORRECTION: Gérer le cas où productsData est null ou vide.
-    const productsWeightMap = new Map(productsData?.map(p => [Number(p.id), p.weight_grams]) || []);
+      if (productsError) throw productsError;
+
+      // Créer la map des poids si des données sont retournées
+      if (productsData) {
+        productsWeightMap = new Map(productsData.map(p => [Number(p.id), p.weight_grams]));
+      }
+    }
     
     let totalWeightGrams = 0;
     cart.forEach((item: { product_id: string; quantity: number }) => {
