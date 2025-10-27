@@ -36,7 +36,10 @@ serve(async (req) => {
     const easyPostClient = new EasyPost(easyPostApiKey);
 
     // --- 3. Calculer le poids total du colis ---
-    const productIds = cart.map((item: { product_id: string }) => item.product_id);
+    // CORRECTION: Extraire uniquement les nombres des ID de produits (ex: "v2_1" -> "1")
+    const productIds = cart
+      .map((item: { product_id: string }) => item.product_id.startsWith('v2_') ? item.product_id.replace('v2_', '') : null)
+      .filter((id: string | null): id is string => id !== null);
     
     const { data: productsData, error: productsError } = await supabaseAdmin
       .from('products')
