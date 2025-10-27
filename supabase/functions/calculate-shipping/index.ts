@@ -48,15 +48,21 @@ serve(async (req) => {
 
     if (productsError) throw productsError;
 
-    // CORRECTION: S'assurer que les clés de la Map sont des nombres.
-    const productsWeightMap = new Map(productsData.map(p => [Number(p.id), p.weight_grams]));
+    // CORRECTION: Gérer le cas où productsData est null ou vide.
+    const productsWeightMap = new Map(productsData?.map(p => [Number(p.id), p.weight_grams]) || []);
     
     let totalWeightGrams = 0;
     cart.forEach((item: { product_id: string; quantity: number }) => {
-      // CORRECTION: Utiliser un nombre pour la recherche dans la Map.
-      const productIdNumber = parseInt(item.product_id.replace('v2_', ''), 10);
-      const weight = productsWeightMap.get(productIdNumber) || 150; // 150g par défaut
-      totalWeightGrams += weight * item.quantity;
+      // CORRECTION: Gérer les produits V1 et V2
+      if (item.product_id.startsWith('v2_')) {
+        const productIdNumber = parseInt(item.product_id.replace('v2_', ''), 10);
+        const weight = productsWeightMap.get(productIdNumber) || 250; // Poids par défaut pour un produit V2 non trouvé
+        totalWeightGrams += weight * item.quantity;
+      } else {
+        // Pour les anciens produits (V1), on utilise un poids par défaut générique.
+        const defaultWeightForV1 = 250; // Estimation raisonnable pour un vêtement
+        totalWeightGrams += defaultWeightForV1 * item.quantity;
+      }
     });
 
     // Convertir en onces (oz) car c'est l'unité standard pour EasyPost
