@@ -82,8 +82,8 @@ serve(async (req) => {
     const totalWeightOunces = totalWeightGrams * 0.035274;
 
     // --- 4. Créer les objets Adresse et Colis pour EasyPost ---
-    // CORRECTION: La création d'objets EasyPost se fait avec `new` puis `.save()`
-    const fromAddress = new easyPostClient.Address({
+    // CORRECTION FINALE: La création se fait avec la méthode statique `create`.
+    const fromAddress = await easyPostClient.Address.create({
       street1: '765 Rue Bourget',
       street2: 'App 112',
       city: 'Montréal',
@@ -93,10 +93,9 @@ serve(async (req) => {
       company: 'Impressed MTL',
       phone: '514-966-5837'
     });
-    await fromAddress.save();
 
     // L'adresse du client (la destination)
-    const toAddress = new easyPostClient.Address({
+    const toAddress = await easyPostClient.Address.create({
       street1: shippingAddress.address,
       street2: shippingAddress.apartment,
       city: shippingAddress.city,
@@ -107,24 +106,21 @@ serve(async (req) => {
       email: shippingAddress.email,
       phone: shippingAddress.phone
     });
-    await toAddress.save();
 
     // Le colis lui-même
-    const parcel = new easyPostClient.Parcel({
+    const parcel = await easyPostClient.Parcel.create({
       length: 12, // en pouces (inches) - **À AJUSTER**
       width: 10,  // en pouces (inches) - **À AJUSTER**
       height: 5,  // en pouces (inches) - **À AJUSTER**
       weight: totalWeightOunces, // en onces (oz)
     });
-    await parcel.save();
 
     // --- 5. Créer l'envoi et récupérer les tarifs ---
-    const shipment = new easyPostClient.Shipment({
+    const shipment = await easyPostClient.Shipment.create({
       to_address: toAddress,
       from_address: fromAddress,
       parcel: parcel,
     });
-    await shipment.save();
 
     // --- 6. Formatter et renvoyer les tarifs au client ---
     // Définir un type pour les objets "rate" d'EasyPost pour éviter 'any'
