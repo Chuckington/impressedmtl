@@ -2,7 +2,6 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import EasyPostClient from 'https://esm.sh/@easypost/api@7.2.0'; // CORRECTION: Renommer l'import
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,9 +38,6 @@ serve(async (req) => {
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
-    // CORRECTION FINALE: L'objet importé est la classe elle-même.
-    const easyPostClient = new EasyPostClient(easyPostApiKey);
 
     // --- 3. Calculer le poids total du colis ---
     console.log("Step 3: Calculating total weight...");
@@ -86,49 +82,55 @@ serve(async (req) => {
 
     console.log(`Total weight calculated: ${totalWeightGrams}g / ${totalWeightOunces}oz`);
 
-    // --- 4. Créer les objets Adresse et Colis pour EasyPost ---
-    console.log("Step 4: Creating EasyPost objects (fromAddress)...");
-    const fromAddress = await easyPostClient.Address.create({
-      street1: '765 Rue Bourget',
-      street2: 'App 112',
-      city: 'Montréal',
-      state: 'QC',
-      zip: 'H4C 0A5',
-      country: 'CA',
-      company: 'Impressed MTL',
-      phone: '514-966-5837'
-    });
+    // --- 4. Préparer le corps de la requête pour l'API EasyPost ---
+    console.log("Step 4: Preparing EasyPost API request body...");
+    const requestBody = {
+      shipment: {
+        to_address: {
+          name: shippingAddress.fullName,
+          street1: shippingAddress.address,
+          street2: shippingAddress.apartment,
+          city: shippingAddress.city,
+          state: 'QC',
+          zip: shippingAddress.postalCode,
+          country: 'CA',
+          email: shippingAddress.email,
+          phone: shippingAddress.phone
+        },
+        from_address: {
+          company: 'Impressed MTL',
+          street1: '765 Rue Bourget',
+          street2: 'App 112',
+          city: 'Montréal',
+          state: 'QC',
+          zip: 'H4C 0A5',
+          country: 'CA',
+          phone: '514-966-5837'
+        },
+        parcel: {
+          length: 12, // en pouces (inches)
+          width: 10,  // en pouces (inches)
+          height: 5,  // en pouces (inches)
+          weight: totalWeightOunces, // en onces (oz)
+        }
+      }
+    };
 
-    console.log("Step 4.1: Creating EasyPost objects (toAddress)...");
-    // L'adresse du client (la destination)
-    const toAddress = await easyPostClient.Address.create({
-      street1: shippingAddress.address,
-      street2: shippingAddress.apartment,
-      city: shippingAddress.city,
-      state: 'QC', // Pour l'instant, on suppose que c'est toujours au Québec
-      zip: shippingAddress.postalCode,
-      country: 'CA',
-      name: shippingAddress.fullName,
-      email: shippingAddress.email,
-      phone: shippingAddress.phone
+    // --- 5. Appeler directement l'API EasyPost avec fetch ---
+    console.log("Step 5: Calling EasyPost API via fetch...");
+    const easyPostResponse = await fetch("https://api.easypost.com/v1/shipments", {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${easyPostApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
     });
-
-    console.log("Step 4.2: Creating EasyPost objects (parcel)...");
-    // Le colis lui-même
-    const parcel = await easyPostClient.Parcel.create({
-      length: 12, // en pouces (inches) - **À AJUSTER**
-      width: 10,  // en pouces (inches) - **À AJUSTER**
-      height: 5,  // en pouces (inches) - **À AJUSTER**
-      weight: totalWeightOunces, // en onces (oz)
-    });
-
-    // --- 5. Créer l'envoi et récupérer les tarifs ---
-    console.log("Step 5: Creating shipment and fetching rates...");
-    const shipment = await easyPostClient.Shipment.create({
-      to_address: toAddress,
-      from_address: fromAddress,
-      parcel: parcel,
-    });
+    
+    const shipment = await easyPostResponse.json();
+    if (!easyPostResponse.ok) {
+      throw new Error(`Erreur de l'API EasyPost: ${JSON.stringify(shipment.error)}`);
+    }
 
     console.log("Shipment created successfully. Formatting rates...");
 
