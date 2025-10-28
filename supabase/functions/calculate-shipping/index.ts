@@ -147,7 +147,16 @@ serve(async (req) => {
       delivery_days: number | null;
     }
 
-    const rates = shipment.rates.map((rate: EasyPostRate) => ({
+    // NOUVEAU: Définir un type pour nos tarifs formatés
+    interface FormattedRate {
+      id: string;
+      service: string;
+      amount: number;
+      currency: string;
+      delivery_days: number | null;
+    }
+
+    const rates: FormattedRate[] = shipment.rates.map((rate: EasyPostRate) => ({
       id: rate.id,
       service: `${rate.carrier} ${rate.service}`,
       amount: parseFloat(rate.rate),
@@ -155,9 +164,30 @@ serve(async (req) => {
       delivery_days: rate.delivery_days,
     }));
 
-    console.log("Step 6: Success! Returning rates to client.");
+    console.log("Step 6: Rates fetched in USD. Converting to CAD...");
 
-    return new Response(JSON.stringify({ rates }), {
+    // --- NOUVEAU: Étape 7. Conversion des tarifs de USD à CAD ---
+    let exchangeRate = 1.37; // Taux par défaut au cas où l'API échoue
+    try {
+      const exchangeResponse = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=CAD");
+      if (exchangeResponse.ok) {
+        const data = await exchangeResponse.json();
+        exchangeRate = data.rates.CAD;
+        console.log(`Current USD to CAD exchange rate: ${exchangeRate}`);
+      }
+    } catch (e) {
+      console.error("Could not fetch exchange rate, using default.", e);
+    }
+
+    const convertedRates = rates.map((rate: FormattedRate) => ({
+      ...rate,
+      amount: parseFloat((rate.amount * exchangeRate).toFixed(2)),
+      currency: 'CAD',
+    }));
+
+    console.log("Step 7: Success! Returning converted rates to client.");
+
+    return new Response(JSON.stringify({ rates: convertedRates }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
