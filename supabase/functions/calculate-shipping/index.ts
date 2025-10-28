@@ -17,6 +17,7 @@ serve(async (req) => {
 
   try {
     // --- 1. Récupérer les données envoyées par le client ---
+    console.log("Step 1: Parsing request body...");
     const { cart, shippingAddress } = await req.json();
 
     if (!cart || cart.length === 0 || !shippingAddress) {
@@ -24,6 +25,7 @@ serve(async (req) => {
     }
 
     // --- 2. Vérifier les secrets et initialiser les clients ---
+    console.log("Step 2: Checking secrets and initializing clients...");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const easyPostApiKey = Deno.env.get("EASYPOST_API_KEY");
@@ -42,6 +44,7 @@ serve(async (req) => {
     const easyPostClient = new EasyPostClient(easyPostApiKey);
 
     // --- 3. Calculer le poids total du colis ---
+    console.log("Step 3: Calculating total weight...");
     // CORRECTION: Extraire uniquement les nombres des ID de produits (ex: "v2_1" -> "1")
     const productIds = cart
       .map((item: { product_id: string }) => item.product_id.startsWith('v2_') ? item.product_id.replace('v2_', '') : null)
@@ -81,8 +84,10 @@ serve(async (req) => {
     // Convertir en onces (oz) car c'est l'unité standard pour EasyPost
     const totalWeightOunces = totalWeightGrams * 0.035274;
 
+    console.log(`Total weight calculated: ${totalWeightGrams}g / ${totalWeightOunces}oz`);
+
     // --- 4. Créer les objets Adresse et Colis pour EasyPost ---
-    // CORRECTION FINALE: La création se fait avec la méthode statique `create`.
+    console.log("Step 4: Creating EasyPost objects (fromAddress)...");
     const fromAddress = await easyPostClient.Address.create({
       street1: '765 Rue Bourget',
       street2: 'App 112',
@@ -94,6 +99,7 @@ serve(async (req) => {
       phone: '514-966-5837'
     });
 
+    console.log("Step 4.1: Creating EasyPost objects (toAddress)...");
     // L'adresse du client (la destination)
     const toAddress = await easyPostClient.Address.create({
       street1: shippingAddress.address,
@@ -107,6 +113,7 @@ serve(async (req) => {
       phone: shippingAddress.phone
     });
 
+    console.log("Step 4.2: Creating EasyPost objects (parcel)...");
     // Le colis lui-même
     const parcel = await easyPostClient.Parcel.create({
       length: 12, // en pouces (inches) - **À AJUSTER**
@@ -116,11 +123,14 @@ serve(async (req) => {
     });
 
     // --- 5. Créer l'envoi et récupérer les tarifs ---
+    console.log("Step 5: Creating shipment and fetching rates...");
     const shipment = await easyPostClient.Shipment.create({
       to_address: toAddress,
       from_address: fromAddress,
       parcel: parcel,
     });
+
+    console.log("Shipment created successfully. Formatting rates...");
 
     // --- 6. Formatter et renvoyer les tarifs au client ---
     // Définir un type pour les objets "rate" d'EasyPost pour éviter 'any'
@@ -140,6 +150,8 @@ serve(async (req) => {
       currency: rate.currency,
       delivery_days: rate.delivery_days,
     }));
+
+    console.log("Step 6: Success! Returning rates to client.");
 
     return new Response(JSON.stringify({ rates }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
