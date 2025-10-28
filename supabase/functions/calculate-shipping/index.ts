@@ -118,12 +118,15 @@ serve(async (req) => {
 
     // --- 5. Appeler directement l'API EasyPost avec fetch ---
     console.log("Step 5: Calling EasyPost API via fetch...");
-    // CORRECTION DÉFINITIVE: EasyPost utilise l'authentification "Basic", pas "Bearer".
+    // CORRECTION DÉFINITIVE: EasyPost utilise l'authentification "Basic", pas "Bearer". 
+    // La clé API est utilisée comme nom d'utilisateur, avec un mot de passe vide.
     const basicAuth = btoa(`${easyPostApiKey}:`); // btoa encode en Base64
 
     const easyPostResponse = await fetch("https://api.easypost.com/v1/shipments", {
       method: 'POST',
       headers: {
+        // L'authentification Basic se fait en encodant "username:password" en Base64.
+        // Pour EasyPost, c'est "VOTRE_API_KEY:".
         'Authorization': `Basic ${basicAuth}`,
         'Content-Type': 'application/json'
       },
