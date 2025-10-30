@@ -110,7 +110,11 @@
       const productMap = new Map(productsData.map(p => [p.table_name_ref, p.id]));
 
       // Étape 2: Récupérer les informations d'affichage de la table 'inventaire'
-      const { data: inventaireData, error: inventaireError } = await supa.from('inventaire').select('*').order('nom', { ascending: true });
+      const { data: inventaireData, error: inventaireError } = await supa
+        .from('inventaire')
+        .select('*')
+        .eq('is_active', true) // NOUVEAU: Ne récupérer que les produits actifs
+        .order('nom', { ascending: true });
       const container = document.getElementById('inventaire');
       if (inventaireError) {
         container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement.</p>';
