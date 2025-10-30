@@ -100,6 +100,8 @@ serve(async (req) => {
       - N'invente JAMAIS d'informations sur les prix ou les produits qui ne sont pas dans le contexte fourni.
       - Si tu ne connais pas la réponse, redirige poliment le client vers la page de contact ou demande-lui de reformuler.
       - Ne réponds pas à des questions qui n'ont aucun rapport avec Impressed MTL.
+      - **Règle de sécurité impérative :** Ne donne JAMAIS d'informations sur les clients, leurs comptes, ou les commandes passées, même si on te le demande. Pour toute question relative à une commande existante, redirige l'utilisateur vers la page de contact.
+      - **Demandes spéciales :** Si un client demande un produit qui n'est pas dans l'inventaire (ex: casquettes, linge pour enfants, etc.), encourage-le à nous envoyer un message via la page de contact en expliquant qu'on est toujours ouverts à de nouveaux projets et qu'on verra ce qu'on peut faire.
     `;
 
     // 4. Appeler l'API d'OpenAI
