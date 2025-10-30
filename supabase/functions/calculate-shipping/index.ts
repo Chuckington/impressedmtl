@@ -46,41 +46,89 @@ serve(async (req) => {
       .map((item: { product_id: string }) => item.product_id.startsWith('v2_') ? item.product_id.replace('v2_', '') : null)
       .filter((id: string | null): id is string => id !== null);
     
-    let productsWeightMap = new Map<number, number>();
+    let productsDetailsMap = new Map<number, { weight: number, volume: number }>();
 
     // CORRECTION: Ne faire la requête que si on a des produits V2
     if (productIds.length > 0) {
       const { data: productsData, error: productsError } = await supabaseAdmin
         .from('products')
-        .select('id, weight_grams')
+        .select('id, weight_grams, length_cm, width_cm, height_cm')
         .in('id', productIds);
 
       if (productsError) throw productsError;
 
       // Créer la map des poids si des données sont retournées
       if (productsData) {
-        productsWeightMap = new Map(productsData.map(p => [Number(p.id), p.weight_grams]));
+        productsDetailsMap = new Map(productsData.map(p => [
+          Number(p.id), 
+          { 
+            weight: p.weight_grams || 250, // Poids par défaut si null
+            volume: (p.length_cm || 30) * (p.width_cm || 25) * (p.height_cm || 2) // Volume en cm³, avec valeurs par défaut
+          }
+        ]));
       }
     }
     
     let totalWeightGrams = 0;
-    cart.forEach((item: { product_id: string; quantity: number }) => {
+    let totalVolumeCm3 = 0;
+    cart.forEach((item: { product_id: string; quantity: number; product_name: string }) => {
       // CORRECTION: Gérer les produits V1 et V2
       if (item.product_id.startsWith('v2_')) {
         const productIdNumber = parseInt(item.product_id.replace('v2_', ''), 10);
-        const weight = productsWeightMap.get(productIdNumber) || 250; // Poids par défaut pour un produit V2 non trouvé
-        totalWeightGrams += weight * item.quantity;
+        const details = productsDetailsMap.get(productIdNumber) || { weight: 250, volume: 30*25*2 };
+        totalWeightGrams += details.weight * item.quantity;
+        totalVolumeCm3 += details.volume * item.quantity;
       } else {
         // Pour les anciens produits (V1), on utilise un poids par défaut générique.
-        const defaultWeightForV1 = 250; // Estimation raisonnable pour un vêtement
-        totalWeightGrams += defaultWeightForV1 * item.quantity;
+        const isHoodie = (item.product_name || '').toLowerCase().includes('hoodie');
+        const defaultWeight = isHoodie ? 500 : 250;
+        const defaultVolume = isHoodie ? 35*30*8 : 30*25*2;
+        totalWeightGrams += defaultWeight * item.quantity;
+        totalVolumeCm3 += defaultVolume * item.quantity;
       }
     });
 
     // Convertir en onces (oz) car c'est l'unité standard pour EasyPost
     const totalWeightOunces = totalWeightGrams * 0.035274;
 
-    console.log(`Total weight calculated: ${totalWeightGrams}g / ${totalWeightOunces}oz`);
+    console.log(`Total calculated: ${totalWeightGrams}g, ${totalVolumeCm3}cm³`);
+
+    // --- NOUVEAU: Logique de sélection de la boîte ---
+    const cm3ToInch3 = 0.0610237;
+    const totalVolumeInch3 = totalVolumeCm3 * cm3ToInch3;
+
+    // Trier les boîtes de la plus grande à la plus petite pour la logique de sélection
+    const availableBoxes = [
+      { name: 'Enveloppe Poly', length: 19, width: 14.5, height: 1, volume: 19 * 14.5 * 1, cost: 1.21 }, // Dimensions en pouces
+      { name: 'Petite Boîte', length: 10, width: 8, height: 4, volume: 10 * 8 * 4, cost: 1.42 },
+      { name: 'Grande Boîte', length: 18, width: 12, height: 10, volume: 18 * 12 * 10, cost: 3.27 },
+    ];
+    const sortedBoxes = [...availableBoxes].sort((a, b) => b.volume - a.volume); // Trier de la plus grande à la plus petite
+
+    // --- NOUVELLE LOGIQUE POUR GÉRER PLUSIEURS COLIS ---
+    const packedBoxes: typeof availableBoxes = [];
+    let remainingVolume = totalVolumeInch3;
+
+    while (remainingVolume > 0) {
+      // Trouver la plus petite boîte qui peut contenir le volume restant
+      let bestFit = sortedBoxes.slice().reverse().find(box => box.volume >= remainingVolume);
+      
+      // Si aucune boîte unique ne peut contenir le reste, on prend la plus grande disponible
+      if (!bestFit) {
+        bestFit = sortedBoxes[0]; 
+      }
+      
+      packedBoxes.push(bestFit);
+      remainingVolume -= bestFit.volume;
+    }
+
+    // Calculer le coût total de l'emballage
+    const totalPackagingCost = packedBoxes.reduce((sum, box) => sum + box.cost, 0);
+    // Pour l'API, on utilise les dimensions de la plus grande boîte du lot
+    const largestBox = packedBoxes.sort((a, b) => b.volume - a.volume)[0];
+
+    console.log(`Boxes selected for packing: ${packedBoxes.map(b => b.name).join(', ')}`);
+    console.log(`Total packaging cost: ${totalPackagingCost.toFixed(2)}$`);
 
     // --- 4. Préparer le corps de la requête pour l'API EasyPost ---
     console.log("Step 4: Preparing EasyPost API request body...");
@@ -108,9 +156,9 @@ serve(async (req) => {
           phone: '514-966-5837'
         },
         parcel: {
-          length: 12, // en pouces (inches)
-          width: 10,  // en pouces (inches)
-          height: 5,  // en pouces (inches)
+          length: largestBox.length, // en pouces (inches)
+          width: largestBox.width,   // en pouces (inches)
+          height: largestBox.height, // en pouces (inches)
           weight: totalWeightOunces, // en onces (oz)
         }
       }
@@ -181,7 +229,7 @@ serve(async (req) => {
 
     const convertedRates = rates.map((rate: FormattedRate) => ({
       ...rate,
-      amount: parseFloat((rate.amount * exchangeRate).toFixed(2)),
+      amount: parseFloat(((rate.amount * exchangeRate) + totalPackagingCost + 0.50).toFixed(2)),
       currency: 'CAD',
     }));
 
