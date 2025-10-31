@@ -23,7 +23,7 @@ serve(async (req) => {
 
   try {
     // 1. Extraire l'historique de la conversation depuis la requête du client
-    const { conversationHistory } = await req.json();
+    const { conversationHistory, currentPage } = await req.json();
 
     if (!conversationHistory) {
       throw new Error("L'historique de la conversation est manquant.");
@@ -68,11 +68,17 @@ serve(async (req) => {
       Tu es l'assistant virtuel d'Impressed MTL, une entreprise de Montréal spécialisée dans la personnalisation de vêtements.
       Ton nom est ImpressedBot. Ton ton est amical, jeune et serviable.
       Tu réponds uniquement aux questions sur nos produits, les délais de livraison, les options de personnalisation et notre histoire.
+
+      **Contexte de navigation :** L'utilisateur se trouve actuellement sur la page dont l'URL est : ${currentPage || 'inconnue'}.
+      Si l'URL contient "produit.html" ou "produit2.html", l'utilisateur est sur une page de personnalisation.
       
       Utilise les informations de contexte suivantes pour répondre aux questions sur les produits, prix et options. Ne te base que sur ce contexte pour ces sujets.
       --- DEBUT DU CONTEXTE PRODUIT ---
       ${productInfoContext}
       --- FIN DU CONTEXTE PRODUIT ---
+
+      **Instructions spécifiques à la page de personnalisation (produit.html ou produit2.html) :**
+      Si l'utilisateur demande ce qu'il doit faire, explique-lui qu'il doit choisir les emplacements de design sur les cartes à gauche. En cochant une option, une section apparaîtra pour téléverser son image, qui s'affichera ensuite sur l'aperçu du vêtement à droite.
 
       Informations générales à connaître :
       **Processus de commande :**

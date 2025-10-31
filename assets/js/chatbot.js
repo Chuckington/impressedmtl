@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // 4. Appeler la Supabase Edge Function
                 const { data, error } = await supa.functions.invoke('chatbot', {
-                    body: { conversationHistory },
+                    body: { conversationHistory, currentPage: globalThis.location.href },
                 });
 
                 if (error) {
