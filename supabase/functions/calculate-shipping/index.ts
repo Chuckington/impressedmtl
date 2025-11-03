@@ -235,7 +235,7 @@ serve(async (req) => {
 
     console.log("Step 7: Success! Returning converted rates to client.");
 
-    return new Response(JSON.stringify({ rates: convertedRates }), {
+    return new Response(JSON.stringify({ shipmentId: shipment.id, rates: convertedRates }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
