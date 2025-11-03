@@ -160,6 +160,10 @@ serve(async (req) => {
           width: largestBox.width,   // en pouces (inches)
           height: largestBox.height, // en pouces (inches)
           weight: totalWeightOunces, // en onces (oz)
+        },
+        options: {
+          label_format: "PDF",
+          label_size: "4x6"
         }
       }
     };
