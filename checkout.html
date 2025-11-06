@@ -537,7 +537,7 @@
                 shipmentId: selectedRateInput ? selectedRateInput.dataset.shipmentId : null,
                 // NOUVEAU: Envoyer les détails du service de livraison choisi
                 shippingService: selectedRateInput ? selectedRateInput.labels[0].dataset.serviceName : 'Cueillette en magasin',
-                shippingDeliveryDays: selectedRateInput ? selectedRateInput.dataset.totalDeliveryDays : null, // On envoie le nouveau total
+                shippingDeliveryDays: selectedRateInput ? selectedRateInput.dataset.totalDeliveryDays : null,
                 shippingRateId: selectedRateInput ? selectedRateInput.dataset.rateId : null // NOUVEAU: Envoyer l'ID du tarif choisi
               }
             });
