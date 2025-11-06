@@ -415,8 +415,10 @@
         rateDiv.innerHTML = `
           <input type="radio" id="rate-${rate.id}" name="shipping_rate" value="${rate.amount}" data-rate-id="${rate.id}" data-shipment-id="${shipmentId}">
           <label for="rate-${rate.id}">
-            <span class="service-name">${rate.service}</span>
-            ${rate.delivery_days ? `<span class="delivery-days">(${rate.delivery_days} jour(s) estimé(s))</span>` : ''}
+            <div class="service-details">
+              <span class="service-name">${rate.service}</span>
+              ${rate.delivery_days ? `<span class="delivery-days">(${rate.delivery_days} jour(s) estimé(s))</span>` : ''}
+            </div>
             <span class="service-price">${rate.amount.toFixed(2)} $</span>
           </label>
         `;
