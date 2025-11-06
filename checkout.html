@@ -119,7 +119,7 @@
 
     <!-- NOUVELLE SECTION POUR LES OPTIONS DE LIVRAISON -->
     <div class="section shipping-options">
-      <h3>Options de livraison</h3>
+      <h3>Options de livraison (En Développement - Disponible Bientôt!)</h3>
       <div id="shipping-rates-container">
         <p class="shipping-placeholder">Veuillez remplir votre adresse de livraison pour voir les options.</p>
       </div>
@@ -168,6 +168,8 @@
     let currentCartForPayment = [];
     const fixedFeeAmountEl = document.getElementById('fixed-fee-amount');
     const fixedFeeMessageEl = document.getElementById('fixed-fee-message');
+    let shippingCost = 0; // NOUVEAU: Pour stocker le coût de livraison choisi
+    let itemsTotalWithFees = 0; // NOUVEAU: Pour stocker le total avant livraison
     let appliedPromoCode = null; // Pour stocker le code promo valide
     let currentTotalForPayment = 0;
     let totalDiscount = 0; // Variable pour stocker le rabais
@@ -313,13 +315,14 @@
         fixedFeeMessageEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
       }
 
+      itemsTotalWithFees = subTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee;
+
       // --- LOGIQUE DE CALCUL DU TOTAL FINAL ---
 
       // 1. On calcule le total des articles, moins les rabais spéciaux déjà appliqués.
       const itemsTotalAfterOffers = subTotalBeforeFixedFee - totalDiscount;
 
-      // 2. On calcule le total incluant tous les frais. C'est la base pour le code promo.
-      const totalBeforePromo = itemsTotalAfterOffers + fixedFee + maquetteFee;
+      const totalBeforePromo = itemsTotalWithFees; // Utiliser la nouvelle variable
 
       // 3. On calcule la valeur du rabais promotionnel.
       let promoDiscountValue = 0;
@@ -348,11 +351,82 @@
       }
 
       // 4. On calcule le total final à payer.
-      currentTotalForPayment = totalBeforePromo - promoDiscountValue;
+      // NOUVEAU: Inclure les frais de port dans le total final
+      currentTotalForPayment = totalBeforePromo - promoDiscountValue + shippingCost;
 
       // 5. On met à jour l'affichage.
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
       totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
+    }
+
+    // --- NOUVELLE LOGIQUE POUR LA LIVRAISON ---
+
+    const postalCodeInput = document.getElementById('postalCode');
+    const shippingRatesContainer = document.getElementById('shipping-rates-container');
+
+    // Fonction pour appeler la fonction de calcul de livraison
+    async function getShippingRates() {
+      const shippingAddress = getAndValidateShippingInfo();
+      if (!shippingAddress || currentCartForPayment.length === 0) {
+        return; // Ne rien faire si l'adresse est invalide ou le panier vide
+      }
+
+      shippingRatesContainer.innerHTML = '<div class="spinner-container"><div class="spinner"></div><p>Calcul des tarifs...</p></div>';
+
+      try {
+        const { data, error } = await supa.functions.invoke('calculate-shipping', {
+          body: {
+            cart: currentCartForPayment,
+            shippingAddress: shippingAddress
+          }
+        });
+
+        if (error) throw error;
+
+        displayShippingRates(data.rates, data.shipmentId);
+
+      } catch (err) {
+        console.error("Erreur lors du calcul des frais de port:", err);
+        shippingRatesContainer.innerHTML = '<p class="error-message">Impossible de calculer les tarifs pour cette adresse. Veuillez vérifier les informations.</p>';
+      }
+    }
+
+    // Fonction pour afficher les options de livraison
+    function displayShippingRates(rates, shipmentId) {
+      shippingRatesContainer.innerHTML = '';
+      if (!rates || rates.length === 0) {
+        shippingRatesContainer.innerHTML = '<p>Aucune option de livraison trouvée pour cette adresse.</p>';
+        return;
+      }
+
+      rates.forEach((rate, index) => {
+        const rateDiv = document.createElement('div');
+        rateDiv.className = 'shipping-rate-option';
+        rateDiv.innerHTML = `
+          <input type="radio" id="rate-${rate.id}" name="shipping_rate" value="${rate.amount}" data-rate-id="${rate.id}" data-shipment-id="${shipmentId}">
+          <label for="rate-${rate.id}">
+            <span class="service-name">${rate.service}</span>
+            ${rate.delivery_days ? `<span class="delivery-days">(${rate.delivery_days} jour(s) estimé(s))</span>` : ''}
+            <span class="service-price">${rate.amount.toFixed(2)} $</span>
+          </label>
+        `;
+        shippingRatesContainer.appendChild(rateDiv);
+
+        // Pré-sélectionner la première option
+        if (index === 0) {
+          rateDiv.querySelector('input').checked = true;
+          shippingCost = rate.amount;
+          loadOrderSummary(); // Mettre à jour le total
+        }
+      });
+
+      // Ajouter un écouteur d'événement pour les changements
+      shippingRatesContainer.addEventListener('change', (e) => {
+        if (e.target.name === 'shipping_rate') {
+          shippingCost = parseFloat(e.target.value);
+          loadOrderSummary(); // Recalculer le total avec le nouveau coût de livraison
+        }
+      });
     }
 
     async function handleApplyPromoCode() {
@@ -433,6 +507,7 @@
             const { data: { user } } = await supa.auth.getUser(); // Récupérer l'utilisateur actuel
             // Simuler l'appel backend pour l'instant
             // Vous devrez créer une Supabase Edge Function nommée 'process-square-payment' par exemple
+            const selectedRateInput = document.querySelector('input[name="shipping_rate"]:checked');
             const { data: paymentResponse, error: paymentError } = await supa.functions.invoke('process-square-payment', {
               body: {
                 sourceId: token, // C'est le token de la carte
@@ -445,7 +520,10 @@
                 cartDetails: currentCartForPayment, // Détails du panier
                 shippingDetails: shippingDetails, // Nouvelles informations de livraison
                 promoCodeDetails: appliedPromoCode, // NOUVEAU: Envoyer les détails du code promo
-                specialOfferDiscount: totalDiscount // NOUVEAU: Envoyer le rabais de l'offre spéciale
+                specialOfferDiscount: totalDiscount, // NOUVEAU: Envoyer le rabais de l'offre spéciale
+                shippingCost: shippingCost, // NOUVEAU: Envoyer le coût de la livraison
+                shipmentId: selectedRateInput ? selectedRateInput.dataset.shipmentId : null, // NOUVEAU: Envoyer l'ID de l'envoi
+                shippingRateId: selectedRateInput ? selectedRateInput.dataset.rateId : null // NOUVEAU: Envoyer l'ID du tarif choisi
               }
             });
 
@@ -511,11 +589,16 @@
     // Initialisation
     loadOrderSummary();
     initializeSquarePaymentForm();
+    
+    // NOUVEAU: Déclencher le calcul de la livraison lorsque l'utilisateur quitte le champ du code postal
+    postalCodeInput.addEventListener('blur', getShippingRates);
 
     // Ajouter des écouteurs pour effacer l'erreur de validation en tapant (incluant l'email)
     ['fullName', 'address', 'city', 'postalCode', 'email'].forEach(id => {
         document.getElementById(id).addEventListener('input', () => {
             document.getElementById('form-validation-error').style.display = 'none';
+            // NOUVEAU: Réinitialiser les options de livraison si l'adresse change
+            shippingRatesContainer.innerHTML = '<p class="shipping-placeholder">Veuillez remplir votre adresse de livraison pour voir les options.</p>';
         });
     });
 
