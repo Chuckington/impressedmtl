@@ -412,12 +412,14 @@
       rates.forEach((rate, index) => {
         const rateDiv = document.createElement('div');
         rateDiv.className = 'shipping-rate-option';
+        // CORRECTION: Calculer le délai total en ajoutant les 14 jours de production
+        const totalDeliveryDays = rate.delivery_days ? parseInt(rate.delivery_days, 10) + 14 : null;
         rateDiv.innerHTML = `
-          <input type="radio" id="rate-${rate.id}" name="shipping_rate" value="${rate.amount}" data-rate-id="${rate.id}" data-shipment-id="${shipmentId}">
-          <label for="rate-${rate.id}" data-service-name="${rate.service}" data-delivery-days="${rate.delivery_days || ''}">
+          <input type="radio" id="rate-${rate.id}" name="shipping_rate" value="${rate.amount}" data-rate-id="${rate.id}" data-shipment-id="${shipmentId}" data-total-delivery-days="${totalDeliveryDays || ''}">
+          <label for="rate-${rate.id}" data-service-name="${rate.service}">
             <div class="service-details">
               <span class="service-name">${rate.service}</span>
-              ${rate.delivery_days ? `<span class="delivery-days">(${rate.delivery_days} jour(s) estimé(s))</span>` : ''}
+              ${totalDeliveryDays ? `<span class="delivery-days">(${totalDeliveryDays} jour(s) estimé(s))</span>` : ''}
             </div>
             <span class="service-price">${rate.amount.toFixed(2)} $</span>
           </label>
