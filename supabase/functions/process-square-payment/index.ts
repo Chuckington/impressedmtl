@@ -394,7 +394,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
   const shippingCost = shippingDetails.cost || 0;
   const shippingHtml = `
     <p>Livraison (${shippingDetails.service}): ${shippingCost.toFixed(2)}$</p>
-    ${shippingDetails.days ? `<p style="font-size: 0.9em; color: #555;"><i>Délai de livraison estimé : ${shippingDetails.days} jour(s) ouvrables <strong>après un délai de production de 2 à 3 semaines.</strong></i></p>` : ''}
+    ${shippingDetails.days ? `<p style="font-size: 0.9em; color: #555;"><i>Délai total estimé (production + livraison) : <strong>${shippingDetails.days} jour(s) ouvrables.</strong></i></p>` : ''}
   `;
 
   return `
