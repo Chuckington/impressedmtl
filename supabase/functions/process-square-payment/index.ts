@@ -244,7 +244,13 @@ serve(async (req) => {
       });
     } else {
       // Gérer les autres statuts de paiement ou les erreurs renvoyées par Square
-      const errorMessage = result.errors?.map(e => `[${e.category}] ${e.code}: ${e.detail}`).join('; ')
+      // CORRECTION: Définir un type pour les erreurs de l'API Square pour éviter 'any'
+      interface SquareApiError {
+        category: string;
+        code: string;
+        detail: string;
+      }
+      const errorMessage = result.errors?.map((e: SquareApiError) => `[${e.category}] ${e.code}: ${e.detail}`).join('; ')
         || `Échec du paiement ou statut inattendu: ${result.payment?.status}`;
       console.error("Échec du paiement Square ou statut inattendu:", result);
       return new Response(JSON.stringify({ success: false, message: errorMessage, details: result.errors || { status: result.payment?.status } }), {
@@ -255,19 +261,14 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Erreur inattendue dans la fonction process-square-payment:", error);
-    let errorMessage = "Erreur interne du serveur lors du traitement du paiement.";
-    let errorDetails: string; // Déclarer sans initialiser immédiatement
-
-    if (error instanceof ApiError) { // Erreur spécifique du SDK Square
-        errorMessage = error.errors?.map(e => `[${e.category}] ${e.code}: ${e.detail}`).join('; ') || error.message;
-        errorDetails = JSON.stringify(error.errors);
-    } else if (error instanceof Error) {
-        errorMessage = error.message;
-        errorDetails = error.stack || error.message; // Utiliser stack si disponible pour plus de détails
+    // CORRECTION: Gestion d'erreur simplifiée et sécurisée
+    let errorMessage = "Une erreur interne est survenue.";
+    if (error instanceof Error) {
+      errorMessage = error.message;
     } else {
-        errorDetails = String(error); // Fallback pour les types d'erreurs inconnus
+      errorMessage = String(error);
     }
-    return new Response(JSON.stringify({ success: false, message: errorMessage, errorDetails: errorDetails }), {
+    return new Response(JSON.stringify({ success: false, message: errorMessage }), {
       status: 500, // Erreur serveur
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
@@ -459,7 +460,7 @@ async function sendReceiptEmail(to: string, subject: string, htmlBody: string): 
       const responseData = await response.json();
       console.log(`Email envoyé avec succès à ${to}. ID Resend: ${responseData.id}`);
     }
-  } catch (error) {
-    console.error(`Erreur lors de la requête fetch vers Resend pour ${to}:`, error);
+  } catch (e: unknown) {
+    console.error(`Erreur lors de la requête fetch vers Resend pour ${to}:`, e);
   }
 }
