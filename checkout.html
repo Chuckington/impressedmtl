@@ -414,7 +414,7 @@
         rateDiv.className = 'shipping-rate-option';
         rateDiv.innerHTML = `
           <input type="radio" id="rate-${rate.id}" name="shipping_rate" value="${rate.amount}" data-rate-id="${rate.id}" data-shipment-id="${shipmentId}">
-          <label for="rate-${rate.id}">
+          <label for="rate-${rate.id}" data-service-name="${rate.service}" data-delivery-days="${rate.delivery_days || ''}">
             <div class="service-details">
               <span class="service-name">${rate.service}</span>
               ${rate.delivery_days ? `<span class="delivery-days">(${rate.delivery_days} jour(s) estimé(s))</span>` : ''}
@@ -534,7 +534,10 @@
                 promoCodeDetails: appliedPromoCode, // NOUVEAU: Envoyer les détails du code promo
                 specialOfferDiscount: totalDiscount, // NOUVEAU: Envoyer le rabais de l'offre spéciale
                 shippingCost: shippingCost, // NOUVEAU: Envoyer le coût de la livraison
-                shipmentId: selectedRateInput ? selectedRateInput.dataset.shipmentId : null, // NOUVEAU: Envoyer l'ID de l'envoi
+                shipmentId: selectedRateInput ? selectedRateInput.dataset.shipmentId : null,
+                // NOUVEAU: Envoyer les détails du service de livraison choisi
+                shippingService: selectedRateInput ? selectedRateInput.labels[0].dataset.serviceName : 'Cueillette en magasin',
+                shippingDeliveryDays: selectedRateInput ? selectedRateInput.labels[0].dataset.deliveryDays : null,
                 shippingRateId: selectedRateInput ? selectedRateInput.dataset.rateId : null // NOUVEAU: Envoyer l'ID du tarif choisi
               }
             });

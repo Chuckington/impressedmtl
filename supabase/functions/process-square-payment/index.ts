@@ -1,9 +1,6 @@
 // supabase/functions/process-square-payment/index.ts
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts"; // Version de std mise à jour
-// Importer le SDK Square.
-// Pour Deno, il est souvent plus simple d'utiliser un CDN comme esm.sh.
-// Essayons une version plus récente du SDK Square.
-import { Client, Environment, ApiError } from "https://esm.sh/square@39.0.0"; // Mise à jour de la version
+// NOUVEAU: On retire l'import du SDK Square qui cause des problèmes de compatibilité.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 
@@ -24,7 +21,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount } = await req.json();
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays } = await req.json();
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteRequested });
 
     // Initialiser le client admin Supabase (nécessaire pour l'enrichissement des données et la sauvegarde)
@@ -91,17 +88,12 @@ serve(async (req) => {
       });
     }
 
-    const squareEnvironment = SQUARE_ENVIRONMENT_STR === "production"
-      ? Environment.Production
-      : Environment.Sandbox;
+    // NOUVEAU: Définir l'URL de l'API Square en fonction de l'environnement
+    const squareApiUrl = SQUARE_ENVIRONMENT_STR === "production"
+      ? "https://connect.squareup.com/v2/payments"
+      : "https://connect.squareupsandbox.com/v2/payments";
 
-    console.log("Utilisation de l'environnement Square:", squareEnvironment);
-
-    // 4. Initialiser le client Square
-    const client = new Client({
-      accessToken: SQUARE_ACCESS_TOKEN,
-      environment: squareEnvironment,
-    });
+    console.log("Utilisation de l'environnement Square:", SQUARE_ENVIRONMENT_STR);
 
     const maquetteFee = maquetteRequested === true ? 5 : 0;
 
@@ -122,26 +114,33 @@ serve(async (req) => {
     if (maquetteFee > 0) paymentNoteParts.push(`Frais maquette: ${maquetteFee.toFixed(2)}$`);
     if (discountApplied > 0.01) paymentNoteParts.push(`Rabais: -${discountApplied.toFixed(2)}$`);
 
-    // 5. Créer le paiement avec l'API Square
+    // 5. Créer le paiement en appelant directement l'API Square avec fetch
     console.log("Tentative de création de paiement avec l'API Square...");
-    const { result, statusCode } = await client.paymentsApi.createPayment({
-      sourceId: sourceId, // Le token de carte obtenu côté client
-      idempotencyKey: idempotencyKey, // Clé unique pour éviter les doubles paiements
-      amountMoney: {
-        amount: BigInt(amount), // Montant en centimes, Square attend un BigInt
-        currency: currency,     // Ex: 'CAD'
+    const squareResponse = await fetch(squareApiUrl, {
+      method: 'POST',
+      headers: {
+        'Square-Version': '2024-05-15', // Version de l'API
+        'Authorization': `Bearer ${SQUARE_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json'
       },
-      locationId: locationId, // L'ID de votre localisation Square
-      note: paymentNoteParts.length > 0 ? paymentNoteParts.join(' | ') : undefined,
-      // Optionnel: ajoutez des détails supplémentaires si nécessaire
-      // note: `Commande pour ${cartDetails?.[0]?.product_name || 'un article'}`,
-      // orderId: 'VOTRE_ID_COMMANDE_INTERNE_SI_APPLICABLE' // Si vous avez un système d'ID de commande
+      body: JSON.stringify({
+        source_id: sourceId,
+        idempotency_key: idempotencyKey,
+        amount_money: {
+          amount: amount, // Le montant est déjà en centimes (number)
+          currency: currency
+        },
+        location_id: locationId,
+        note: paymentNoteParts.length > 0 ? paymentNoteParts.join(' | ') : undefined
+      })
     });
 
-    console.log("Réponse de l'API Square (création paiement):", { statusCode, payment_details: result.payment });
+    const result = await squareResponse.json();
+
+    console.log("Réponse de l'API Square (création paiement):", { status: squareResponse.status, body: result });
 
     // 6. Gérer la réponse de Square
-    if (result.payment && (result.payment.status === 'COMPLETED' || result.payment.status === 'APPROVED')) {
+    if (squareResponse.ok && result.payment && (result.payment.status === 'COMPLETED' || result.payment.status === 'APPROVED')) {
       const paymentId = result.payment.id;
 
       if (!paymentId) {
@@ -233,7 +232,7 @@ serve(async (req) => {
       
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
-        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0);
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0, { cost: shippingCost, service: shippingService, days: shippingDeliveryDays });
         await sendReceiptEmail(shippingDetails.email, `Confirmation de ta commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
         await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
       }
@@ -318,8 +317,14 @@ interface ShippingInfo {
   phone?: string;
 }
 
+interface ShippingDetailsForEmail {
+  cost: number;
+  service: string;
+  days: number | null;
+}
+
 // Fonction pour formater le reçu en HTML
-function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteRequested: boolean, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number): string {
+function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteRequested: boolean, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number, shippingDetails: ShippingDetailsForEmail): string {
   const itemsHtml = (cartItems || []).map(item => {
     const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
       let detail = `<li><strong>${p.spot_label}</strong> (+${p.spot_price.toFixed(2)}$)<br>`;
@@ -385,6 +390,13 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     </p>
   ` : '';
 
+  // NOUVEAU: Section pour les détails de la livraison
+  const shippingCost = shippingDetails.cost || 0;
+  const shippingHtml = `
+    <p>Livraison (${shippingDetails.service}): ${shippingCost.toFixed(2)}$</p>
+    ${shippingDetails.days ? `<p style="font-size: 0.9em; color: #555;"><i>Délai de livraison estimé : ${shippingDetails.days} jour(s) ouvrables <strong>après un délai de production de 2 à 3 semaines.</strong></i></p>` : ''}
+  `;
+
   return `
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -396,6 +408,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         ${specialOfferDiscount > 0 ? `<p style="color: #28a745;">Rabais Offre Spéciale: -${specialOfferDiscount.toFixed(2)}$</p>` : ''}
         ${fixedFee > 0 ? `<p>Frais de préparation: ${fixedFee.toFixed(2)}$</p>` : ''}
         <p>Maquette demandée: <strong>${maquetteRequested ? 'Oui' : 'Non'}</strong> (+${maquetteFee.toFixed(2)}$)</p>
+        ${shippingHtml}
         ${promoCodeHtml}
         <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
         <h3>Adresse de livraison:</h3>
