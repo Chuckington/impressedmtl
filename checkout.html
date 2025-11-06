@@ -399,6 +399,16 @@
         return;
       }
 
+      // NOUVEAU: Créer l'option de cueillette et l'ajouter au début de la liste
+      const pickupOption = {
+        id: 'pickup-free',
+        service: 'Cueillette en magasin (Pick-Up)',
+        amount: 0.00,
+        currency: 'CAD',
+        delivery_days: null // Pas de délai, ou on pourrait mettre "Sur rendez-vous"
+      };
+      rates.unshift(pickupOption); // Ajoute l'option au tout début du tableau
+
       rates.forEach((rate, index) => {
         const rateDiv = document.createElement('div');
         rateDiv.className = 'shipping-rate-option';
