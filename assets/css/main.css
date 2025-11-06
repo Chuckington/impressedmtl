@@ -517,6 +517,12 @@ th { background:#f0f0f0; }
   align-items: center;
   cursor: pointer;
 }
+/* NOUVEAU: Conteneur pour les détails du service de livraison */
+.service-details {
+  display: flex;
+  flex-direction: column; /* Met le délai sous le nom */
+  align-items: flex-start; /* Aligne à gauche */
+}
 .service-name {
   font-weight: bold;
 }
