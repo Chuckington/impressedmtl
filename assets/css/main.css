@@ -57,7 +57,7 @@ header {
 .header-nav-desktop a {
   color: #fff;
   text-decoration: underline;
-  font-size: 1.4rem; /* Rendu plus gros */
+  font-size: 1.2rem; /* Taille ajustée pour correspondre au sous-titre */
   font-weight: bold; /* Mis en gras */
 }
 /* NOUVEAU: Forcer la couleur blanche même pour les liens visités */
