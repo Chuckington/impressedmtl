@@ -418,8 +418,8 @@
       rates.forEach((rate, index) => {
         const rateDiv = document.createElement('div');
         rateDiv.className = 'shipping-rate-option';
-        // CORRECTION: Calculer le délai total en ajoutant les 14 jours de production
-        const totalDeliveryDays = rate.delivery_days ? parseInt(rate.delivery_days, 10) + 14 : null;
+        // CORRECTION: Calculer le délai total en ajoutant les 10 jours de production
+        const totalDeliveryDays = rate.delivery_days ? parseInt(rate.delivery_days, 10) + 10 : null;
         // NOUVEAU: Ajouter une note spécifique pour la cueillette
         const pickupNote = rate.id === 'pickup-free' 
           ? `<span class="pickup-note">Des instructions suivront dans le courriel de confirmation.</span>` : '';

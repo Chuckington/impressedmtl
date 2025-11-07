@@ -437,7 +437,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     : '';
   const isPickup = shippingDetails.service.toLowerCase().includes('cueillette');
   const deliveryMessage = isPickup
-    ? `<p style="font-size: 0.9em; color: #555;"><i>Quand ta commande sera prête (délai de production de 14 jours), nous te contacterons pour prendre un rendez-vous pour la cueillette (adresse, jour et heure).</i></p>`
+    ? `<p style="font-size: 0.9em; color: #555;"><i>Quand ta commande sera prête (délai de production de 10 jours ouvrables), nous te contacterons pour prendre un rendez-vous pour la cueillette (adresse, jour et heure).</i></p>`
     : `${shippingDetails.days ? `<p style="font-size: 0.9em; color: #555;"><i>Délai total estimé (production + livraison) : <strong>${shippingDetails.days} jour(s) ouvrables.</strong></i></p>` : ''}`;
   const shippingHtml = `
     <p>Livraison (${shippingDetails.service}): ${shippingCost.toFixed(2)}$</p>
