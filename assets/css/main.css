@@ -38,7 +38,7 @@ header {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 30px; /* Augmenter l'espace pour les nouveaux liens */
+  gap: 50px; /* Augmenter l'espace pour les nouveaux liens */
 }
 .header-logo img {
   height: 60px; /* Taille ajustée */
@@ -52,13 +52,17 @@ header {
 /* NOUVEAU: Styles pour les liens de navigation du header sur desktop */
 .header-nav-desktop {
   display: flex;
-  gap: 25px;
+  gap: 50px; /* Augmenter l'espacement entre les liens */
 }
 .header-nav-desktop a {
   color: #fff;
   text-decoration: underline;
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-size: 1.4rem; /* Rendu plus gros */
+  font-weight: bold; /* Mis en gras */
+}
+/* NOUVEAU: Forcer la couleur blanche même pour les liens visités */
+.header-nav-desktop a:visited {
+  color: #fff;
 }
 
 .header-actions {
