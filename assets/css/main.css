@@ -973,7 +973,7 @@ footer a.social-link svg {
     cursor: pointer;
     font-size: 24px;
     z-index: 1002;
-    color: #000; /* NOUVEAU: Assure que l'icône est noire */
+    color: #fff; /* CORRECTION: L'icône doit être blanche sur fond noir */
   }
   /* NOUVEAU: Cacher le bouton de retour sur mobile */
   .header-back-btn {
