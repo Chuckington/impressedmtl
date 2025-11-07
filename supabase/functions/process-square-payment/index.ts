@@ -21,7 +21,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays, shipmentId, shippingRateId } = await req.json();
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays, shipmentId, shippingRateId, packedBoxes } = await req.json();
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteRequested });
 
     // Initialiser le client admin Supabase (nécessaire pour l'enrichissement des données et la sauvegarde)
@@ -269,7 +269,7 @@ serve(async (req) => {
 
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
-        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0, { cost: shippingCost, service: shippingService, days: shippingDeliveryDays });
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0, { cost: shippingCost, service: shippingService, days: shippingDeliveryDays, boxes: packedBoxes });
         await sendReceiptEmail(shippingDetails.email, `Confirmation de ta commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
         await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
       }
@@ -359,6 +359,7 @@ interface ShippingDetailsForEmail {
   cost: number;
   service: string;
   days: number | null;
+  boxes?: string[]; // NOUVEAU: La liste des boîtes est optionnelle
 }
 
 // Fonction pour formater le reçu en HTML
@@ -431,13 +432,16 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
   // NOUVEAU: Section pour les détails de la livraison
   const shippingCost = shippingDetails.cost || 0;
   // NOUVEAU: Logique conditionnelle pour le message de livraison
+  const packedBoxesHtml = shippingDetails.boxes && shippingDetails.boxes.length > 0
+    ? `<p style="font-size: 0.9em; color: #555;"><i>Emballage prévu : ${shippingDetails.boxes.join(', ')}</i></p>`
+    : '';
   const isPickup = shippingDetails.service.toLowerCase().includes('cueillette');
   const deliveryMessage = isPickup
     ? `<p style="font-size: 0.9em; color: #555;"><i>Quand ta commande sera prête (délai de production de 14 jours), nous te contacterons pour prendre un rendez-vous pour la cueillette (adresse, jour et heure).</i></p>`
     : `${shippingDetails.days ? `<p style="font-size: 0.9em; color: #555;"><i>Délai total estimé (production + livraison) : <strong>${shippingDetails.days} jour(s) ouvrables.</strong></i></p>` : ''}`;
   const shippingHtml = `
     <p>Livraison (${shippingDetails.service}): ${shippingCost.toFixed(2)}$</p>
-    ${deliveryMessage}
+    ${deliveryMessage}${packedBoxesHtml}
   `;
 
   return `

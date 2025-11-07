@@ -239,7 +239,7 @@ serve(async (req) => {
 
     console.log("Step 7: Success! Returning converted rates to client.");
 
-    return new Response(JSON.stringify({ shipmentId: shipment.id, rates: convertedRates }), {
+    return new Response(JSON.stringify({ shipmentId: shipment.id, rates: convertedRates, packedBoxes: packedBoxes.map(b => b.name) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

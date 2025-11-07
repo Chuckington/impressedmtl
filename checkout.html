@@ -123,6 +123,7 @@
       <div id="shipping-rates-container">
         <p class="shipping-placeholder">Remplis ton adresse de livraison pour voir les options disponibles.</p>
       </div>
+      <input type="hidden" id="packed-boxes-info">
     </div>
 
     <div class="section payment-form">
@@ -383,7 +384,7 @@
 
         if (error) throw error;
 
-        displayShippingRates(data.rates, data.shipmentId);
+        displayShippingRates(data.rates, data.shipmentId, data.packedBoxes);
 
       } catch (err) {
         console.error("Erreur lors du calcul des frais de port:", err);
@@ -392,7 +393,12 @@
     }
 
     // Fonction pour afficher les options de livraison
-    function displayShippingRates(rates, shipmentId) {
+    function displayShippingRates(rates, shipmentId, packedBoxes) {
+      // NOUVEAU: Stocker les informations sur les boîtes dans un champ caché
+      const packedBoxesInfoEl = document.getElementById('packed-boxes-info');
+      if (packedBoxesInfoEl && packedBoxes) {
+        packedBoxesInfoEl.value = JSON.stringify(packedBoxes);
+      }
       shippingRatesContainer.innerHTML = '';
       if (!rates || rates.length === 0) {
         shippingRatesContainer.innerHTML = '<p>Aucune option de livraison trouvée pour cette adresse.</p>';
@@ -544,6 +550,7 @@
                 // NOUVEAU: Envoyer les détails du service de livraison choisi
                 shippingService: selectedRateInput ? selectedRateInput.labels[0].dataset.serviceName : 'Cueillette en magasin',
                 shippingDeliveryDays: selectedRateInput ? selectedRateInput.dataset.totalDeliveryDays : null,
+                packedBoxes: JSON.parse(document.getElementById('packed-boxes-info').value || '[]'), // NOUVEAU: Envoyer la liste des boîtes
                 shippingRateId: selectedRateInput ? selectedRateInput.dataset.rateId : null // NOUVEAU: Envoyer l'ID du tarif choisi
               }
             });
