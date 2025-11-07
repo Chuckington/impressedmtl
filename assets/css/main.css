@@ -542,6 +542,13 @@ th { background:#f0f0f0; }
   color: #555;
 }
 
+/* NOUVEAU: Style pour la note de cueillette */
+.pickup-note {
+  font-size: 0.8em;
+  color: #555;
+  font-style: italic;
+}
+
 .order-summary p { margin-bottom: 8px; }
 .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 .section h3 {

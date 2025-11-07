@@ -405,7 +405,7 @@
         service: 'Cueillette en magasin (Pick-Up)',
         amount: 0.00,
         currency: 'CAD',
-        delivery_days: null // Pas de délai, ou on pourrait mettre "Sur rendez-vous"
+        delivery_days: 0 // On met 0 pour que le calcul (0 + 14) donne 14 jours
       };
       rates.unshift(pickupOption); // Ajoute l'option au tout début du tableau
 
@@ -414,6 +414,9 @@
         rateDiv.className = 'shipping-rate-option';
         // CORRECTION: Calculer le délai total en ajoutant les 14 jours de production
         const totalDeliveryDays = rate.delivery_days ? parseInt(rate.delivery_days, 10) + 14 : null;
+        // NOUVEAU: Ajouter une note spécifique pour la cueillette
+        const pickupNote = rate.id === 'pickup-free' 
+          ? `<span class="pickup-note">Des instructions suivront dans le courriel de confirmation.</span>` : '';
         rateDiv.innerHTML = `
           <input type="radio" id="rate-${rate.id}" name="shipping_rate" value="${rate.amount}" data-rate-id="${rate.id}" data-shipment-id="${shipmentId}" data-total-delivery-days="${totalDeliveryDays || ''}">
           <label for="rate-${rate.id}" data-service-name="${rate.service}">
@@ -421,6 +424,7 @@
               <span class="service-name">${rate.service}</span>
               ${totalDeliveryDays ? `<span class="delivery-days">(${totalDeliveryDays} jour(s) estimé(s))</span>` : ''}
             </div>
+            ${pickupNote}
             <span class="service-price">${rate.amount.toFixed(2)} $</span>
           </label>
         `;
