@@ -1038,9 +1038,6 @@ footer a.social-link svg {
   .hamburger-btn {
     order: 1; /* Met le hamburger à gauche */
   }
-  .header-title {
-    display: none; /* On cache le titre central pour faire de la place */
-  }
 
   /* NOUVEAU: Cacher le widget Trustpilot sur mobile */
   .header-trustpilot-widget {
