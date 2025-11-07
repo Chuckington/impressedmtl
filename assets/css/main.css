@@ -44,7 +44,6 @@ header {
   height: 60px; /* Taille ajustée */
   width: auto;
   vertical-align: middle;
-  filter: invert(1); /* NOUVEAU: Inverse les couleurs du logo (noir -> blanc) */
 }
 .header-actions #user-email {
   color: #fff; /* NOUVEAU: Assure que l'email de l'utilisateur est blanc */
@@ -72,7 +71,6 @@ header {
 }
 .header-icon-link img {
   height: 32px; /* Taille ajustée pour correspondre aux anciens boutons */
-  filter: invert(1); /* NOUVEAU: Inverse les couleurs des icônes (noir -> blanc) */
 }
 .header-title { /* Pour les pages qui ont un titre au centre */
   flex: 1; 
