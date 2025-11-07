@@ -16,7 +16,8 @@ header {
   position: sticky; 
   top: 0; 
   width: 100%; 
-  background: white; 
+  background: #000; /* NOUVEAU: Fond noir */
+  color: #fff; /* NOUVEAU: Texte blanc par défaut */
   display: flex; 
   align-items: center; 
   justify-content: space-between;
@@ -27,7 +28,7 @@ header {
 }
 /* NOUVEAU: Styles pour le menu hamburger (caché par défaut) */
 .header-nav-mobile { display: none; }
-.hamburger-btn { display: none; }
+.hamburger-btn { display: none; color: #fff; /* NOUVEAU: Icône blanche */ }
 .header-nav-links {
   display: flex;
   align-items: center;
@@ -43,6 +44,10 @@ header {
   height: 60px; /* Taille ajustée */
   width: auto;
   vertical-align: middle;
+  filter: invert(1); /* NOUVEAU: Inverse les couleurs du logo (noir -> blanc) */
+}
+.header-actions #user-email {
+  color: #fff; /* NOUVEAU: Assure que l'email de l'utilisateur est blanc */
 }
 .header-actions {
   display: flex;
@@ -67,6 +72,7 @@ header {
 }
 .header-icon-link img {
   height: 32px; /* Taille ajustée pour correspondre aux anciens boutons */
+  filter: invert(1); /* NOUVEAU: Inverse les couleurs des icônes (noir -> blanc) */
 }
 .header-title { /* Pour les pages qui ont un titre au centre */
   flex: 1; 
@@ -77,7 +83,7 @@ header {
   transform: translate(-50%, -50%);
 }
 .header-title h1 { font-size:1.8rem; }
-.header-title p { font-size:1rem; color:#555; margin-top:4px; }
+.header-title p { font-size:1rem; color:#eee; margin-top:4px; } /* NOUVEAU: Texte du sous-titre gris clair */
 
 /* --- Éléments Communs --- */
 .btn { 
