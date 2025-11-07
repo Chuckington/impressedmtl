@@ -21,7 +21,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays } = await req.json();
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays, shipmentId, shippingRateId } = await req.json();
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteRequested });
 
     // Initialiser le client admin Supabase (nécessaire pour l'enrichissement des données et la sauvegarde)
@@ -230,6 +230,43 @@ serve(async (req) => {
         }
       }
       
+      // --- NOUVEAU: Acheter l'étiquette de livraison si applicable ---
+      let shippingLabelUrl: string | null = null;
+      if (shipmentId && shippingRateId) {
+        console.log(`Tentative d'achat de l'étiquette pour l'envoi ${shipmentId} avec le tarif ${shippingRateId}`);
+        try {
+          const buyLabelResponse = await fetch(`https://api.easypost.com/v2/shipments/${shipmentId}/buy`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get("EASYPOST_API_KEY")}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              rate: { id: shippingRateId }
+            })
+          });
+
+          const buyLabelData = await buyLabelResponse.json();
+          if (buyLabelResponse.ok && buyLabelData.postage_label?.label_pdf_url) {
+            shippingLabelUrl = buyLabelData.postage_label.label_pdf_url;
+            console.log("Étiquette de livraison générée avec succès:", shippingLabelUrl);
+
+            // Mettre à jour la commande avec l'URL de l'étiquette
+            const { error: updateError } = await supabaseAdminClient
+              .from('orders')
+              .update({ shipping_label_url: shippingLabelUrl })
+              .eq('id', newOrderId);
+            
+            if (updateError) console.error("Erreur lors de la sauvegarde de l'URL de l'étiquette:", updateError);
+
+          } else {
+            console.error("Erreur lors de l'achat de l'étiquette EasyPost:", buyLabelData.error || 'Réponse invalide');
+          }
+        } catch (e) {
+          console.error("Erreur critique lors de l'appel pour acheter l'étiquette:", e);
+        }
+      }
+
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
         const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0, { cost: shippingCost, service: shippingService, days: shippingDeliveryDays });
