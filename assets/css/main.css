@@ -38,7 +38,7 @@ header {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 30px; /* Augmenter l'espace pour les nouveaux liens */
 }
 .header-logo img {
   height: 60px; /* Taille ajustée */
@@ -48,6 +48,19 @@ header {
 .header-actions #user-email {
   color: #fff; /* NOUVEAU: Assure que l'email de l'utilisateur est blanc */
 }
+
+/* NOUVEAU: Styles pour les liens de navigation du header sur desktop */
+.header-nav-desktop {
+  display: flex;
+  gap: 25px;
+}
+.header-nav-desktop a {
+  color: #fff;
+  text-decoration: underline;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -920,6 +933,29 @@ footer a.social-link svg {
   /* NOUVEAU: Assurer que la boîte d'offre prend toute la largeur sur mobile */
   #offer-info-box {
     width: 100% !important; /* CORRECTION: Forcer la largeur sur mobile */
+  }
+
+  /* --- Header & Navigation --- */
+  .header-nav-links {
+    display: none; /* Cache les liens sur desktop */
+  }
+  .hamburger-btn {
+    display: block; /* Affiche le bouton hamburger */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    z-index: 1002;
+    color: #fff; /* NOUVEAU: Assure que l'icône est blanche */
+  }
+  /* NOUVEAU: Cacher le bouton de retour sur mobile */
+  .header-back-btn {
+    display: none;
+  }
+
+  /* NOUVEAU: Cacher les liens de navigation desktop sur mobile */
+  .header-nav-desktop {
+    display: none;
   }
 
   /* --- Header & Navigation --- */
