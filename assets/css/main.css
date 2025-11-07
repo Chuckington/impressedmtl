@@ -107,10 +107,6 @@ header {
   font-weight: bold;
   text-align: center;
 }
-.header-announcement span {
-  display: block; /* Met chaque élément sur sa propre ligne */
-  line-height: 1.3;
-}
 
 /* --- Éléments Communs --- */
 .btn { 
