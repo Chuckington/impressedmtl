@@ -1038,6 +1038,10 @@ footer a.social-link svg {
   .hamburger-btn {
     order: 1; /* Met le hamburger à gauche */
   }
+  /* NOUVEAU: Cacher le message d'annonce sur mobile pour faire de la place */
+  .header-title {
+    display: none;
+  }
 
   /* NOUVEAU: Cacher le widget Trustpilot sur mobile */
   .header-trustpilot-widget {
