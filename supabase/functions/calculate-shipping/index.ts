@@ -100,7 +100,6 @@ serve(async (req) => {
     // Trier les boîtes de la plus grande à la plus petite pour la logique de sélection
     const availableBoxes = [
       { name: 'Enveloppe Poly', length: 19, width: 14.5, height: 1, volume: 19 * 14.5 * 1, cost: 1.21 }, // Dimensions en pouces
-      { name: 'Petite Boîte', length: 10, width: 8, height: 4, volume: 10 * 8 * 4, cost: 1.42 },
       { name: 'Grande Boîte', length: 18, width: 12, height: 10, volume: 18 * 12 * 10, cost: 3.27 },
     ];
     const sortedBoxes = [...availableBoxes].sort((a, b) => b.volume - a.volume); // Trier de la plus grande à la plus petite
