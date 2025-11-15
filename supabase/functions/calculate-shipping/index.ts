@@ -70,22 +70,37 @@ serve(async (req) => {
     }
     
     let totalWeightGrams = 0;
-    let totalVolumeCm3 = 0;
-    cart.forEach((item: { product_id: string; quantity: number; product_name: string }) => {
-      // CORRECTION: Gérer les produits V1 et V2
+
+    // --- NOUVELLE LOGIQUE DE CALCUL DE VOLUME AVEC COMPRESSIBILITÉ ---
+    const compressibilityFactor = 0.6; // Chaque article supplémentaire ne compte que pour 60% de son volume.
+
+    // 1. Créer une liste détaillée de chaque article individuel pour le tri
+    const allItems = cart.flatMap((item: { product_id: string; quantity: number; product_name: string }) => {
+      let details;
       if (item.product_id.startsWith('v2_')) {
         const productIdNumber = parseInt(item.product_id.replace('v2_', ''), 10);
-        const details = productsDetailsMap.get(productIdNumber) || { weight: 250, volume: 30*25*2 };
-        totalWeightGrams += details.weight * item.quantity;
-        totalVolumeCm3 += details.volume * item.quantity;
+        details = productsDetailsMap.get(productIdNumber) || { weight: 250, volume: 30*25*2 };
       } else {
-        // Pour les anciens produits (V1), on utilise un poids par défaut générique.
         const isHoodie = (item.product_name || '').toLowerCase().includes('hoodie');
-        const defaultWeight = isHoodie ? 500 : 250;
-        const defaultVolume = isHoodie ? 35*30*8 : 30*25*2;
-        totalWeightGrams += defaultWeight * item.quantity;
-        totalVolumeCm3 += defaultVolume * item.quantity;
+        details = {
+          weight: isHoodie ? 500 : 250,
+          volume: isHoodie ? 35*30*8 : 30*25*2
+        };
       }
+      // Créer une entrée pour chaque quantité (ex: 2 hoodies -> [hoodie, hoodie])
+      return Array(item.quantity).fill(details);
+    });
+
+    // 2. Trier les articles du plus volumineux au moins volumineux
+    allItems.sort((a, b) => b.volume - a.volume);
+
+    // 3. Calculer le poids total et le volume compressé
+    let totalVolumeCm3 = 0;
+    allItems.forEach((item, index) => {
+      totalWeightGrams += item.weight;
+      // Le premier article (le plus gros) compte pour 100%, les autres pour 60%
+      const effectiveVolume = index === 0 ? item.volume : item.volume * compressibilityFactor;
+      totalVolumeCm3 += effectiveVolume;
     });
 
     // Convertir en onces (oz) car c'est l'unité standard pour EasyPost
