@@ -74,9 +74,15 @@ serve(async (req) => {
     // --- NOUVELLE LOGIQUE DE CALCUL DE VOLUME AVEC COMPRESSIBILITÉ ---
     const compressibilityFactor = 0.6; // Chaque article supplémentaire ne compte que pour 60% de son volume.
 
+    // NOUVEAU: Définir un type pour les détails de chaque article
+    interface ItemDetails {
+      weight: number;
+      volume: number;
+    }
+
     // 1. Créer une liste détaillée de chaque article individuel pour le tri
-    const allItems = cart.flatMap((item: { product_id: string; quantity: number; product_name: string }) => {
-      let details;
+    const allItems: ItemDetails[] = cart.flatMap((item: { product_id: string; quantity: number; product_name: string }) => {
+      let details: ItemDetails;
       if (item.product_id.startsWith('v2_')) {
         const productIdNumber = parseInt(item.product_id.replace('v2_', ''), 10);
         details = productsDetailsMap.get(productIdNumber) || { weight: 250, volume: 30*25*2 };
@@ -92,11 +98,11 @@ serve(async (req) => {
     });
 
     // 2. Trier les articles du plus volumineux au moins volumineux
-    allItems.sort((a, b) => b.volume - a.volume);
+    allItems.sort((a: ItemDetails, b: ItemDetails) => b.volume - a.volume);
 
     // 3. Calculer le poids total et le volume compressé
     let totalVolumeCm3 = 0;
-    allItems.forEach((item, index) => {
+    allItems.forEach((item: ItemDetails, index: number) => {
       totalWeightGrams += item.weight;
       // Le premier article (le plus gros) compte pour 100%, les autres pour 60%
       const effectiveVolume = index === 0 ? item.volume : item.volume * compressibilityFactor;
