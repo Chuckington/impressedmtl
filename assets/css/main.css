@@ -518,6 +518,19 @@ th { background:#f0f0f0; }
   margin-bottom: 15px;
 }
 
+/* NOUVEAU: Styles pour la section de référence */
+.referral-section {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+}
+.referral-section h3 {
+  text-align: left;
+  border-bottom: none;
+  margin-bottom: 15px;
+}
+
 /* --- NOUVEAUX STYLES POUR LES OPTIONS DE LIVRAISON --- */
 .shipping-options {
   background-color: #f8f9fa;
@@ -1081,7 +1094,7 @@ footer a.social-link svg {
 
   /* --- Barre de commande (produit.html & produit2.html) --- */
   #order-summary {
-    position: static; /* Annule le sticky */
+    position: static; /* Annule le positionnement "sticky" du desktop */
     box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Ombre de carte normale */
     border-radius: 16px; /* Coins arrondis comme une carte */
     margin-top: 20px;
