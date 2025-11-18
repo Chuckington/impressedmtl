@@ -518,22 +518,22 @@
 
     // NOUVEAU: Fonction pour charger les vendeurs dans le menu déroulant
     async function loadReferralOptions() {
-      const sellersOptgroup = document.getElementById('sellers-optgroup');
-      if (!sellersOptgroup) return;
+      const sellerSelect = document.getElementById('seller-select');
+      if (!sellerSelect) return;
 
       const { data: sellers, error } = await supa
         .from('sellers')
         .select('name')
         .order('name', { ascending: true });
 
-      if (!error && sellers) {
-        sellers.forEach(seller => {
-          const option = document.createElement('option');
-          option.value = seller.name;
-          option.textContent = seller.name;
-          sellersOptgroup.appendChild(option);
-        });
-      }
+      if (error || !sellers) return;
+
+      sellers.forEach(seller => {
+        const option = document.createElement('option');
+        option.value = seller.name;
+        option.textContent = seller.name;
+        sellerSelect.appendChild(option);
+      });
     }
 
     async function initializeSquarePaymentForm() {
@@ -566,15 +566,6 @@
             return; // Arrêter si la validation échoue
           }
 
-          // NOUVEAU: Valider le choix de la source de référence
-          const referralSource = document.getElementById('referral-source-select').value;
-          if (!referralSource) {
-            formValidationErrorEl.textContent = 'Choisis comment tu as entendu parler de nous.';
-            formValidationErrorEl.style.display = 'block';
-            cardButton.disabled = false;
-            return;
-          }
-
           const result = await card.tokenize();
           if (result.status === 'OK') {
             const token = result.token;
@@ -584,6 +575,13 @@
             const { data: { user } } = await supa.auth.getUser(); // Récupérer l'utilisateur actuel
             // Simuler l'appel backend pour l'instant
             // Vous devrez créer une Supabase Edge Function nommée 'process-square-payment' par exemple
+            
+            // NOUVEAU: Déterminer la source de référence finale à envoyer
+            let finalReferralSource = document.getElementById('referral-source-main').value;
+            if (finalReferralSource === 'seller') {
+              finalReferralSource = document.getElementById('seller-select').value;
+            }
+
             const selectedRateInput = document.querySelector('input[name="shipping_rate"]:checked');
             const { data: paymentResponse, error: paymentError } = await supa.functions.invoke('process-square-payment', {
               body: {
@@ -604,7 +602,7 @@
                 shippingService: selectedRateInput ? selectedRateInput.labels[0].dataset.serviceName : 'Cueillette en magasin',
                 shippingDeliveryDays: selectedRateInput ? selectedRateInput.dataset.totalDeliveryDays : null,
                 packedBoxes: JSON.parse(document.getElementById('packed-boxes-info').value || '[]'), // NOUVEAU: Envoyer la liste des boîtes
-                referralSource: referralSource, // NOUVEAU: Envoyer la source de référence
+                referralSource: finalReferralSource, // NOUVEAU: Envoyer la source de référence finale
                 shippingRateId: selectedRateInput ? selectedRateInput.dataset.rateId : null // NOUVEAU: Envoyer l'ID du tarif choisi
               }
             });
@@ -677,18 +675,27 @@
     postalCodeInput.addEventListener('blur', getShippingRates);
 
     // --- NOUVELLE LOGIQUE DE VALIDATION EN TEMPS RÉEL ---
-    const mandatoryFields = ['email', 'fullName', 'address', 'city', 'postalCode', 'phone', 'referral-source-select'];
+    const mandatoryFields = ['email', 'fullName', 'address', 'city', 'postalCode', 'phone', 'referral-source-main'];
     const cardButton = document.getElementById('card-button');
+    const referralSourceMain = document.getElementById('referral-source-main');
+    const sellerSelectContainer = document.getElementById('seller-select-container');
+    const sellerSelect = document.getElementById('seller-select');
 
     function validateAllFields() {
       let allValid = true;
       for (const fieldId of mandatoryFields) {
         const field = document.getElementById(fieldId);
-        if (!field || !field.value.trim()) {
+        if (!field || field.value.trim() === '') {
           allValid = false;
           break;
         }
       }
+
+      // Validation supplémentaire si "Référé par un vendeur" est choisi
+      if (referralSourceMain.value === 'seller' && sellerSelect.value === '') {
+        allValid = false;
+      }
+
       cardButton.disabled = !allValid;
     }
 
@@ -698,6 +705,17 @@
         field.addEventListener('input', validateAllFields);
         field.addEventListener('change', validateAllFields); // Pour le <select>
       }
+    });
+    sellerSelect.addEventListener('change', validateAllFields);
+
+    // NOUVEAU: Afficher/cacher la liste des vendeurs
+    referralSourceMain.addEventListener('change', () => {
+      if (referralSourceMain.value === 'seller') {
+        sellerSelectContainer.style.display = 'block';
+      } else {
+        sellerSelectContainer.style.display = 'none';
+      }
+      validateAllFields(); // Revalider quand le choix principal change
     });
 
     // NOUVEAU: Écouteur pour le bouton du code promo
