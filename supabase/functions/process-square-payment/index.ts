@@ -21,7 +21,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays, shipmentId, shippingRateId, packedBoxes } = await req.json();
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays, shipmentId, shippingRateId, packedBoxes, referralSource } = await req.json();
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteRequested });
 
     // Initialiser le client admin Supabase (nécessaire pour l'enrichissement des données et la sauvegarde)
@@ -198,6 +198,16 @@ serve(async (req) => {
         return new Response(JSON.stringify({ success: true, paymentId: paymentId, orderNumber: null, error: "DB RPC returned invalid data" }), {
           status: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
+      }
+
+      // NOUVEAU: Mettre à jour la commande avec la source de référence
+      if (referralSource) {
+        const { error: referralError } = await supabaseAdminClient
+          .from('orders')
+          .update({ referral_source: referralSource })
+          .eq('id', newOrderId);
+        
+        if (referralError) console.error("Erreur lors de la sauvegarde de la source de référence:", referralError);
       }
 
       console.log(`Commande enregistrée et récupérée avec ID: ${newOrderId} et Numéro de Commande: #${newOrderNumber}`);

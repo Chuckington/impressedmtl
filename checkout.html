@@ -500,6 +500,26 @@
         await loadOrderSummary(); // Recalculer le total
     }
 
+    // NOUVEAU: Fonction pour charger les vendeurs dans le menu déroulant
+    async function loadReferralOptions() {
+      const sellersOptgroup = document.getElementById('sellers-optgroup');
+      if (!sellersOptgroup) return;
+
+      const { data: sellers, error } = await supa
+        .from('sellers')
+        .select('name')
+        .order('name', { ascending: true });
+
+      if (!error && sellers) {
+        sellers.forEach(seller => {
+          const option = document.createElement('option');
+          option.value = seller.name;
+          option.textContent = seller.name;
+          sellersOptgroup.appendChild(option);
+        });
+      }
+    }
+
     async function initializeSquarePaymentForm() {
       // IMPORTANT: Remplacez par votre ID d'application de PRODUCTION Square
       const SQUARE_APPLICATION_ID = 'sq0idp-PhZLJgo903hJONOYGnYnKg';
@@ -528,6 +548,15 @@
           if (!shippingDetails) {
             cardButton.disabled = false;
             return; // Arrêter si la validation échoue
+          }
+
+          // NOUVEAU: Valider le choix de la source de référence
+          const referralSource = document.getElementById('referral-source-select').value;
+          if (!referralSource) {
+            formValidationErrorEl.textContent = 'Choisis comment tu as entendu parler de nous.';
+            formValidationErrorEl.style.display = 'block';
+            cardButton.disabled = false;
+            return;
           }
 
           const result = await card.tokenize();
@@ -559,6 +588,7 @@
                 shippingService: selectedRateInput ? selectedRateInput.labels[0].dataset.serviceName : 'Cueillette en magasin',
                 shippingDeliveryDays: selectedRateInput ? selectedRateInput.dataset.totalDeliveryDays : null,
                 packedBoxes: JSON.parse(document.getElementById('packed-boxes-info').value || '[]'), // NOUVEAU: Envoyer la liste des boîtes
+                referralSource: referralSource, // NOUVEAU: Envoyer la source de référence
                 shippingRateId: selectedRateInput ? selectedRateInput.dataset.rateId : null // NOUVEAU: Envoyer l'ID du tarif choisi
               }
             });
@@ -625,6 +655,7 @@
     // Initialisation
     loadOrderSummary();
     initializeSquarePaymentForm();
+    loadReferralOptions(); // NOUVEAU: Charger les vendeurs
     
     // NOUVEAU: Déclencher le calcul de la livraison lorsque l'utilisateur quitte le champ du code postal
     postalCodeInput.addEventListener('blur', getShippingRates);
