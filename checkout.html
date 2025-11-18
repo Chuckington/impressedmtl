@@ -142,14 +142,14 @@
         <select id="referral-source-main" name="referral_source_main" required>
           <option value="" disabled selected>Sélectionne une option...</option>
           <option value="Instagram">Instagram</option>
-          <option value="seller">Référé par un vendeur</option>
+          <option value="seller">Référé par un représentant</option>
           <option value="Autre">Autre</option>
         </select>
       </div>
       <div id="seller-select-container" class="form-group full-width" style="display: none; margin-top: 15px;">
-        <label for="seller-select">Quel vendeur t'a référé ? <span style="color:red;">*</span></label>
+        <label for="seller-select">Quel représentant t'a référé ? <span style="color:red;">*</span></label>
         <select id="seller-select" name="seller_select">
-          <option value="" disabled selected>Sélectionne un vendeur...</option>
+          <option value="" disabled selected>Sélectionne un représentant...</option>
         </select>
       </div>
     </div>
@@ -525,8 +525,8 @@
 
     // NOUVEAU: Fonction pour charger les vendeurs dans le menu déroulant
     async function loadReferralOptions() {
-      const sellerSelect = document.getElementById('seller-select');
-      if (!sellerSelect) return;
+      const representativeSelect = document.getElementById('seller-select');
+      if (!representativeSelect) return;
 
       const { data: sellers, error } = await supa
         .from('sellers')
@@ -539,7 +539,7 @@
         const option = document.createElement('option');
         option.value = seller.name;
         option.textContent = seller.name;
-        sellerSelect.appendChild(option);
+        representativeSelect.appendChild(option);
       });
     }
 
@@ -676,7 +676,7 @@
     // Initialisation
     loadOrderSummary();
     initializeSquarePaymentForm();
-    loadReferralOptions(); // NOUVEAU: Charger les vendeurs
+    loadReferralOptions(); // NOUVEAU: Charger les représentants
     
     // NOUVEAU: Déclencher le calcul de la livraison lorsque l'utilisateur quitte le champ du code postal
     postalCodeInput.addEventListener('blur', getShippingRates);
@@ -698,7 +698,7 @@
         }
       }
 
-      // Validation supplémentaire si "Référé par un vendeur" est choisi
+      // Validation supplémentaire si "Référé par un représentant" est choisi
       if (referralSourceMain.value === 'seller' && sellerSelect.value === '') {
         allValid = false;
       }
@@ -715,7 +715,7 @@
     });
     sellerSelect.addEventListener('change', validateAllFields);
 
-    // NOUVEAU: Afficher/cacher la liste des vendeurs
+    // NOUVEAU: Afficher/cacher la liste des représentants
     referralSourceMain.addEventListener('change', () => {
       if (referralSourceMain.value === 'seller') {
         sellerSelectContainer.style.display = 'block';
