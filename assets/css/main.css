@@ -518,19 +518,6 @@ th { background:#f0f0f0; }
   margin-bottom: 15px;
 }
 
-/* NOUVEAU: Styles pour la section de référence */
-.referral-section {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 20px;
-}
-.referral-section h3 {
-  text-align: left;
-  border-bottom: none;
-  margin-bottom: 15px;
-}
-
 /* --- NOUVEAUX STYLES POUR LES OPTIONS DE LIVRAISON --- */
 .shipping-options {
   background-color: #f8f9fa;
