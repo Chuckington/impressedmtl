@@ -134,6 +134,21 @@
       <input type="hidden" id="packed-boxes-info">
     </div>
 
+    <!-- NOUVELLE SECTION POUR LA RÉFÉRENCE -->
+    <div class="section referral-section">
+      <h3>Comment as-tu entendu parler de nous ?</h3>
+      <div class="form-group full-width">
+        <select id="referral-source-select" name="referral_source" required>
+          <option value="" disabled selected>Sélectionne une option...</option>
+          <option value="Instagram">Instagram</option>
+          <optgroup id="sellers-optgroup" label="Référé par un vendeur :">
+            <!-- Les vendeurs seront ajoutés ici par JavaScript -->
+          </optgroup>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+    </div>
+
     <div class="section payment-form">
       <h3>Informations de paiement</h3>
       <form id="payment-form-square">
