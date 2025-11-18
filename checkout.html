@@ -675,13 +675,28 @@
     // NOUVEAU: Déclencher le calcul de la livraison lorsque l'utilisateur quitte le champ du code postal
     postalCodeInput.addEventListener('blur', getShippingRates);
 
-    // Ajouter des écouteurs pour effacer l'erreur de validation en tapant (incluant l'email)
-    ['fullName', 'address', 'city', 'postalCode', 'email'].forEach(id => {
-        document.getElementById(id).addEventListener('input', () => {
-            document.getElementById('form-validation-error').style.display = 'none';
-            // NOUVEAU: Réinitialiser les options de livraison si l'adresse change
-            shippingRatesContainer.innerHTML = '<p class="shipping-placeholder">Veuillez remplir votre adresse de livraison pour voir les options.</p>';
-        });
+    // --- NOUVELLE LOGIQUE DE VALIDATION EN TEMPS RÉEL ---
+    const mandatoryFields = ['email', 'fullName', 'address', 'city', 'postalCode', 'phone', 'referral-source-select'];
+    const cardButton = document.getElementById('card-button');
+
+    function validateAllFields() {
+      let allValid = true;
+      for (const fieldId of mandatoryFields) {
+        const field = document.getElementById(fieldId);
+        if (!field || !field.value.trim()) {
+          allValid = false;
+          break;
+        }
+      }
+      cardButton.disabled = !allValid;
+    }
+
+    mandatoryFields.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) {
+        field.addEventListener('input', validateAllFields);
+        field.addEventListener('change', validateAllFields); // Pour le <select>
+      }
     });
 
     // NOUVEAU: Écouteur pour le bouton du code promo
