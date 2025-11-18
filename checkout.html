@@ -139,13 +139,17 @@
     <div class="section referral-section">
       <h3>Comment as-tu entendu parler de nous ? <span style="color:red;">*</span></h3>
       <div class="form-group full-width">
-        <select id="referral-source-select" name="referral_source" required>
+        <select id="referral-source-main" name="referral_source_main" required>
           <option value="" disabled selected>Sélectionne une option...</option>
           <option value="Instagram">Instagram</option>
-          <optgroup id="sellers-optgroup" label="Référé par un vendeur :">
-            <!-- Les vendeurs seront ajoutés ici par JavaScript -->
-          </optgroup>
+          <option value="seller">Référé par un vendeur</option>
           <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div id="seller-select-container" class="form-group full-width" style="display: none; margin-top: 15px;">
+        <label for="seller-select">Quel vendeur t'a référé ? <span style="color:red;">*</span></label>
+        <select id="seller-select" name="seller_select">
+          <option value="" disabled selected>Sélectionne un vendeur...</option>
         </select>
       </div>
     </div>
