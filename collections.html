@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Collections – Impressed MTL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Supabase UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Lien vers la feuille de style principale -->
+  <link rel="stylesheet" href="assets/css/main.css">
+  <!-- Lien vers la feuille de style du chatbot -->
+  <link rel="stylesheet" href="assets/css/chatbot.css">
+  <!-- === FAVICON === -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <!-- =============== -->
+</head>
+<body>
+  <header>
+    <button class="hamburger-btn" id="hamburger-btn">☰</button>
+    <div class="header-left">
+      <a href="index.html" class="header-logo">
+        <img src="assets/logo2.png" alt="Logo Impressed MTL">
+      </a>
+      <nav class="header-nav-desktop">
+        <a href="inventaire.html">Inventaire</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+    <div class="header-title">
+      <div class="header-announcement">
+        <span>On livre partout au Canada! 🇨🇦</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="panier.html" class="header-icon-link">
+        <img src="assets/cart-icon.png" alt="Panier">
+      </a>
+      <button id="auth-button" class="header-icon-link">
+        <img src="assets/login-icon.png" alt="Compte">
+      </button>
+      <span id="user-email" style="margin-left: 10px; color:#fff; font-size: 0.9rem;"></span>
+    </div>
+  </header>
+  <nav class="header-nav-mobile" id="mobile-nav">
+    <button class="close-nav-btn" id="close-nav-btn">&times;</button>
+    <a href="index.html">Accueil</a>
+    <a href="inventaire.html">Inventaire</a>
+    <a href="panier.html">Panier</a>
+    <a href="about.html">À propos</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="container">
+    <h1 class="section-title">Nos Collections</h1>
+    <div id="collections-grid" class="grid">
+      <p style="grid-column:1/-1; text-align:center;">Chargement des collections...</p>
+    </div>
+  </div>
+
+  <!-- NOUVEAU: Charger le client Supabase en premier -->
+  <script src="assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- Logique d'authentification (identique aux autres pages) ---
+      const authBtn = document.getElementById('auth-button');
+      const userEmailEl = document.getElementById('user-email');
+
+      async function updateAuthUI() {
+        const { data: { user } } = await supa.auth.getUser();
+        if (user) {
+          userEmailEl.textContent = user.email;
+        } else {
+          userEmailEl.textContent = '';
+        }
+      }
+
+      authBtn.addEventListener('click', async () => {
+        const { data: { user } } = await supa.auth.getUser();
+        if (user) {
+          await supa.auth.signOut();
+        } else {
+          window.location.href = 'login.html';
+        }
+        updateAuthUI();
+      });
+
+      supa.auth.onAuthStateChange(updateAuthUI);
+      updateAuthUI();
+
+      // --- Logique de chargement des collections ---
+      async function loadCollections() {
+        const gridContainer = document.getElementById('collections-grid');
+        
+        // Récupérer les collections actives depuis la table 'collections'
+        const { data: collections, error } = await supa
+          .from('collections')
+          .select('*')
+          .eq('is_active', true)
+          .order('name', { ascending: true });
+
+        if (error) {
+          gridContainer.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement des collections.</p>';
+          console.error('Erreur Supabase:', error);
+          return;
+        }
+
+        if (!collections || collections.length === 0) {
+          gridContainer.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Aucune collection disponible pour le moment.</p>';
+          return;
+        }
+
+        gridContainer.innerHTML = ''; // Vider le message de chargement
+        collections.forEach(collection => {
+          const card = document.createElement('a');
+          // Le lien pointe vers une future page de détail de la collection
+          card.href = `collection.html?slug=${collection.slug}`;
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="card-image">
+              <img src="${collection.logo_url || 'https://placehold.co/400x300/E7E7E7/A9A9A9?text=Logo'}" alt="Logo de ${collection.name}">
+            </div>
+            <div class="card-content">
+              <h3>${collection.name}</h3>
+              <p>${collection.description || 'Aucune description disponible.'}</p>
+            </div>`;
+          gridContainer.appendChild(card);
+        });
+      }
+
+      // Lancer le chargement des collections
+      loadCollections();
+
+      // --- Logique du menu Hamburger (identique aux autres pages) ---
+      const hamburgerBtn = document.getElementById('hamburger-btn');
+      const mobileNav = document.getElementById('mobile-nav');
+      const closeNavBtn = document.getElementById('close-nav-btn');
+
+      hamburgerBtn.addEventListener('click', () => {
+        mobileNav.classList.add('is-active');
+      });
+
+      closeNavBtn.addEventListener('click', () => {
+        mobileNav.classList.remove('is-active');
+      });
+    });
+  </script>
+  <!-- Script pour le chatbot -->
+  <script src="assets/js/chatbot.js"></script>
+</body>
+</html>
