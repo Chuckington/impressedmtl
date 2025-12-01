@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Collections – Impressed MTL</title>
+  <title>Collection – Impressed MTL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Supabase UMD -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -53,10 +53,16 @@
     <a href="contact.html">Contact</a>
   </nav>
 
+  <!-- NOUVEAU: Section pour la bannière et les infos de la collection -->
+  <div id="collection-header" class="container" style="text-align: center; display: none;">
+    <img id="collection-banner" src="" alt="Bannière de la collection" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px; margin-bottom: 20px;">
+    <h1 id="collection-name" class="section-title" style="margin-top: 0;">Chargement...</h1>
+    <p id="collection-description" style="max-width: 700px; margin: 0 auto 40px;"></p>
+  </div>
+
   <div class="container">
-    <h1 class="section-title">Nos Collections</h1>
-    <div id="collections-grid" class="grid">
-      <p style="grid-column:1/-1; text-align:center;">Chargement des collections...</p>
+    <div id="products-grid" class="grid">
+      <p style="grid-column:1/-1; text-align:center;">Chargement des produits...</p>
     </div>
   </div>
 
@@ -90,48 +96,86 @@
       supa.auth.onAuthStateChange(updateAuthUI);
       updateAuthUI();
 
-      // --- Logique de chargement des collections ---
-      async function loadCollections() {
-        const gridContainer = document.getElementById('collections-grid');
-        
-        // Récupérer les collections actives depuis la table 'collections'
-        const { data: collections, error } = await supa
+      // --- NOUVELLE LOGIQUE DE LA PAGE DE DÉTAIL D'UNE COLLECTION ---
+      async function loadCollectionPage() {
+        const collectionHeaderEl = document.getElementById('collection-header');
+        const collectionNameEl = document.getElementById('collection-name');
+        const collectionDescriptionEl = document.getElementById('collection-description');
+        const collectionBannerEl = document.getElementById('collection-banner');
+        const productsGridEl = document.getElementById('products-grid');
+
+        // 1. Lire le 'slug' depuis l'URL
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('slug');
+
+        if (!slug) {
+          productsGridEl.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Aucune collection spécifiée.</p>';
+          return;
+        }
+
+        // 2. Récupérer les informations de la collection
+        const { data: collection, error: collectionError } = await supa
           .from('collections')
           .select('*')
-          .eq('is_active', true)
-          .order('name', { ascending: true });
+          .eq('slug', slug)
+          .single(); // .single() pour récupérer un seul objet
 
-        if (error) {
-          gridContainer.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement des collections.</p>';
-          console.error('Erreur Supabase:', error);
+        if (collectionError || !collection) {
+          productsGridEl.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Collection non trouvée.</p>';
+          console.error('Erreur Supabase (collection):', collectionError);
           return;
         }
 
-        if (!collections || collections.length === 0) {
-          gridContainer.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Aucune collection disponible pour le moment.</p>';
+        // 3. Afficher l'en-tête de la collection
+        document.title = `${collection.name} – Impressed MTL`; // Mettre à jour le titre de la page
+        collectionHeaderEl.style.display = 'block';
+        collectionNameEl.textContent = collection.name;
+        collectionDescriptionEl.textContent = collection.description;
+        if (collection.banner_url) {
+          collectionBannerEl.src = collection.banner_url;
+        } else {
+          collectionBannerEl.style.display = 'none'; // Cacher la bannière si elle n'existe pas
+        }
+
+        // 4. Récupérer les produits associés à cette collection
+        const { data: products, error: productsError } = await supa
+          .from('products')
+          .select('*')
+          .eq('collection_id', collection.id) // Filtrer par l'ID de la collection
+          .eq('is_active', true);
+        
+        if (productsError) {
+          productsGridEl.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:red;">Erreur de chargement des produits.</p>';
+          console.error('Erreur Supabase (produits):', productsError);
           return;
         }
 
-        gridContainer.innerHTML = ''; // Vider le message de chargement
-        collections.forEach(collection => {
+        if (!products || products.length === 0) {
+          productsGridEl.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Aucun produit dans cette collection pour le moment.</p>';
+          return;
+        }
+
+        // 5. Afficher les produits dans la grille
+        productsGridEl.innerHTML = ''; // Vider le message de chargement
+        products.forEach(product => {
           const card = document.createElement('a');
-          // Le lien pointe vers une future page de détail de la collection
-          card.href = `collection.html?slug=${collection.slug}`;
+          // Le lien pointe vers la page de personnalisation du produit
+          card.href = `produit2.html?id=${product.id}`;
           card.className = 'card';
           card.innerHTML = `
             <div class="card-image">
-              <img src="${collection.logo_url || 'https://placehold.co/400x300/E7E7E7/A9A9A9?text=Logo'}" alt="Logo de ${collection.name}">
+              <img src="${product.asset_thumbnail || 'https://placehold.co/400x300/E7E7E7/A9A9A9?text=Image'}" alt="Image de ${product.name}">
             </div>
             <div class="card-content">
-              <h3>${collection.name}</h3>
-              <p>${collection.description || 'Aucune description disponible.'}</p>
+              <h3>${product.name}</h3>
+              <p>À partir de ${product.base_price.toFixed(2)}$</p>
             </div>`;
-          gridContainer.appendChild(card);
+          productsGridEl.appendChild(card);
         });
       }
 
-      // Lancer le chargement des collections
-      loadCollections();
+      // Lancer le chargement de la page
+      loadCollectionPage();
 
       // --- Logique du menu Hamburger (identique aux autres pages) ---
       const hamburgerBtn = document.getElementById('hamburger-btn');
