@@ -344,6 +344,7 @@ interface PersonalizationDetail {
   spot_price: number;
   image_url?: string;
   view?: string;
+  technique?: string; // NOUVEAU: Pour identifier la broderie
 }
 
 interface CartItem {
@@ -388,11 +389,66 @@ interface ShippingDetailsForEmail {
   boxes?: string[]; // NOUVEAU: La liste des boîtes est optionnelle
 }
 
+// NOUVEAU: Grille de prix pour la broderie (Identique au frontend)
+const embroideryPriceGrid = [
+  { min: 6, max: 11, minPrice: 19, maxPrice: 31 },
+  { min: 12, max: 35, minPrice: 16, maxPrice: 27 },
+  { min: 36, max: 143, minPrice: 14, maxPrice: 25 },
+  { min: 144, max: 299, minPrice: 13, maxPrice: 24 },
+  { min: 300, max: 999999, minPrice: 12, maxPrice: 23 }
+];
+
 // Fonction pour formater le reçu en HTML
 function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteRequested: boolean, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number, shippingDetails: ShippingDetailsForEmail, isQuoteRequest: boolean = false): string {
+  
+  // 1. Calculer les volumes de broderie pour déterminer les tarifs
+  let clothingEmbroideryCount = 0;
+  let headwearEmbroideryCount = 0;
+
+  if (isQuoteRequest) {
+    cartItems.forEach(item => {
+      const hasEmbroidery = (item.personalizations || []).some(p => p.technique === 'embroidery');
+      if (hasEmbroidery) {
+        const isHeadwear = (item.product_id && item.product_id.includes('tuque')) || 
+                           (item.product_name && (item.product_name.toLowerCase().includes('tuque') || item.product_name.toLowerCase().includes('casquette')));
+        if (isHeadwear) headwearEmbroideryCount += item.quantity;
+        else clothingEmbroideryCount += item.quantity;
+      }
+    });
+  }
+
+  const getEmbroideryRate = (count: number) => {
+    if (count < 6) return embroideryPriceGrid[0];
+    return embroideryPriceGrid.find(r => count >= r.min && count <= r.max) || embroideryPriceGrid[embroideryPriceGrid.length - 1];
+  };
+
+  const clothingEmbroideryRate = getEmbroideryRate(clothingEmbroideryCount);
+  const headwearEmbroideryRate = getEmbroideryRate(headwearEmbroideryCount);
+
+  // 2. Générer le HTML des articles et calculer les sous-totaux Min/Max
+  let minSubTotal = 0;
+  let maxSubTotal = 0;
+
   const itemsHtml = (cartItems || []).map(item => {
+    let itemMinExtra = 0;
+    let itemMaxExtra = 0;
+
     const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
-      let detail = `<li><strong>${p.spot_label}</strong> (+${p.spot_price.toFixed(2)}$)<br>`;
+      let priceDisplay = '';
+      
+      if (isQuoteRequest && p.technique === 'embroidery') {
+        const isHeadwear = (item.product_id && item.product_id.includes('tuque')) || (item.product_name && item.product_name.toLowerCase().includes('tuque'));
+        const rate = isHeadwear ? headwearEmbroideryRate : clothingEmbroideryRate;
+        itemMinExtra += rate.minPrice;
+        itemMaxExtra += rate.maxPrice;
+        priceDisplay = `(Broderie: ${rate.minPrice.toFixed(2)}$ - ${rate.maxPrice.toFixed(2)}$)`;
+      } else {
+        itemMinExtra += p.spot_price;
+        itemMaxExtra += p.spot_price;
+        priceDisplay = `(+${p.spot_price.toFixed(2)}$)`;
+      }
+
+      let detail = `<li><strong>${p.spot_label}</strong> ${priceDisplay}<br>`;
       
       // Afficher le design seul
       if (p.image_url) {
@@ -417,6 +473,9 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     
     const itemOptionsHtml = options.length > 0 ? `<li>Options: ${options.join(', ')}</li>` : '';
 
+    minSubTotal += (item.base_price + itemMinExtra) * item.quantity;
+    maxSubTotal += (item.base_price + itemMaxExtra) * item.quantity;
+
     return `
       <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
         <strong>${item.product_name} x ${item.quantity}</strong><br>
@@ -428,13 +487,11 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     `;
   }).join('');
 
-  const subTotal = (cartItems || []).reduce((sum, item) => {
-    const itemExtraCost = (item.personalizations || []).reduce((pSum, p) => pSum + p.spot_price, 0);
-    return sum + (item.quantity * (item.base_price + itemExtraCost));
-  }, 0);
-
+  // 3. Calculer les totaux finaux
   const maquetteFee = maquetteRequested ? 5 : 0;
-  const totalBeforePromo = subTotal - specialOfferDiscount + fixedFee + maquetteFee;
+  // On utilise le max pour le calcul du rabais promo si c'est un pourcentage (estimation haute)
+  const totalBeforePromo = maxSubTotal - specialOfferDiscount + fixedFee + maquetteFee;
+  
   let promoDiscountValue = 0;
   if (promoCode) {
       if (promoCode.discount_type === 'percentage') {
@@ -447,7 +504,16 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
       }
   }
 
-  const totalAmount = (totalAmountInCents / 100).toFixed(2);
+  const shippingCost = shippingDetails.cost || 0;
+  const totalMin = minSubTotal - specialOfferDiscount + fixedFee + maquetteFee - promoDiscountValue + shippingCost;
+  const totalMax = maxSubTotal - specialOfferDiscount + fixedFee + maquetteFee - promoDiscountValue + shippingCost;
+
+  let totalDisplay = '';
+  if (isQuoteRequest && totalMin !== totalMax) {
+    totalDisplay = `${totalMin.toFixed(2)}$ – ${totalMax.toFixed(2)}$`;
+  } else {
+    totalDisplay = `${(totalAmountInCents / 100).toFixed(2)}$`;
+  }
 
   const promoCodeHtml = promoCode ? `
     <p style="color: #28a745;">
@@ -456,7 +522,6 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
   ` : '';
 
   // NOUVEAU: Section pour les détails de la livraison
-  const shippingCost = shippingDetails.cost || 0;
   // NOUVEAU: Logique conditionnelle pour le message de livraison
   const packedBoxesHtml = shippingDetails.boxes && shippingDetails.boxes.length > 0
     ? `<p style="font-size: 0.9em; color: #555;"><i>Emballage prévu : ${shippingDetails.boxes.join(', ')}</i></p>`
@@ -472,23 +537,39 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
 
   // Textes dynamiques selon le type (Commande vs Soumission)
   const titleText = isQuoteRequest ? `Nous avons bien reçu ta demande, ${shippingInfo.fullName} !` : `Merci pour ta commande, ${shippingInfo.fullName} !`;
-  const introText = isQuoteRequest ? `Voici le récapitulatif de ta demande de soumission <strong>#${orderNumber}</strong>. Nous allons valider les détails techniques (broderie) et t'envoyer la facture finale sous peu.` : `Voici le récapitulatif de ta commande <strong>#${orderNumber}</strong> :`;
+  
+  const introText = isQuoteRequest 
+    ? `<div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; border: 1px solid #ffeeba; margin-bottom: 20px;">
+         <strong>Demande de soumission #${orderNumber} reçue</strong><br><br>
+         Ceci n'est pas une facture finale. Ta commande contient des articles en broderie qui nécessitent une validation technique.<br><br>
+         <strong>Prochaines étapes :</strong>
+         <ol style="margin-top: 10px; padding-left: 20px;">
+           <li>Notre équipe va analyser la complexité de ton logo.</li>
+           <li>Nous ajusterons le prix final selon la grille tarifaire.</li>
+           <li>Tu recevras un devis/facture final par courriel <strong>dans les plus brefs délais (généralement sous 24h)</strong>.</li>
+           <li>La production sera lancée une fois le paiement du solde effectué.</li>
+         </ol>
+       </div>
+       <p>Voici le récapitulatif de ta demande :</p>` 
+    : `<p>Voici le récapitulatif de ta commande <strong>#${orderNumber}</strong> :</p>`;
+
   const totalLabel = isQuoteRequest ? `Total estimé:` : `Total payé:`;
+  const subTotalDisplay = isQuoteRequest && minSubTotal !== maxSubTotal ? `${minSubTotal.toFixed(2)}$ – ${maxSubTotal.toFixed(2)}$` : `${minSubTotal.toFixed(2)}$`;
 
   return `
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
         <h2>${titleText}</h2>
-        <p>${introText}</p>
+        ${introText}
         <h3>Articles:</h3>
         ${itemsHtml}
-        <p>Sous-total: ${subTotal.toFixed(2)}$</p>
+        <p>Sous-total: ${subTotalDisplay}</p>
         ${specialOfferDiscount > 0 ? `<p style="color: #28a745;">Rabais Offre Spéciale: -${specialOfferDiscount.toFixed(2)}$</p>` : ''}
         ${fixedFee > 0 ? `<p>Frais de préparation: ${fixedFee.toFixed(2)}$</p>` : ''}
         <p>Maquette demandée: <strong>${maquetteRequested ? 'Oui' : 'Non'}</strong> (+${maquetteFee.toFixed(2)}$)</p>
         ${shippingHtml}
         ${promoCodeHtml}
-        <h3>${totalLabel} ${totalAmount}$ (Taxes incluses)</h3>
+        <h3>${totalLabel} ${totalDisplay} (Taxes incluses)</h3>
         <h3>Adresse de livraison:</h3>
         <p>
           ${shippingInfo.fullName}<br>
