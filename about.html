@@ -16,6 +16,64 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
   <!-- =============== -->
+  <style>
+    /* Styles pour l'accordéon */
+    .accordion-item {
+      border-bottom: 1px solid #eee;
+      margin-bottom: 10px;
+    }
+    .accordion-header {
+      background-color: #fff;
+      color: #333;
+      cursor: pointer;
+      padding: 18px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      transition: 0.4s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 8px;
+    }
+    .accordion-header.active, .accordion-header:hover {
+      background-color: #f9f9f9;
+    }
+    .accordion-header:after {
+      content: '\002B'; /* Signe Plus */
+      color: #777;
+      font-weight: bold;
+      float: right;
+      margin-left: 5px;
+      font-size: 1.5rem;
+    }
+    .accordion-header.active:after {
+      content: "\2212"; /* Signe Moins */
+    }
+    .accordion-content {
+      padding: 0 18px;
+      background-color: white;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease-out;
+      border-radius: 0 0 8px 8px;
+    }
+    /* Ajustements pour le contenu existant dans l'accordéon */
+    .accordion-content .intro-text, 
+    .accordion-content .faq-section {
+      margin-top: 0;
+      border-top: none;
+      padding-top: 20px;
+      padding-bottom: 20px;
+      text-align: left;
+    }
+    .accordion-content h2 {
+      display: none; /* On cache les anciens titres h2 car ils sont maintenant dans les boutons */
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -57,155 +115,192 @@
 
   <div class="about-container">
     <img src="assets/logo2.png" alt="Logo Impressed MTL" class="about-logo">
-    <div class="intro-text">
-      <p>Bienvenue chez Impressed!</p>
-      <p>On est deux amis de Montréal, passionnés par la création et le design. Au départ, on voulait lancer notre propre marque de vêtements. Puis on s’est dit qu’on pouvait aller plus loin : donner à tout le monde la possibilité de s’exprimer à travers ce qu’il porte.</p>
-      <p>C’est cette idée qui nous a motivés à créer Impressed. Un atelier simple, local et accessible, où tu peux transformer une idée, un logo ou un visuel en une pièce de vêtement qui te ressemble.</p>
-      <p>Nos vêtements s’adaptent à toutes les occasions : que ce soit pour le quotidien, un projet personnel, le travail, une équipe, un événement ou simplement pour offrir un cadeau, ils sont pensés pour être confortables, durables et polyvalents.</p>
-      <p>On mise sur des vêtements bien faits, agréables à porter et toujours fidèles à ton style. Notre objectif est d’offrir une expérience fluide, transparente et toujours à la hauteur de tes attentes.</p>
-    </div>
+    <!-- DÉBUT DE L'ACCORDÉON -->
+    <div class="accordion">
+      
+      <!-- 1. Histoire -->
+      <div class="accordion-item">
+        <button class="accordion-header">Histoire</button>
+        <div class="accordion-content">
+          <div class="intro-text">
+            <p>Bienvenue chez Impressed!</p>
+            <p>On est deux amis de Montréal, passionnés par la création et le design. Au départ, on voulait lancer notre propre marque de vêtements. Puis on s’est dit qu’on pouvait aller plus loin : donner à tout le monde la possibilité de s’exprimer à travers ce qu’il porte.</p>
+            <p>C’est cette idée qui nous a motivés à créer Impressed. Un atelier simple, local et accessible, où tu peux transformer une idée, un logo ou un visuel en une pièce de vêtement qui te ressemble.</p>
+            <p>Nos vêtements s’adaptent à toutes les occasions : que ce soit pour le quotidien, un projet personnel, le travail, une équipe, un événement ou simplement pour offrir un cadeau, ils sont pensés pour être confortables, durables et polyvalents.</p>
+            <p>On mise sur des vêtements bien faits, agréables à porter et toujours fidèles à ton style. Notre objectif est d’offrir une expérience fluide, transparente et toujours à la hauteur de tes attentes.</p>
+          </div>
+        </div>
+      </div>
 
-    <div class="faq-section"> <!-- Utilisation de la même classe pour un style cohérent -->
-      <h2>Nos valeurs guident chacune de nos décisions :</h2>
-      <div class="faq-item">
-        <h4>Inclusion</h4>
-        <p>Chez nous, tout le monde a sa place. On veut que chaque personne puisse créer et s’exprimer librement, peu importe son style, ses origines ou son parcours.</p>
+      <!-- 2. Nos valeurs -->
+      <div class="accordion-item">
+        <button class="accordion-header">Nos valeurs</button>
+        <div class="accordion-content">
+          <div class="faq-section">
+            <p style="margin-bottom: 20px; font-weight: bold;">Nos valeurs guident chacune de nos décisions :</p>
+            <div class="faq-item">
+              <h4>Inclusion</h4>
+              <p>Chez nous, tout le monde a sa place. On veut que chaque personne puisse créer et s’exprimer librement, peu importe son style, ses origines ou son parcours.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Qualité</h4>
+              <p>On accorde une vraie importance aux détails. Chaque pièce est choisie et préparée avec soin pour qu’elle reste belle et agréable à porter longtemps.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Authenticité</h4>
+              <p>On fait les choses simplement, sans artifices. On préfère être honnêtes, clairs et cohérents dans ce qu’on dit et ce qu’on livre.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Confiance</h4>
+              <p>On croit aux relations humaines avant tout. Si tu commandes chez nous, tu peux compter sur un suivi honnête, une communication directe et une réelle volonté de bien faire.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Engagement</h4>
+              <p>On prend à cœur chaque commande, qu’elle soit petite ou grande. Ce qu’on fait, on le fait sérieusement, avec respect pour ton projet et pour le travail bien fait.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="faq-item">
-        <h4>Qualité</h4>
-        <p>On accorde une vraie importance aux détails. Chaque pièce est choisie et préparée avec soin pour qu’elle reste belle et agréable à porter longtemps.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Authenticité</h4>
-        <p>On fait les choses simplement, sans artifices. On préfère être honnêtes, clairs et cohérents dans ce qu’on dit et ce qu’on livre.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Confiance</h4>
-        <p>On croit aux relations humaines avant tout. Si tu commandes chez nous, tu peux compter sur un suivi honnête, une communication directe et une réelle volonté de bien faire.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Engagement</h4>
-        <p>On prend à cœur chaque commande, qu’elle soit petite ou grande. Ce qu’on fait, on le fait sérieusement, avec respect pour ton projet et pour le travail bien fait.</p>
-      </div>
-    </div>
 
-    <div class="faq-section">
-      <h2>Foire aux questions</h2>
-      <div class="faq-item">
-        <h4>Comment commander un vêtement personnalisé ?</h4>
-        <p>C'est simple ! Va sur la page "Inventaire", clique sur le produit qui t'intéresse, puis utilise notre outil de personnalisation pour choisir tes emplacements et téléverser tes designs. Finalise en choisissant la couleur, la quantité et les tailles, puis ajoute au panier !</p>
+      <!-- 3. Foire aux questions -->
+      <div class="accordion-item">
+        <button class="accordion-header">Foire aux questions</button>
+        <div class="accordion-content">
+          <div class="faq-section">
+            <div class="faq-item">
+              <h4>Comment commander un vêtement personnalisé ?</h4>
+              <p>C'est simple ! Va sur la page "Inventaire", clique sur le produit qui t'intéresse, puis utilise notre outil de personnalisation pour choisir tes emplacements et téléverser tes designs. Finalise en choisissant la couleur, la quantité et les tailles, puis ajoute au panier !</p>
+            </div>
+            <div class="faq-item">
+              <h4>Quels sont les délais et les options de livraison ?</h4>
+              <p>Notre délai de production est d'environ 10 jours ouvrables. À cela s'ajoute le délai de livraison. Nous livrons maintenant partout au Canada avec Postes Canada et plusieurs options (standard, express, etc.) te seront proposées sur la page de paiement. Tu peux aussi choisir l'option "Cueillette en magasin" qui est gratuite.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Puis-je voir un aperçu de ma commande avant l'impression ?</h4>
+              <p>Oui, absolument. Sur la page du panier, tu peux cocher l'option "Demander une maquette" pour un frais de 5$. Nous t'enverrons alors un aperçu visuel par courriel pour que tu puisses tout valider avant qu'on lance la production.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Que se passe-t-il si la qualité de mon image n'est pas bonne ?</h4>
+              <p>Pas d'inquiétude. Chaque commande est vérifiée manuellement par un membre de notre équipe. Si nous avons le moindre doute sur la qualité de ton image ou sa compatibilité avec le vêtement, nous te contacterons directement pour trouver une solution.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Est-ce que le nombre de couleurs dans mon design change le prix ?</h4>
+              <p>Non, le nombre de couleurs dans ton design n'a aucun impact sur le prix final de la personnalisation.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Quelle technique d'impression utilisez-vous ?</h4>
+              <p>Pour l'instant, notre seule technique est la presse à chaud, ce qui est idéal pour des designs colorés et des commandes de toutes tailles. Nous prévoyons d'ajouter la broderie et la sérigraphie dans le futur.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Quelle est la taille approximative des designs ?</h4>
+              <p>Un petit design (comme sur la poitrine) mesure environ 3x3 pouces. Un gros design (placé devant ou dans le dos) mesure environ 10x10 pouces. Ces tailles sont des standards, mais peuvent être ajustées au besoin lors de la personnalisation.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Avez-vous des offres pour les commandes en grande quantité ?</h4>
+              <p>Oui ! Nous avons des offres spéciales pour les commandes de 20 unités ou plus sur nos T-Shirts de base et nos T-Shirts Premium (avec un design au dos et sur la poitrine). Le rabais est appliqué automatiquement dans le panier lorsque les conditions sont remplies.</p>
+            </div>
+            <div class="faq-item">
+              <h4>Je cherche un produit qui n'est pas dans votre inventaire (ex: hoodies pour enfants), est-ce possible ?</h4>
+              <p>On est toujours ouverts à de nouveaux projets ! Le mieux est de nous envoyer un message via notre page de contact en expliquant ton besoin, et on verra ce qu'on peut faire pour toi.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="faq-item">
-        <h4>Quels sont les délais et les options de livraison ?</h4>
-        <p>Notre délai de production est d'environ 10 jours ouvrables. À cela s'ajoute le délai de livraison. Nous livrons maintenant partout au Canada avec Postes Canada et plusieurs options (standard, express, etc.) te seront proposées sur la page de paiement. Tu peux aussi choisir l'option "Cueillette en magasin" qui est gratuite.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Puis-je voir un aperçu de ma commande avant l'impression ?</h4>
-        <p>Oui, absolument. Sur la page du panier, tu peux cocher l'option "Demander une maquette" pour un frais de 5$. Nous t'enverrons alors un aperçu visuel par courriel pour que tu puisses tout valider avant qu'on lance la production.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Que se passe-t-il si la qualité de mon image n'est pas bonne ?</h4>
-        <p>Pas d'inquiétude. Chaque commande est vérifiée manuellement par un membre de notre équipe. Si nous avons le moindre doute sur la qualité de ton image ou sa compatibilité avec le vêtement, nous te contacterons directement pour trouver une solution.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Est-ce que le nombre de couleurs dans mon design change le prix ?</h4>
-        <p>Non, le nombre de couleurs dans ton design n'a aucun impact sur le prix final de la personnalisation.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Quelle technique d'impression utilisez-vous ?</h4>
-        <p>Pour l'instant, notre seule technique est la presse à chaud, ce qui est idéal pour des designs colorés et des commandes de toutes tailles. Nous prévoyons d'ajouter la broderie et la sérigraphie dans le futur.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Quelle est la taille approximative des designs ?</h4>
-        <p>Un petit design (comme sur la poitrine) mesure environ 3x3 pouces. Un gros design (placé devant ou dans le dos) mesure environ 10x10 pouces. Ces tailles sont des standards, mais peuvent être ajustées au besoin lors de la personnalisation.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Avez-vous des offres pour les commandes en grande quantité ?</h4>
-        <p>Oui ! Nous avons des offres spéciales pour les commandes de 20 unités ou plus sur nos T-Shirts de base et nos T-Shirts Premium (avec un design au dos et sur la poitrine). Le rabais est appliqué automatiquement dans le panier lorsque les conditions sont remplies.</p>
-      </div>
-      <div class="faq-item">
-        <h4>Je cherche un produit qui n'est pas dans votre inventaire (ex: hoodies pour enfants), est-ce possible ?</h4>
-        <p>On est toujours ouverts à de nouveaux projets ! Le mieux est de nous envoyer un message via notre page de contact en expliquant ton besoin, et on verra ce qu'on peut faire pour toi.</p>
-      </div>
-    </div>
 
-    <!-- NOUVELLE SECTION POUR LA POLITIQUE -->
-    <div class="faq-section">
-      <h2>Politique d’Achat, de Retour et de Qualité</h2>
-      <div class="faq-item">
-        <h4>1. Généralités</h4>
-        <p>Impressed MTL se spécialise dans la création de vêtements personnalisés réalisés à la demande. En passant commande sur notre site, le client accepte l’ensemble des conditions décrites ci-dessous. Ces politiques ont pour objectif d’assurer une communication claire, un service cohérent et une protection équitable pour toutes les parties.</p>
+      <!-- 4. Broderie (NOUVEAU) -->
+      <div class="accordion-item">
+        <button class="accordion-header">Broderie</button>
+        <div class="accordion-content">
+          <div class="faq-section">
+            <p>Informations à venir très bientôt !</p>
+          </div>
+        </div>
       </div>
-      <div class="faq-item">
-        <h4>2. Articles Personnalisés – Aucune possibilité de retour ou de remboursement</h4>
-        <p>Tous les vêtements personnalisés sont ni remboursables ni échangeables. Puisque chaque pièce est fabriquée spécialement pour le client, nous ne pouvons pas reprendre ou revendre un article personnalisable.</p>
-        <p>Cependant, si une erreur provient strictement de notre part, nous nous engageons à corriger la situation sans frais. Les erreurs acceptées incluent :</p>
-        <ul style="list-style-position: inside; padding-left: 20px; text-align: left; margin-top: 10px;">
-          <li>Mauvaise taille envoyée</li>
-          <li>Mauvaise couleur de vêtement</li>
-          <li>Mauvais design appliqué</li>
-          <li>Mauvais placement du design</li>
-          <li>Défaut physique du vêtement</li>
-          <li>Mauvais article envoyé (ex. un hoodie au lieu d’un crewneck)</li>
-        </ul>
+
+      <!-- 5. Politique -->
+      <div class="accordion-item">
+        <button class="accordion-header">Politique d’Achat, de Retour et de Qualité</button>
+        <div class="accordion-content">
+          <div class="faq-section">
+            <div class="faq-item">
+              <h4>1. Généralités</h4>
+              <p>Impressed MTL se spécialise dans la création de vêtements personnalisés réalisés à la demande. En passant commande sur notre site, le client accepte l’ensemble des conditions décrites ci-dessous. Ces politiques ont pour objectif d’assurer une communication claire, un service cohérent et une protection équitable pour toutes les parties.</p>
+            </div>
+            <div class="faq-item">
+              <h4>2. Articles Personnalisés – Aucune possibilité de retour ou de remboursement</h4>
+              <p>Tous les vêtements personnalisés sont ni remboursables ni échangeables. Puisque chaque pièce est fabriquée spécialement pour le client, nous ne pouvons pas reprendre ou revendre un article personnalisable.</p>
+              <p>Cependant, si une erreur provient strictement de notre part, nous nous engageons à corriger la situation sans frais. Les erreurs acceptées incluent :</p>
+              <ul style="list-style-position: inside; padding-left: 20px; text-align: left; margin-top: 10px;">
+                <li>Mauvaise taille envoyée</li>
+                <li>Mauvaise couleur de vêtement</li>
+                <li>Mauvais design appliqué</li>
+                <li>Mauvais placement du design</li>
+                <li>Défaut physique du vêtement</li>
+                <li>Mauvais article envoyé (ex. un hoodie au lieu d’un crewneck)</li>
+              </ul>
+            </div>
+            <div class="faq-item">
+              <h4>3. Vérification humaine de chaque design</h4>
+              <p>Pour garantir un résultat professionnel et fidèle au rendu attendu, chaque commande est vérifiée manuellement par un membre de notre équipe avant la production. Cette vérification inclut :</p>
+              <ul style="list-style-position: inside; padding-left: 20px; text-align: left; margin-top: 10px;">
+                <li>La qualité et la résolution du design fourni</li>
+                <li>La cohérence du placement demandé</li>
+                <li>La taille approximative du visuel</li>
+                <li>La lisibilité et l’orthographe visibles</li>
+                <li>La compatibilité du design avec le vêtement choisi</li>
+              </ul>
+              <p style="margin-top: 10px;">Si un doute ou une incohérence est détecté, nous nous réservons le droit de contacter le client pour clarification avant de procéder à la production. Cette étape permet d’éviter les erreurs et d’assurer un résultat final optimal.</p>
+            </div>
+            <div class="faq-item">
+              <h4>4. Responsabilités du client avant l’achat</h4>
+              <p>Le client doit vérifier la taille souhaitée, les fichiers fournis (images, textes, couleurs, orthographe) et s’assurer que les instructions données sont complètes et exactes. Un guide des tailles sera bientôt disponible, mais nos vêtements suivent les tailles standard de l'industrie.</p>
+              <p><strong>Confirmation avant production :</strong> Le client peut, sur demande, obtenir une maquette (mockup) ou nous écrire pour confirmer les détails avant production. S’il ne demande pas de maquette, il accepte que la production soit basée sur les fichiers et instructions fournis dans sa commande.</p>
+            </div>
+            <div class="faq-item">
+              <h4>5. Légères variations – Normal dans le textile</h4>
+              <p>Les vêtements personnalisés peuvent présenter certaines variations considérées normales dans l’industrie :</p>
+              <ul style="list-style-position: inside; padding-left: 20px; text-align: left; margin-top: 10px;">
+                <li>Différences minimes de couleur selon l’écran d’un client</li>
+                <li>Variations possibles de 1 à 2 cm dans le placement du design</li>
+                <li>Légères différences de teinte selon les manufacturiers</li>
+                <li>Effet de la texture et de l’éclairage sur l’apparence du design</li>
+              </ul>
+              <p style="margin-top: 10px;">Ces variations ne sont pas considérées comme des défauts et ne donnent pas droit à une compensation.</p>
+            </div>
+            <div class="faq-item">
+              <h4>6. Délais de production</h4>
+              <p>Les délais de production des vêtements personnalisés peuvent varier selon la période. Les délais présentés lors de la commande sont des estimations. Impressed MTL ne peut être tenu responsable des retards dus à la forte demande (périodes des fêtes, rentrée, événements locaux), à la disponibilité des stocks chez les fournisseurs ou à des imprévus logistiques ou liés aux transporteurs.</p>
+            </div>
+            <div class="faq-item">
+              <h4>7. Expédition & Livraison</h4>
+              <p>Une fois le colis remis au transporteur, les délais ne relèvent plus de notre contrôle. Nous ne sommes pas responsables des retards, pertes ou dommages causés par le transporteur. Le client doit communiquer avec le transporteur pour tout problème lié au suivi de colis. Aucune assurance de livraison n’est offerte.</p>
+            </div>
+            <div class="faq-item">
+              <h4>8. Inspection des produits & réclamations</h4>
+              <p>Chaque vêtement est inspecté manuellement par notre équipe avant l’expédition afin de s’assurer de sa qualité. Le client doit vérifier sa commande dès sa réception. Toute réclamation liée à un défaut ou une erreur doit être faite dans les 48 heures, accompagnée de photos claires. Après ce délai, une prise en charge ne peut être garantie.</p>
+            </div>
+            <div class="faq-item">
+              <h4>9. Annulation de commande</h4>
+              <p>Les commandes personnalisées ne peuvent pas être annulées une fois la production commencée. Les commandes non personnalisées (si offertes) peuvent être annulées uniquement si elles ne sont ni produites ni expédiées.</p>
+            </div>
+            <div class="faq-item">
+              <h4>10. Propriété intellectuelle & droits des designs</h4>
+              <p>Pour tout fichier fourni par le client (logo, image, illustration ou texte), le client garantit qu’il possède les droits d’utilisation. Impressed MTL n’est pas responsable des violations de droits d’auteur ou de marques déposées provenant des designs fournis. Nous nous réservons le droit de refuser tout contenu jugé offensant, illégal ou discriminatoire.</p>
+            </div>
+            <div class="faq-item">
+              <h4>11. Données personnelles</h4>
+              <p>Les informations recueillies (nom, adresse, courriel) sont utilisées uniquement pour traiter la commande, communiquer avec le client ou effectuer la livraison. Nous ne partageons ni ne vendons les données à des tiers.</p>
+            </div>
+            <div class="faq-item">
+              <h4>12. Limitation de responsabilité</h4>
+              <p>Impressed MTL ne peut être tenu responsable des retards liés aux transporteurs, des pertes ou dommages survenant après la remise du colis, des erreurs provenant de fichiers ou informations fournies par le client ou des variations normales liées aux procédés d’impression. En commandant sur notre site, le client reconnaît avoir lu, compris et accepté ces politiques.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="faq-item">
-        <h4>3. Vérification humaine de chaque design</h4>
-        <p>Pour garantir un résultat professionnel et fidèle au rendu attendu, chaque commande est vérifiée manuellement par un membre de notre équipe avant la production. Cette vérification inclut :</p>
-        <ul style="list-style-position: inside; padding-left: 20px; text-align: left; margin-top: 10px;">
-          <li>La qualité et la résolution du design fourni</li>
-          <li>La cohérence du placement demandé</li>
-          <li>La taille approximative du visuel</li>
-          <li>La lisibilité et l’orthographe visibles</li>
-          <li>La compatibilité du design avec le vêtement choisi</li>
-        </ul>
-        <p style="margin-top: 10px;">Si un doute ou une incohérence est détecté, nous nous réservons le droit de contacter le client pour clarification avant de procéder à la production. Cette étape permet d’éviter les erreurs et d’assurer un résultat final optimal.</p>
-      </div>
-      <div class="faq-item">
-        <h4>4. Responsabilités du client avant l’achat</h4>
-        <p>Le client doit vérifier la taille souhaitée, les fichiers fournis (images, textes, couleurs, orthographe) et s’assurer que les instructions données sont complètes et exactes. Un guide des tailles sera bientôt disponible, mais nos vêtements suivent les tailles standard de l'industrie.</p>
-        <p><strong>Confirmation avant production :</strong> Le client peut, sur demande, obtenir une maquette (mockup) ou nous écrire pour confirmer les détails avant production. S’il ne demande pas de maquette, il accepte que la production soit basée sur les fichiers et instructions fournis dans sa commande.</p>
-      </div>
-      <div class="faq-item">
-        <h4>5. Légères variations – Normal dans le textile</h4>
-        <p>Les vêtements personnalisés peuvent présenter certaines variations considérées normales dans l’industrie :</p>
-        <ul style="list-style-position: inside; padding-left: 20px; text-align: left; margin-top: 10px;">
-          <li>Différences minimes de couleur selon l’écran d’un client</li>
-          <li>Variations possibles de 1 à 2 cm dans le placement du design</li>
-          <li>Légères différences de teinte selon les manufacturiers</li>
-          <li>Effet de la texture et de l’éclairage sur l’apparence du design</li>
-        </ul>
-        <p style="margin-top: 10px;">Ces variations ne sont pas considérées comme des défauts et ne donnent pas droit à une compensation.</p>
-      </div>
-      <div class="faq-item">
-        <h4>6. Délais de production</h4>
-        <p>Les délais de production des vêtements personnalisés peuvent varier selon la période. Les délais présentés lors de la commande sont des estimations. Impressed MTL ne peut être tenu responsable des retards dus à la forte demande (périodes des fêtes, rentrée, événements locaux), à la disponibilité des stocks chez les fournisseurs ou à des imprévus logistiques ou liés aux transporteurs.</p>
-      </div>
-      <div class="faq-item">
-        <h4>7. Expédition & Livraison</h4>
-        <p>Une fois le colis remis au transporteur, les délais ne relèvent plus de notre contrôle. Nous ne sommes pas responsables des retards, pertes ou dommages causés par le transporteur. Le client doit communiquer avec le transporteur pour tout problème lié au suivi de colis. Aucune assurance de livraison n’est offerte.</p>
-      </div>
-      <div class="faq-item">
-        <h4>8. Inspection des produits & réclamations</h4>
-        <p>Chaque vêtement est inspecté manuellement par notre équipe avant l’expédition afin de s’assurer de sa qualité. Le client doit vérifier sa commande dès sa réception. Toute réclamation liée à un défaut ou une erreur doit être faite dans les 48 heures, accompagnée de photos claires. Après ce délai, une prise en charge ne peut être garantie.</p>
-      </div>
-      <div class="faq-item">
-        <h4>9. Annulation de commande</h4>
-        <p>Les commandes personnalisées ne peuvent pas être annulées une fois la production commencée. Les commandes non personnalisées (si offertes) peuvent être annulées uniquement si elles ne sont ni produites ni expédiées.</p>
-      </div>
-      <div class="faq-item">
-        <h4>10. Propriété intellectuelle & droits des designs</h4>
-        <p>Pour tout fichier fourni par le client (logo, image, illustration ou texte), le client garantit qu’il possède les droits d’utilisation. Impressed MTL n’est pas responsable des violations de droits d’auteur ou de marques déposées provenant des designs fournis. Nous nous réservons le droit de refuser tout contenu jugé offensant, illégal ou discriminatoire.</p>
-      </div>
-      <div class="faq-item">
-        <h4>11. Données personnelles</h4>
-        <p>Les informations recueillies (nom, adresse, courriel) sont utilisées uniquement pour traiter la commande, communiquer avec le client ou effectuer la livraison. Nous ne partageons ni ne vendons les données à des tiers.</p>
-      </div>
-      <div class="faq-item">
-        <h4>12. Limitation de responsabilité</h4>
-        <p>Impressed MTL ne peut être tenu responsable des retards liés aux transporteurs, des pertes ou dommages survenant après la remise du colis, des erreurs provenant de fichiers ou informations fournies par le client ou des variations normales liées aux procédés d’impression. En commandant sur notre site, le client reconnaît avoir lu, compris et accepté ces politiques.</p>
-      </div>
+
     </div>
+    <!-- FIN DE L'ACCORDÉON -->
 
     <div class="final-notes">
       <p>Tu as d'autres questions ? N'hésite pas à <a href="contact.html">nous contacter ici</a>.</p>
@@ -262,6 +357,20 @@
       closeNavBtn.addEventListener('click', () => {
         mobileNav.classList.remove('is-active');
       });
+
+      // --- Script pour l'accordéon ---
+      const acc = document.getElementsByClassName("accordion-header");
+      for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+          this.classList.toggle("active");
+          const panel = this.nextElementSibling;
+          if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+          } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+          } 
+        });
+      }
     });
   </script>
   <!-- Script pour le chatbot -->
