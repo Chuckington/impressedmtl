@@ -205,6 +205,7 @@
     let appliedPromoCode = null; // Pour stocker le code promo valide
     let currentTotalForPayment = 0;
     let totalDiscount = 0; // Variable pour stocker le rabais
+    let isQuoteRequest = false; // NOUVEAU: Variable pour suivre si c'est une demande de soumission
 
     // Fonction pour calculer les rabais (copiée de panier.html)
     function calculateSpecialOffers(items) {
@@ -389,6 +390,55 @@
       // 5. On met à jour l'affichage.
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
       totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
+
+      // --- NOUVEAU: Détection de la broderie et adaptation de l'interface ---
+      isQuoteRequest = cartItems.some(item =>
+          (item.personalizations || []).some(p => p.technique === 'embroidery')
+      );
+
+      const cardContainer = document.getElementById('card-container');
+      const cardButton = document.getElementById('card-button');
+      const paymentHeader = document.querySelector('.payment-form h3');
+      const totalLabelContainer = totalAmountEl.parentElement; // Le <p> contenant le total
+
+      // Nettoyer message existant s'il y en a un
+      const existingMsg = document.getElementById('quote-message');
+      if(existingMsg) existingMsg.remove();
+
+      if (isQuoteRequest) {
+          // MODE SOUMISSION (BRODERIE)
+          if(cardContainer) cardContainer.style.display = 'none';
+          if(cardButton) cardButton.textContent = "Envoyer pour validation et facturation";
+          if(paymentHeader) paymentHeader.textContent = "Validation de la commande";
+
+          // Message d'information
+          const msgDiv = document.createElement('div');
+          msgDiv.id = 'quote-message';
+          msgDiv.style.cssText = 'background-color: #fff3cd; color: #856404; padding: 15px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ffeeba; font-size: 0.95rem; line-height: 1.5;';
+          msgDiv.innerHTML = `
+              <strong>Commande sur devis (Broderie)</strong><br>
+              Votre commande contient de la broderie. Le prix affiché est une estimation.<br>
+              Nous validerons la complexité de votre logo et vous enverrons la facture finale exacte par courriel sous 24 heures.<br>
+              <strong>Aucun paiement n'est requis maintenant.</strong>
+          `;
+          const form = document.getElementById('payment-form-square');
+          if(form) form.insertBefore(msgDiv, cardButton);
+
+          // Mettre à jour le libellé du total
+          if(totalLabelContainer) {
+              totalLabelContainer.innerHTML = `<strong>Total estimé: <span id="total-amount">${currentTotalForPayment.toFixed(2)}</span> $</strong>`;
+          }
+      } else {
+          // MODE PAIEMENT STANDARD
+          if(cardContainer) cardContainer.style.display = 'block';
+          if(cardButton) cardButton.textContent = "Payer";
+          if(paymentHeader) paymentHeader.textContent = "Informations de paiement";
+          
+          // Restaurer le libellé du total
+          if(totalLabelContainer) {
+               totalLabelContainer.innerHTML = `<strong>Total à payer: <span id="total-amount">${currentTotalForPayment.toFixed(2)}</span> $</strong><br><small style="font-weight:normal; color:#555;">(Taxes incluses)</small>`;
+          }
+      }
     }
 
     // --- NOUVELLE LOGIQUE POUR LA LIVRAISON ---
@@ -573,12 +623,25 @@
             return; // Arrêter si la validation échoue
           }
 
-          const result = await card.tokenize();
-          if (result.status === 'OK') {
-            const token = result.token;
-            // **ÉTAPE CRUCIALE : Envoyer le token et les détails de la commande à votre backend**
-            // Ce backend (ex: Supabase Edge Function) utilisera le token pour créer un paiement réel avec l'API Square.
+          let token = null;
+
+          // NOUVEAU: Si ce n'est PAS une demande de soumission, on tokenise la carte
+          if (!isQuoteRequest) {
+            const result = await card.tokenize();
+            if (result.status !== 'OK') {
+               let errorMessage = `Tokenisation échouée: ${result.status}`;
+               if (result.errors) {
+                 errorMessage += ` - ${result.errors.map(e => e.message).join(' ')}`;
+               }
+               throw new Error(errorMessage);
+            }
+            token = result.token;
             console.log('Token de paiement Square:', token);
+          } else {
+            console.log('Mode Soumission : Pas de tokenisation requise.');
+          }
+
+          // --- ENVOI AU BACKEND (Commun pour Paiement et Soumission) ---
             const { data: { user } } = await supa.auth.getUser(); // Récupérer l'utilisateur actuel
             // Simuler l'appel backend pour l'instant
             // Vous devrez créer une Supabase Edge Function nommée 'process-square-payment' par exemple
@@ -592,7 +655,8 @@
             const selectedRateInput = document.querySelector('input[name="shipping_rate"]:checked');
             const { data: paymentResponse, error: paymentError } = await supa.functions.invoke('process-square-payment', {
               body: {
-                sourceId: token, // C'est le token de la carte
+                isQuoteRequest: isQuoteRequest, // NOUVEAU: Indiquer si c'est une soumission
+                sourceId: token, // Token de la carte (null si soumission)
                 amount: Math.round(currentTotalForPayment * 100), // Montant en centimes
                 userId: user ? user.id : null, // Envoyer l'ID utilisateur s'il est connecté
                 currency: 'CAD',
@@ -622,7 +686,10 @@
                // Log pour débogage
                console.log('Réponse de la fonction Supabase (paymentResponse):', JSON.stringify(paymentResponse, null, 2));
 
-               document.getElementById('payment-status-container').textContent = 'Paiement réussi ! Redirection...';
+               const successMessage = isQuoteRequest ? 'Demande envoyée avec succès ! Redirection...' : 'Paiement réussi ! Redirection...';
+               document.getElementById('payment-status-container').textContent = successMessage;
+               document.getElementById('payment-status-container').style.color = 'green';
+
                // Optionnel: Vider le panier après paiement réussi
                const { data: { user } } = await supa.auth.getUser();
                if (user) {
@@ -637,13 +704,6 @@
               throw new Error(paymentResponse.message || 'Échec du traitement du paiement par le backend.');
             }
 
-          } else {
-            let errorMessage = `Tokenisation échouée: ${result.status}`;
-            if (result.errors) {
-              errorMessage += ` - ${result.errors.map(e => e.message).join(' ')}`;
-            }
-            throw new Error(errorMessage);
-          }
         } catch (error) {
           console.error('Erreur de paiement Square:', error);
           document.getElementById('payment-status-container').textContent = `Erreur: ${error.message}`;
