@@ -546,7 +546,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
          <ol style="margin-top: 10px; padding-left: 20px;">
            <li>Notre équipe va analyser la complexité de ton logo.</li>
            <li>Nous ajusterons le prix final selon la grille tarifaire.</li>
-           <li>Tu recevras un devis/facture final par courriel <strong>dans les plus brefs délais (généralement sous 24h)</strong>.</li>
+           <li>Tu recevras une facture finale par courriel <strong>dans les plus brefs délais (généralement 2 jours ouvrables)</strong>.</li>
            <li>La production sera lancée une fois le paiement du solde effectué.</li>
          </ol>
        </div>
