@@ -452,16 +452,16 @@
             let techniqueSelectorHtml = '';
             if (isEmbroideryEligible(tableNameRef, desc)) {
               techniqueSelectorHtml = `
-                <div class="technique-selector" id="tech-selector-${item.id}" style="display:none;">
+                <div class="technique-selector" id="tech-selector-PLACEHOLDER" style="display:none;">
                   <div class="technique-option">
-                    <input type="radio" id="tech-print-${item.id}" name="tech-${item.id}" value="print" checked>
-                    <label for="tech-print-${item.id}">
+                    <input type="radio" id="tech-print-PLACEHOLDER" name="tech-PLACEHOLDER" value="print" checked>
+                    <label for="tech-print-PLACEHOLDER">
                       Impression <span style="color:#666; font-size:0.85em;">(+${modificationPrice.toFixed(2)}$)</span>
                     </label>
                   </div>
                   <div class="technique-option disabled">
-                    <input type="radio" id="tech-embroidery-${item.id}" name="tech-${item.id}" value="embroidery" disabled>
-                    <label for="tech-embroidery-${item.id}">
+                    <input type="radio" id="tech-embroidery-PLACEHOLDER" name="tech-PLACEHOLDER" value="embroidery" disabled>
+                    <label for="tech-embroidery-PLACEHOLDER">
                       Broderie 
                       <span class="badge-new" style="background:#FFC107; color:#000; padding:1px 4px; border-radius:3px; font-size:0.7em; margin-left:4px;">NOUVEAU</span>
                       <span style="color:#e85d04; font-size:0.75em; margin-left:4px;">(Bientôt disponible)</span>
@@ -488,7 +488,7 @@
                       <div class="personalize">
                         <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-front" data-view="front" data-placement-key="${frontPlacementKey}"><label for="opt-${item.id}-front">Devant</label>
                       </div>
-                      ${techniqueSelectorHtml.replace(/-item.id/g, `-${item.id}-left`)}
+                      ${techniqueSelectorHtml.replace(/PLACEHOLDER/g, `${item.id}-front`)}
                       <div class="upload-section" id="upload-section-${item.id}-front" style="display:none;">
                         <label for="file-input-${item.id}-front" class="btn btn-small">Choisir fichier (devant)</label>
                         <input type="file" id="file-input-${item.id}-front" accept="image/*" style="display:none;">
@@ -513,7 +513,7 @@
                           <div class="personalize">
                             <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-back" data-view="back" data-placement-key="${backPlacementKey}"><label for="opt-${item.id}-back">Derrière</label>
                           </div>
-                      ${techniqueSelectorHtml.replace(/-item.id/g, `-${item.id}-right`)}
+                      ${techniqueSelectorHtml.replace(/PLACEHOLDER/g, `${item.id}-back`)}
                           <div class="upload-section" id="upload-section-${item.id}-back" style="display:none;">
                             <label for="file-input-${item.id}-back" class="btn btn-small">Choisir fichier (derrière)</label>
                             <input type="file" id="file-input-${item.id}-back" accept="image/*" style="display:none;">
@@ -538,7 +538,7 @@
                       <div class="personalize">
                         <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-left" data-view="front" data-placement-key="${specificKey}_left"><label for="opt-${item.id}-left">Poitrine Gauche</label>
                       </div>
-                      ${techniqueSelectorHtml.replace(/-item.id/g, `-${item.id}-left`)}
+                      ${techniqueSelectorHtml.replace(/PLACEHOLDER/g, `${item.id}-left`)}
                       <div class="upload-section" id="upload-section-${item.id}-left" style="display:none;">
                         <label for="file-input-${item.id}-left" class="btn btn-small">Choisir fichier (gauche)</label>
                         <input type="file" id="file-input-${item.id}-left" accept="image/*" style="display:none;">
@@ -558,7 +558,7 @@
                       <div class="personalize">
                         <input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-right" data-view="front" data-placement-key="${specificKey}_right"><label for="opt-${item.id}-right">Poitrine Droite</label>
                       </div>
-                      ${techniqueSelectorHtml.replace(/-item.id/g, `-${item.id}-right`)}
+                      ${techniqueSelectorHtml.replace(/PLACEHOLDER/g, `${item.id}-right`)}
                       <div class="upload-section" id="upload-section-${item.id}-right" style="display:none;">
                         <label for="file-input-${item.id}-right" class="btn btn-small">Choisir fichier (droite)</label>
                         <input type="file" id="file-input-${item.id}-right" accept="image/*" style="display:none;">
@@ -619,7 +619,7 @@
                 optionsHtml += `
                     <div class="personalize-option-group">
                       <div class="personalize"><input type="checkbox" class="personalization-checkbox" data-price="${modificationPrice}" id="opt-${item.id}-default" data-view="front" data-placement-key="default_front"><label for="opt-${item.id}-default">${item.personnalisation}</label></div>
-                      ${techniqueSelectorHtml.replace(/-item.id/g, `-${item.id}-default`)}
+                      ${techniqueSelectorHtml.replace(/PLACEHOLDER/g, `${item.id}-default`)}
                       <div class="upload-section" id="upload-section-${item.id}-default" style="display:none;">
                         <label for="file-input-${item.id}-default" class="btn btn-small">Choisir fichier</label>
                         <input type="file" id="file-input-${item.id}-default" accept="image/*" style="display:none;">
