@@ -188,18 +188,18 @@
     
     // NOUVEAU: Grille de prix pour la broderie (C'est ce bloc qui manquait)
     const embroideryPriceGrid = [
-      { min: 6, max: 11, price: "19 $ – 31 $" },
-      { min: 12, max: 35, price: "16 $ – 27 $" },
-      { min: 36, max: 143, price: "14 $ – 25 $" },
-      { min: 144, max: 299, price: "13 $ – 24 $" },
-      { min: 300, max: 999999, price: "12 $ – 23 $" }
+      { min: 6, max: 11, minPrice: 19, maxPrice: 31 },
+      { min: 12, max: 35, minPrice: 16, maxPrice: 27 },
+      { min: 36, max: 143, minPrice: 14, maxPrice: 25 },
+      { min: 144, max: 299, minPrice: 13, maxPrice: 24 },
+      { min: 300, max: 999999, minPrice: 12, maxPrice: 23 }
     ];
 
     // Fonction pour obtenir le texte du prix de broderie selon la quantité
     function getEmbroideryPriceText(qty) {
       if (qty < 6) return "Min. 6 unités";
       const range = embroideryPriceGrid.find(r => qty >= r.min && qty <= r.max);
-      return range ? range.price : "Sur devis";
+      return range ? `${range.minPrice} $ – ${range.maxPrice} $` : "Sur devis";
     }
     
     // Fonction pour vérifier si un produit est éligible à la broderie
@@ -829,6 +829,9 @@
     function updateTotal() {
         if (!state.product) return;
         const qty = parseInt(qtyInput.value) || 1;
+
+        // 1. Trouver le tarif broderie pour la quantité actuelle
+        const embroideryRange = embroideryPriceGrid.find(r => qty >= r.min && qty <= r.max) || embroideryPriceGrid[embroideryPriceGrid.length - 1];
         
         // NOUVEAU: Mettre à jour les prix dynamiques de la broderie dans les cartes
         const embroideryPriceText = getEmbroideryPriceText(qty);
@@ -836,11 +839,52 @@
           el.textContent = embroideryPriceText;
         });
 
-        const extraCost = Array.from(document.querySelectorAll('.personalization-checkbox:checked'))
-          .reduce((sum, cb) => sum + parseFloat(cb.dataset.price), 0);
+        // NOUVEAU: Mettre à jour le prix principal de la carte si la broderie est sélectionnée
+        document.querySelectorAll('.card').forEach(card => {
+            const embroideryRadio = card.querySelector('input[type="radio"][value="embroidery"]');
+            const priceDisplay = card.querySelector('.modification-price-display');
+            
+            if (embroideryRadio && priceDisplay) {
+                if (embroideryRadio.checked) {
+                    priceDisplay.textContent = embroideryPriceText;
+                } else {
+                    const printPrice = parseFloat(card.dataset.printPrice) || 0;
+                    priceDisplay.textContent = printPrice.toFixed(2) + ' $';
+                }
+            }
+        });
+
+        // 2. Calculer le total (Min et Max)
+        let extraCostMin = 0;
+        let extraCostMax = 0;
+
+        const checkedPersonalizations = document.querySelectorAll('.personalization-checkbox:checked');
+        checkedPersonalizations.forEach(cb => {
+            const baseId = cb.id.replace('opt-', '');
+            const techRadio = document.querySelector(`input[name="tech-${baseId}"]:checked`);
+            const isEmbroidery = techRadio && techRadio.value === 'embroidery';
+
+            if (isEmbroidery) {
+                // Si quantité < 6, on utilise la tranche la plus chère pour l'estimation
+                const rangeToUse = (qty >= 6) ? embroideryRange : embroideryPriceGrid[0];
+                extraCostMin += rangeToUse.minPrice;
+                extraCostMax += rangeToUse.maxPrice;
+            } else {
+                // Impression : prix fixe
+                const printPrice = parseFloat(cb.dataset.price) || 0;
+                extraCostMin += printPrice;
+                extraCostMax += printPrice;
+            }
+        });
         
-        const newTotalValue = (state.product.base_price + extraCost) * qty;
-        totalEl.textContent = newTotalValue.toFixed(2);
+        const totalMin = (state.product.base_price + extraCostMin) * qty;
+        const totalMax = (state.product.base_price + extraCostMax) * qty;
+
+        if (totalMin !== totalMax) {
+            totalEl.textContent = `${totalMin.toFixed(2)} – ${totalMax.toFixed(2)}`;
+        } else {
+            totalEl.textContent = totalMin.toFixed(2);
+        }
     }
 
     // Fonction pour valider les quantités de tailles (copiée de V1)
@@ -1017,6 +1061,7 @@
                     priceDisplay.textContent = printPrice.toFixed(2) + ' $';
                 }
             }
+            updateTotal(); // Recalculer le total général quand on change de technique
         }
 
         // Gérer les cases à cocher pour le prix et l'affichage de l'upload

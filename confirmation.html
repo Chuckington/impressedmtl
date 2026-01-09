@@ -17,8 +17,8 @@
 </head>
 <body class="confirmation-page">
     <div class="confirmation-container">
-        <h1>Merci pour ta commande !</h1>
-        <p class="success-message">Ton paiement a été traité avec succès.</p>
+        <h1 id="confirmation-title">Merci pour ta commande !</h1>
+        <p id="confirmation-message" class="success-message">Ton paiement a été traité avec succès.</p>
         <p id="order-id-display" style="font-size: 0.9em; color: #333;"></p> <!-- Élément pour afficher l'ID -->
         <p>On t'enverra bientôt un courriel de confirmation avec les détails de ta commande.</p>
         <p><a href="index.html">Retourner à l'accueil</a></p>
@@ -28,7 +28,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const orderNumber = params.get('orderNumber');
+            const type = params.get('type'); // 'quote' ou 'order'
             const orderIdDisplay = document.getElementById('order-id-display');
+            const titleEl = document.getElementById('confirmation-title');
+            const messageEl = document.getElementById('confirmation-message');
+
+            if (type === 'quote') {
+                titleEl.textContent = "Merci pour ta demande !";
+                messageEl.textContent = "Ta demande de soumission a été reçue avec succès.";
+                messageEl.style.color = "#856404"; // Couleur jaune/orange pour différencier
+            }
 
             if (orderNumber && orderIdDisplay) {
                 orderIdDisplay.textContent = `Ton numéro de commande est le #${orderNumber}.`;

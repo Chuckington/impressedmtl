@@ -207,6 +207,15 @@
     let totalDiscount = 0; // Variable pour stocker le rabais
     let isQuoteRequest = false; // NOUVEAU: Variable pour suivre si c'est une demande de soumission
 
+    // NOUVEAU: Grille de prix pour la broderie (Identique à produit2.html et panier.html)
+    const embroideryPriceGrid = [
+      { min: 6, max: 11, minPrice: 19, maxPrice: 31 },
+      { min: 12, max: 35, minPrice: 16, maxPrice: 27 },
+      { min: 36, max: 143, minPrice: 14, maxPrice: 25 },
+      { min: 144, max: 299, minPrice: 13, maxPrice: 24 },
+      { min: 300, max: 999999, minPrice: 12, maxPrice: 23 }
+    ];
+
     // Fonction pour calculer les rabais (copiée de panier.html)
     function calculateSpecialOffers(items) {
         let totalDiscount = 0;
@@ -290,7 +299,8 @@
       }
 
       summaryItemsEl.innerHTML = ''; // Clear loading message
-      let subTotalBeforeFixedFee = 0;
+      let minSubTotalBeforeFixedFee = 0;
+      let maxSubTotalBeforeFixedFee = 0;
       let totalItemCount = 0;
 
       if (cartItems.length === 0) {
@@ -304,14 +314,52 @@
 
       currentCartForPayment = cartItems; 
 
+      // --- Calcul des volumes pour la broderie ---
+      let clothingEmbroideryCount = 0;
+      let headwearEmbroideryCount = 0;
+
       cartItems.forEach(item => {
-        let extraCost = 0;
-        (item.personalizations || []).forEach(p => extraCost += (p.spot_price || 0));
-        const subtotal = (item.quantity * (item.base_price + extraCost));
-        subTotalBeforeFixedFee += subtotal;
+        const hasEmbroidery = (item.personalizations || []).some(p => p.technique === 'embroidery');
+        if (hasEmbroidery) {
+          const isHeadwear = (item.product_id && item.product_id.includes('tuque')) || 
+                             (item.product_name && (item.product_name.toLowerCase().includes('tuque') || item.product_name.toLowerCase().includes('casquette')));
+          if (isHeadwear) headwearEmbroideryCount += item.quantity;
+          else clothingEmbroideryCount += item.quantity;
+        }
+      });
+
+      const getEmbroideryRate = (count) => {
+        if (count < 6) return embroideryPriceGrid[0];
+        return embroideryPriceGrid.find(r => count >= r.min && count <= r.max) || embroideryPriceGrid[embroideryPriceGrid.length - 1];
+      };
+
+      const clothingEmbroideryRate = getEmbroideryRate(clothingEmbroideryCount);
+      const headwearEmbroideryRate = getEmbroideryRate(headwearEmbroideryCount);
+
+      cartItems.forEach(item => {
+        let itemMinPrice = item.base_price;
+        let itemMaxPrice = item.base_price;
+
+        (item.personalizations || []).forEach(p => {
+            if (p.technique === 'embroidery') {
+                const isHeadwear = (item.product_id && item.product_id.includes('tuque')) || (item.product_name && item.product_name.toLowerCase().includes('tuque'));
+                const rate = isHeadwear ? headwearEmbroideryRate : clothingEmbroideryRate;
+                itemMinPrice += rate.minPrice;
+                itemMaxPrice += rate.maxPrice;
+            } else {
+                const price = p.spot_price || 0;
+                itemMinPrice += price;
+                itemMaxPrice += price;
+            }
+        });
+
+        const subtotalMin = item.quantity * itemMinPrice;
+        const subtotalMax = item.quantity * itemMaxPrice;
+        minSubTotalBeforeFixedFee += subtotalMin;
+        maxSubTotalBeforeFixedFee += subtotalMax;
         totalItemCount += item.quantity; // Compter le nombre total d'articles
         const p = document.createElement('p');
-        p.textContent = `${item.product_name} x ${item.quantity} - ${subtotal.toFixed(2)}$`;
+        p.textContent = `${item.product_name} x ${item.quantity} - ${subtotalMin !== subtotalMax ? `${subtotalMin.toFixed(2)} $ – ${subtotalMax.toFixed(2)} $` : `${subtotalMin.toFixed(2)} $`}`;
         summaryItemsEl.appendChild(p);
       });
 
@@ -348,12 +396,14 @@
         fixedFeeMessageEl.textContent = "Félicitations ! Aucun frais de préparation pour les commandes de 10 articles et plus.";
       }
 
-      itemsTotalWithFees = subTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee;
+      // On utilise le max pour le calcul interne "itemsTotalWithFees" qui sert de base au code promo, 
+      // mais on affichera la fourchette à la fin.
+      itemsTotalWithFees = maxSubTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee;
 
       // --- LOGIQUE DE CALCUL DU TOTAL FINAL ---
 
       // 1. On calcule le total des articles, moins les rabais spéciaux déjà appliqués.
-      const itemsTotalAfterOffers = subTotalBeforeFixedFee - totalDiscount;
+      // const itemsTotalAfterOffers = subTotalBeforeFixedFee - totalDiscount; // Pas utilisé directement
 
       const totalBeforePromo = itemsTotalWithFees; // Utiliser la nouvelle variable
 
@@ -386,11 +436,20 @@
       // 4. On calcule le total final à payer.
       // NOUVEAU: Inclure les frais de port dans le total final
       currentTotalForPayment = totalBeforePromo - promoDiscountValue + shippingCost;
+      
+      // Calculer le total MIN pour l'affichage
+      const totalMinWithFees = minSubTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee - promoDiscountValue + shippingCost;
 
       // 5. On met à jour l'affichage.
       fixedFeeAmountEl.textContent = fixedFee.toFixed(2);
-      totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
-
+      
+      // Affichage du total (Fourchette ou Fixe)
+      if (minSubTotalBeforeFixedFee !== maxSubTotalBeforeFixedFee) {
+          totalAmountEl.textContent = `${totalMinWithFees.toFixed(2)} – ${currentTotalForPayment.toFixed(2)}`;
+      } else {
+          totalAmountEl.textContent = currentTotalForPayment.toFixed(2);
+      }
+      
       // --- NOUVEAU: Détection de la broderie et adaptation de l'interface ---
       isQuoteRequest = cartItems.some(item =>
           (item.personalizations || []).some(p => p.technique === 'embroidery')
@@ -426,7 +485,7 @@
 
           // Mettre à jour le libellé du total
           if(totalLabelContainer) {
-              totalLabelContainer.innerHTML = `<strong>Total estimé: <span id="total-amount">${currentTotalForPayment.toFixed(2)}</span> $</strong>`;
+              totalLabelContainer.innerHTML = `<strong>Total estimé: <span id="total-amount">${totalAmountEl.textContent}</span> $</strong>`;
           }
       } else {
           // MODE PAIEMENT STANDARD
@@ -436,7 +495,7 @@
           
           // Restaurer le libellé du total
           if(totalLabelContainer) {
-               totalLabelContainer.innerHTML = `<strong>Total à payer: <span id="total-amount">${currentTotalForPayment.toFixed(2)}</span> $</strong><br><small style="font-weight:normal; color:#555;">(Taxes incluses)</small>`;
+               totalLabelContainer.innerHTML = `<strong>Total à payer: <span id="total-amount">${totalAmountEl.textContent}</span> $</strong><br><small style="font-weight:normal; color:#555;">(Taxes incluses)</small>`;
           }
       }
     }
@@ -699,7 +758,7 @@
                    localStorage.removeItem('maquetteRequested'); // Nettoyer aussi cette option
                }
                // Rediriger vers une page de confirmation
-               setTimeout(() => window.location.href = `confirmation.html?orderNumber=${paymentResponse.orderNumber}`, 2000);
+               setTimeout(() => window.location.href = `confirmation.html?orderNumber=${paymentResponse.orderNumber}&type=${isQuoteRequest ? 'quote' : 'order'}`, 2000);
             } else {
               throw new Error(paymentResponse.message || 'Échec du traitement du paiement par le backend.');
             }
