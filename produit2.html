@@ -999,6 +999,23 @@
     // Écouteurs pour la mise à jour du total
     qtyInput.addEventListener('input', updateTotal);
     customListEl.addEventListener('change', async (e) => {
+        // NOUVEAU: Gérer le changement de technique (Impression vs Broderie) pour mettre à jour le prix affiché
+        if (e.target.type === 'radio' && e.target.name.startsWith('tech-')) {
+            const radio = e.target;
+            const card = radio.closest('.card');
+            const priceDisplay = card.querySelector('.modification-price-display');
+            
+            if (priceDisplay) {
+                if (radio.value === 'embroidery') {
+                    const qty = parseInt(qtyInput.value) || 1;
+                    priceDisplay.textContent = getEmbroideryPriceText(qty);
+                } else {
+                    const printPrice = parseFloat(card.dataset.printPrice) || 0;
+                    priceDisplay.textContent = printPrice.toFixed(2) + ' $';
+                }
+            }
+        }
+
         // Gérer les cases à cocher pour le prix et l'affichage de l'upload
         if (e.target.classList.contains('personalization-checkbox')) {
             updateTotal();
