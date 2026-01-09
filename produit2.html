@@ -445,6 +445,7 @@
             card.className = 'card';
             let optionsHtml = '';
             const modificationPrice = parseFloat(item.prix) || 0;
+            card.dataset.printPrice = modificationPrice; // Stocker le prix d'impression pour le restaurer
 
             const desc = (item.personnalisation || '').toLowerCase();
             
@@ -645,7 +646,7 @@
               <div class="card-image"><img src="${item.image_url || 'https://placehold.co/400x300/E7E7E7/A9A9A9?text=Image'}" alt="${item.nom}"></div>
               <div class="card-content">
                 <h3>${item.nom}</h3>
-                <p><strong>Prix modification:</strong> ${modificationPrice.toFixed(2)}$</p>
+                <p><strong>Prix modification:</strong> <span class="modification-price-display">${modificationPrice.toFixed(2)} $</span></p>
                 ${optionsHtml}
               </div>`;
             customListEl.appendChild(card);
