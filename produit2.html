@@ -1353,11 +1353,19 @@
                 const labelElement = cbCheckbox.labels[0];
                 const label = labelElement ? labelElement.textContent.trim() : `Option ${cbCheckbox.id}`;
                 const view = cbCheckbox.dataset.view; // NOUVEAU: Récupérer la vue
-                const price = parseFloat(cbCheckbox.dataset.price) || 0;
+                let price = parseFloat(cbCheckbox.dataset.price) || 0;
 
                 // Trouver le logo correspondant sur le canvas
                 const idParts = cbCheckbox.id.split('-');
                 const fabricLogo = fabricCanvas.getObjects('image').find(obj => obj.custom_id === cbCheckbox.id);
+
+                // NOUVEAU: Détecter la technique choisie (Impression ou Broderie)
+                const baseId = cbCheckbox.id.replace('opt-', '');
+                const techRadio = document.querySelector(`input[name="tech-${baseId}"]:checked`);
+                const technique = techRadio ? techRadio.value : 'print';
+
+                // Si c'est de la broderie, le prix unitaire est calculé dynamiquement dans le panier, on met 0 ou un indicateur ici
+                // On garde le prix de l'impression par défaut pour la base de données, le panier recalculera si technique == 'embroidery'
 
                 let transformData = null;
                 if (fabricLogo) {
@@ -1377,8 +1385,9 @@
                     spot_label: label,
                     spot_price: price,
                     image_url: cbCheckbox.dataset.imageUrl || null,
-                    transform: transformData, // Le "plan de montage" du logo
-                    view: view // NOUVEAU: Ajouter la vue
+                    transform: transformData,
+                    view: view,
+                    technique: technique // NOUVEAU: Sauvegarder la technique
                 });
             }
 

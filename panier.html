@@ -118,6 +118,15 @@
     supa.auth.onAuthStateChange(updateAuthUI);
     updateAuthUI();
 
+    // NOUVEAU: Grille de prix pour la broderie (Identique à produit2.html)
+    const embroideryPriceGrid = [
+      { min: 6, max: 11, minPrice: 19, maxPrice: 31 },
+      { min: 12, max: 35, minPrice: 16, maxPrice: 27 },
+      { min: 36, max: 143, minPrice: 14, maxPrice: 25 },
+      { min: 144, max: 299, minPrice: 13, maxPrice: 24 },
+      { min: 300, max: 999999, minPrice: 12, maxPrice: 23 }
+    ];
+
     async function loadCart() {
       const { data: { user } } = await supa.auth.getUser();
       const cartTable = document.querySelector('#cart-table tbody');
@@ -129,7 +138,8 @@
       const maquetteCheckbox = document.getElementById('maquette-checkbox');
 
       cartTable.innerHTML = '';
-      let subTotalBeforeFixedFee = 0;
+      let minSubTotalBeforeFixedFee = 0; // NOUVEAU: Total Min
+      let maxSubTotalBeforeFixedFee = 0; // NOUVEAU: Total Max
       let totalItemCount = 0;
       let cartItems = [];
 
@@ -203,7 +213,7 @@
       if (user) {
         const { data, error } = await supa
           .from('cart_items')
-          .select('id, quantity, base_price, personalizations, product_name, selected_color_name, selected_size_name, selected_gender_name, product_id')
+          .select('id, quantity, base_price, personalizations, product_name, selected_color_name, selected_size_name, selected_gender_name, product_id, product_assets') // product_assets peut être utile pour identifier le type si besoin
           .eq('user_id', user.id);
         if (error || !data || data.length === 0) {
           cartTable.innerHTML = '<tr><td colspan="5">Ton panier est vide.</td></tr>';
@@ -213,21 +223,89 @@
           return;
         }
         cartItems = data;
+      } else {
+        cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cartItems.length === 0) {
+          cartTable.innerHTML = '<tr><td colspan="5">Ton panier est vide.</td></tr>';
+          grandTotal.textContent = '0.00';
+          fixedFeeAmountCartEl.textContent = '0.00';
+          fixedFeeMessageCartEl.textContent = '';
+          return;
+        }
+      }
 
-        cartItems.forEach(item => {
+      // --- NOUVEAU: Calcul des volumes pour la broderie ---
+      let clothingEmbroideryCount = 0;
+      let headwearEmbroideryCount = 0;
+
+      cartItems.forEach(item => {
+        const hasEmbroidery = (item.personalizations || []).some(p => p.technique === 'embroidery');
+        if (hasEmbroidery) {
+          // Identification simple basée sur le nom ou l'ID du produit
+          const isHeadwear = (item.product_id && item.product_id.includes('tuque')) || 
+                             (item.product_name && (item.product_name.toLowerCase().includes('tuque') || item.product_name.toLowerCase().includes('casquette')));
+          
+          if (isHeadwear) {
+            headwearEmbroideryCount += item.quantity;
+          } else {
+            clothingEmbroideryCount += item.quantity;
+          }
+        }
+      });
+
+      // Fonction pour trouver le prix unitaire (fourchette) selon la quantité
+      const getEmbroideryRate = (count) => {
+        if (count < 6) return embroideryPriceGrid[0]; // Fallback au prix le plus cher si < 6 (ou gérer l'erreur)
+        return embroideryPriceGrid.find(r => count >= r.min && count <= r.max) || embroideryPriceGrid[embroideryPriceGrid.length - 1];
+      };
+
+      const clothingEmbroideryRate = getEmbroideryRate(clothingEmbroideryCount);
+      const headwearEmbroideryRate = getEmbroideryRate(headwearEmbroideryCount);
+
+      // --- Affichage des articles ---
+      cartItems.forEach((item, index) => {
           const row = document.createElement('tr');
-          let extraCost = 0;
+          let itemMinPrice = 0;
+          let itemMaxPrice = 0;
+          
+          // Calcul du prix de base de l'item (sans options)
+          itemMinPrice += item.base_price;
+          itemMaxPrice += item.base_price;
+
           const personalizationDetails = (item.personalizations || []).map(pObj => {
-            extraCost += pObj.spot_price || 0;
+            let optionPriceDisplay = '';
+            
+            if (pObj.technique === 'embroidery') {
+              // C'est de la broderie : on utilise le tarif calculé selon le volume du groupe
+              const isHeadwear = (item.product_id && item.product_id.includes('tuque')) || (item.product_name && item.product_name.toLowerCase().includes('tuque'));
+              const rate = isHeadwear ? headwearEmbroideryRate : clothingEmbroideryRate;
+              
+              itemMinPrice += rate.minPrice;
+              itemMaxPrice += rate.maxPrice;
+              optionPriceDisplay = ` (Broderie: ${rate.minPrice}$ - ${rate.maxPrice}$)`;
+            } else {
+              // C'est de l'impression (ou autre) : prix fixe
+              const price = pObj.spot_price || 0;
+              itemMinPrice += price;
+              itemMaxPrice += price;
+              // optionPriceDisplay = ` (+${price.toFixed(2)}$)`; // Optionnel d'afficher le détail ici
+            }
+
             let detailString = pObj.spot_label;
             if (pObj.image_url) {
-              detailString += ` <img src="${pObj.image_url}" alt="Design" class="cart-item-image-preview">`;
+               // Gérer l'affichage de l'image selon si c'est une URL ou un fichier local (rare ici mais bon)
+               const imgUrl = pObj.image_url.startsWith('http') ? pObj.image_url : '#'; 
+               if(imgUrl !== '#') detailString += ` <img src="${imgUrl}" alt="Design" class="cart-item-image-preview">`;
+               else detailString += ` (Design perso)`;
             }
-            return detailString;
+            return detailString + optionPriceDisplay;
           });
 
-          const subtotal = (item.quantity * (item.base_price + extraCost));
-          subTotalBeforeFixedFee += subtotal;
+          const subtotalMin = item.quantity * itemMinPrice;
+          const subtotalMax = item.quantity * itemMaxPrice;
+          
+          minSubTotalBeforeFixedFee += subtotalMin;
+          maxSubTotalBeforeFixedFee += subtotalMax;
           totalItemCount += item.quantity;
 
           let optionsDisplay = [];
@@ -247,68 +325,26 @@
           }
           const optionsText = optionsDisplay.length > 0 ? optionsDisplay.join('<br>') : 'Aucune';
 
-          row.innerHTML = `
-            <td data-label="Produit">${item.product_name || 'Produit inconnu'}</td>
-            <td data-label="Quantité">${item.quantity}</td>
-            <td data-label="Options">${optionsText}</td>
-            <td data-label="Sous-total">${subtotal.toFixed(2)} $</td>
-            <td data-label="Action"><span class="remove-btn" data-id="${item.id}">X</span></td>
-          `;
-          cartTable.appendChild(row);
-        });
-      } else {
-        cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-        if (cartItems.length === 0) {
-          cartTable.innerHTML = '<tr><td colspan="5">Ton panier est vide.</td></tr>';
-          grandTotal.textContent = '0.00';
-          fixedFeeAmountCartEl.textContent = '0.00';
-          fixedFeeMessageCartEl.textContent = '';
-          return;
-        }
-        cartItems.forEach((item, index) => {
-          let extraCost = 0;
-          const personalizationDetails = (item.personalizations || []).map(pObj => {
-            extraCost += pObj.spot_price || 0;
-            let detailString = pObj.spot_label;
-            if (pObj.image_url) {
-              // Pour LocalStorage, l'image ne s'affichera pas directement ici sans plus de logique,
-              // mais on peut indiquer qu'un design a été uploadé.
-              detailString += ` (Design perso: ${pObj.image_url.substring(pObj.image_url.lastIndexOf('/') + 1)})`;
-            }
-            return detailString;
-          });
+          // Formatage du sous-total (Fourchette ou Prix fixe)
+          let subtotalDisplay = '';
+          if (subtotalMin !== subtotalMax) {
+            subtotalDisplay = `${subtotalMin.toFixed(2)} $ – ${subtotalMax.toFixed(2)} $`;
+          } else {
+            subtotalDisplay = `${subtotalMin.toFixed(2)} $`;
+          }
 
-          const subtotal = (item.quantity * (item.base_price + extraCost));
-          subTotalBeforeFixedFee += subtotal;
-          totalItemCount += item.quantity;
-          const row = document.createElement('tr');
-
-          let optionsDisplay = [];
-          if (personalizationDetails.length > 0) {
-            optionsDisplay.push(personalizationDetails.join('<br>'));
-          }
-          // Ajouter Couleur, Taille, Sexe
-          if (item.selected_color_name) {
-            optionsDisplay.push(`Couleur: ${item.selected_color_name}`);
-          }
-          if (item.selected_size_name) {
-            optionsDisplay.push(`Taille: ${item.selected_size_name}`);
-          }
-          if (item.selected_gender_name) {
-            optionsDisplay.push(`Sexe: ${item.selected_gender_name}`);
-          }
-          const optionsText = optionsDisplay.length > 0 ? optionsDisplay.join('<br>') : 'Aucune';
+          // ID pour le bouton supprimer (Supabase ID ou Index LocalStorage)
+          const removeBtnAttr = user ? `data-id="${item.id}"` : `data-index="${index}"`;
 
           row.innerHTML = `
             <td data-label="Produit">${item.product_name || 'Produit inconnu'}</td>
             <td data-label="Quantité">${item.quantity}</td>
             <td data-label="Options">${optionsText}</td>
-            <td data-label="Sous-total">${subtotal.toFixed(2)} $</td>
-            <td data-label="Action"><span class="remove-btn" data-index="${index}">X</span></td>
+            <td data-label="Sous-total">${subtotalDisplay}</td>
+            <td data-label="Action"><span class="remove-btn" ${removeBtnAttr}>X</span></td>
           `;
           cartTable.appendChild(row);
         });
-      }
 
       // Calculer et afficher le rabais
       const totalDiscount = calculateSpecialOffers(cartItems);
@@ -339,7 +375,14 @@
       maquetteCheckbox.checked = localStorage.getItem('maquetteRequested') === 'true';
       const maquetteFee = maquetteCheckbox.checked ? 5 : 0;
 
-      grandTotal.textContent = (subTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee).toFixed(2);
+      const finalMin = minSubTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee;
+      const finalMax = maxSubTotalBeforeFixedFee - totalDiscount + fixedFee + maquetteFee;
+
+      if (finalMin !== finalMax) {
+        grandTotal.textContent = `${finalMin.toFixed(2)} $ – ${finalMax.toFixed(2)}`;
+      } else {
+        grandTotal.textContent = finalMin.toFixed(2);
+      }
     }
 
     document.addEventListener('click', async (e) => {
