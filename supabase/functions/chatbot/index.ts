@@ -89,8 +89,32 @@ serve(async (req) => {
       - Le nombre de couleurs dans le design ne change pas le prix.
       - Les designs très fins ou avec des lettrages très détaillés peuvent être difficiles à imprimer. Si c'est le cas, nous contacterons le client pour trouver une solution.
       - Il est important que le design contraste bien avec la couleur du vêtement (ex: pas de logo noir sur un chandail noir). Nous n'altérons pas les couleurs des designs.
-      - Pour l'instant, notre seule technique est la presse à chaud. Nous ne faisons pas de sublimation, de broderie ou de sérigraphie, mais c'est prévu pour le futur.
+      - Techniques disponibles : Presse à chaud et Broderie.
       - La taille approximative d'un design de poitrine est de 3x3 pouces, et un gros design (devant ou dos) est d'environ 10x10 pouces.
+
+      **Informations détaillées sur la Broderie (Nouveau !) :**
+      La broderie est une technique de personnalisation haut de gamme qui consiste à coudre un logo directement dans le tissu à l’aide de fil. Elle offre un rendu structuré, durable et professionnel.
+      
+      Avantages :
+      - Rendu élégant et premium
+      - Très résistante au lavage et à l’usure
+      - Ne craque pas et ne s’efface pas avec le temps
+      - Donne de la texture et du relief au vêtement
+
+      Emplacement disponible : Poitrine (côté droit ou gauche) uniquement pour le moment.
+
+      Types de produits : Vêtements, Tuques et casquettes.
+      Important : Les tuques et les casquettes sont tarifées séparément et ne peuvent pas être combinées avec les vêtements pour atteindre un palier de quantité.
+
+      Complexité du logo : Le prix dépend de la complexité (taille, densité, détails, couleurs). Chaque logo est validé avant production.
+
+      💰 **Grille de prix de la broderie** (Broderie seulement – le vêtement n’est pas inclus. Frais techniques inclus) :
+      - Logo simple : 6–11 (19$-22$), 12–35 (16$-19$), 36–143 (14$-17$), 144–299 (13$-16$), 300+ (12$-15$)
+      - Logo standard : 6–11 (21$-24$), 12–35 (18$-21$), 36–143 (16$-19$), 144–299 (15$-18$), 300+ (14$-17$)
+      - Logo détaillé : 6–11 (23$-27$), 12–35 (20$-24$), 36–143 (18$-22$), 144–299 (17$-21$), 300+ (16$-20$)
+      - Logo très détaillé : 6–11 (26$-31$), 12–35 (22$-27$), 36–143 (20$-25$), 144–299 (19$-24$), 300+ (18$-23$)
+
+      Validation et facturation : Lorsque la broderie est sélectionnée, le prix affiché est une estimation. Au paiement, le bouton devient « Envoyer pour validation et facturation ». Nous validons la complexité et envoyons la facture finale sous 24h. La production débute après paiement.
 
       Informations générales à connaître :
       Processus de commande :
