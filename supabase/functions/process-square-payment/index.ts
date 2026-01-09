@@ -21,7 +21,7 @@ serve(async (req) => {
 
   try {
     // 2. Extraire les données du corps de la requête
-    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays, shipmentId, shippingRateId, packedBoxes, referralSource } = await req.json();
+    const { sourceId, amount, currency, locationId, idempotencyKey, cartDetails, shippingDetails, userId, maquetteRequested, promoCodeDetails, specialOfferDiscount, shippingCost, shippingService, shippingDeliveryDays, shipmentId, shippingRateId, packedBoxes, referralSource, isQuoteRequest } = await req.json();
     console.log("Données reçues pour le paiement:", { sourceId, amount, currency, locationId, idempotencyKey, maquetteRequested });
 
     // Initialiser le client admin Supabase (nécessaire pour l'enrichissement des données et la sauvegarde)
@@ -64,7 +64,8 @@ serve(async (req) => {
 
     // **Validation Côté Serveur**
     // C'est une sécurité essentielle. Même si le client valide, il faut toujours vérifier côté serveur.
-    if (!sourceId || !amount || !currency || !locationId || !idempotencyKey || !shippingDetails || !shippingDetails.fullName || !shippingDetails.email) {
+    // NOUVEAU: On ne vérifie sourceId que si ce n'est PAS une demande de soumission
+    if ((!isQuoteRequest && !sourceId) || !amount || !currency || !locationId || !idempotencyKey || !shippingDetails || !shippingDetails.fullName || !shippingDetails.email) {
       console.error("Validation échouée: Données de paiement ou de livraison manquantes.", { sourceId, amount, currency, locationId, idempotencyKey, shippingDetails });
       return new Response(JSON.stringify({ success: false, message: "Données de la requête invalides ou manquantes." }), {
         status: 400, // Bad Request
@@ -114,46 +115,56 @@ serve(async (req) => {
     if (maquetteFee > 0) paymentNoteParts.push(`Frais maquette: ${maquetteFee.toFixed(2)}$`);
     if (discountApplied > 0.01) paymentNoteParts.push(`Rabais: -${discountApplied.toFixed(2)}$`);
 
-    // 5. Créer le paiement en appelant directement l'API Square avec fetch
-    console.log("Tentative de création de paiement avec l'API Square...");
-    const squareResponse = await fetch(squareApiUrl, {
-      method: 'POST',
-      headers: {
-        'Square-Version': '2024-05-15', // Version de l'API
-        'Authorization': `Bearer ${SQUARE_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        source_id: sourceId,
-        idempotency_key: idempotencyKey,
-        amount_money: {
-          amount: amount, // Le montant est déjà en centimes (number)
-          currency: currency
+    // 5. Traitement du paiement (ou saut si soumission)
+    let paymentId = null;
+
+    if (!isQuoteRequest) {
+      // --- SCÉNARIO A : PAIEMENT STANDARD VIA SQUARE ---
+      console.log("Tentative de création de paiement avec l'API Square...");
+      const squareResponse = await fetch(squareApiUrl, {
+        method: 'POST',
+        headers: {
+          'Square-Version': '2024-05-15', // Version de l'API
+          'Authorization': `Bearer ${SQUARE_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
         },
-        location_id: locationId,
-        note: paymentNoteParts.length > 0 ? paymentNoteParts.join(' | ') : undefined
-      })
-    });
+        body: JSON.stringify({
+          source_id: sourceId,
+          idempotency_key: idempotencyKey,
+          amount_money: {
+            amount: amount, // Le montant est déjà en centimes (number)
+            currency: currency
+          },
+          location_id: locationId,
+          note: paymentNoteParts.length > 0 ? paymentNoteParts.join(' | ') : undefined
+        })
+      });
 
-    const result = await squareResponse.json();
+      const result = await squareResponse.json();
+      console.log("Réponse de l'API Square (création paiement):", { status: squareResponse.status, body: result });
 
-    console.log("Réponse de l'API Square (création paiement):", { status: squareResponse.status, body: result });
-
-    // 6. Gérer la réponse de Square
-    if (squareResponse.ok && result.payment && (result.payment.status === 'COMPLETED' || result.payment.status === 'APPROVED')) {
-      const paymentId = result.payment.id;
-
-      if (!paymentId) {
-        console.error("ERREUR: ID de paiement manquant dans la réponse Square après un paiement réussi.");
-        return new Response(JSON.stringify({ success: false, message: "Erreur interne: ID de paiement manquant." }), {
-          status: 500,
+      if (squareResponse.ok && result.payment && (result.payment.status === 'COMPLETED' || result.payment.status === 'APPROVED')) {
+        paymentId = result.payment.id;
+        console.log("Paiement Square réussi:", paymentId);
+      } else {
+        // Gérer les erreurs Square
+        interface SquareApiError { category: string; code: string; detail: string; }
+        const errorMessage = result.errors?.map((e: SquareApiError) => `[${e.category}] ${e.code}: ${e.detail}`).join('; ')
+          || `Échec du paiement ou statut inattendu: ${result.payment?.status}`;
+        console.error("Échec du paiement Square:", result);
+        return new Response(JSON.stringify({ success: false, message: errorMessage, details: result.errors }), {
+          status: 400,
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
       }
+    } else {
+      // --- SCÉNARIO B : DEMANDE DE SOUMISSION (BRODERIE) ---
+      console.log("Mode Soumission : Paiement Square ignoré.");
+      paymentId = "QUOTE_REQUEST"; // ID fictif pour la base de données
+    }
 
-      // À partir d'ici, paymentId est garanti d'être une chaîne de caractères.
-      console.log("Paiement Square réussi:", paymentId);
-
+    // 6. Enregistrement de la commande (Commun aux deux scénarios)
+    if (paymentId) {
       // Enregistrer la commande dans la base de données Supabase
       let fixedFeeApplied = 0;
       const totalItemCount = (cartDetails || []).reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
@@ -200,6 +211,15 @@ serve(async (req) => {
         });
       }
 
+      // NOUVEAU: Si c'est une soumission, mettre à jour le statut immédiatement
+      if (isQuoteRequest) {
+        const { error: statusError } = await supabaseAdminClient
+          .from('orders')
+          .update({ status: 'en_attente_validation' }) // Assurez-vous que ce statut est valide dans votre DB
+          .eq('id', newOrderId);
+        if (statusError) console.error("Erreur lors de la mise à jour du statut pour la soumission:", statusError);
+      }
+
       // NOUVEAU: Mettre à jour la commande avec la source de référence
       if (referralSource) {
         const { error: referralError } = await supabaseAdminClient
@@ -241,8 +261,8 @@ serve(async (req) => {
       }
       
       // --- NOUVEAU: Acheter l'étiquette de livraison si applicable ---
-      let shippingLabelUrl: string | null = null;
-      if (shipmentId && shippingRateId) {
+      // On n'achète l'étiquette que si ce n'est PAS une demande de soumission
+      if (!isQuoteRequest && shipmentId && shippingRateId) {
         console.log(`Tentative d'achat de l'étiquette pour l'envoi ${shipmentId} avec le tarif ${shippingRateId}`);
         try {
           const buyLabelResponse = await fetch(`https://api.easypost.com/v2/shipments/${shipmentId}/buy`, {
@@ -258,7 +278,7 @@ serve(async (req) => {
 
           const buyLabelData = await buyLabelResponse.json();
           if (buyLabelResponse.ok && buyLabelData.postage_label?.label_pdf_url) {
-            shippingLabelUrl = buyLabelData.postage_label.label_pdf_url;
+            const shippingLabelUrl = buyLabelData.postage_label.label_pdf_url;
             console.log("Étiquette de livraison générée avec succès:", shippingLabelUrl);
 
             // Mettre à jour la commande avec l'URL de l'étiquette
@@ -279,9 +299,13 @@ serve(async (req) => {
 
       // Envoyer les emails de confirmation
       if (shippingDetails && shippingDetails.email && cartDetails) {
-        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0, { cost: shippingCost, service: shippingService, days: shippingDeliveryDays, boxes: packedBoxes });
-        await sendReceiptEmail(shippingDetails.email, `Confirmation de ta commande Impressed MTL #${newOrderNumber}`, emailHtmlBody);
-        await sendReceiptEmail("impressed.mtl@gmail.com", `Nouvelle commande #${newOrderNumber} - Impressed MTL`, emailHtmlBody);
+        const emailHtmlBody = formatOrderDetailsForEmail(cartDetails, shippingDetails, newOrderNumber, amount, maquetteRequested, fixedFeeApplied, promoCodeDetails || null, specialOfferDiscount || 0, { cost: shippingCost, service: shippingService, days: shippingDeliveryDays, boxes: packedBoxes }, isQuoteRequest);
+        
+        const subjectClient = isQuoteRequest ? `Réception de ta demande de soumission #${newOrderNumber}` : `Confirmation de ta commande Impressed MTL #${newOrderNumber}`;
+        const subjectAdmin = isQuoteRequest ? `Nouvelle demande de soumission #${newOrderNumber} - Impressed MTL` : `Nouvelle commande #${newOrderNumber} - Impressed MTL`;
+
+        await sendReceiptEmail(shippingDetails.email, subjectClient, emailHtmlBody);
+        await sendReceiptEmail("impressed.mtl@gmail.com", subjectAdmin, emailHtmlBody);
       }
 
       // Renvoyer la réponse finale avec le bon numéro de commande
@@ -290,18 +314,10 @@ serve(async (req) => {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     } else {
-      // Gérer les autres statuts de paiement ou les erreurs renvoyées par Square
-      // CORRECTION: Définir un type pour les erreurs de l'API Square pour éviter 'any'
-      interface SquareApiError {
-        category: string;
-        code: string;
-        detail: string;
-      }
-      const errorMessage = result.errors?.map((e: SquareApiError) => `[${e.category}] ${e.code}: ${e.detail}`).join('; ')
-        || `Échec du paiement ou statut inattendu: ${result.payment?.status}`;
-      console.error("Échec du paiement Square ou statut inattendu:", result);
-      return new Response(JSON.stringify({ success: false, message: errorMessage, details: result.errors || { status: result.payment?.status } }), {
-        status: 400, // Bad Request, car le paiement n'a pas pu être traité comme attendu
+      // Cas de repli si paymentId est null (ne devrait pas arriver logiquement, mais nécessaire pour TS)
+      console.error("Erreur logique: paymentId est null à la fin du traitement.");
+      return new Response(JSON.stringify({ success: false, message: "Erreur interne: Paiement non initialisé." }), {
+        status: 500,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     }
@@ -373,7 +389,7 @@ interface ShippingDetailsForEmail {
 }
 
 // Fonction pour formater le reçu en HTML
-function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteRequested: boolean, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number, shippingDetails: ShippingDetailsForEmail): string {
+function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: ShippingInfo, orderNumber: number, totalAmountInCents: number, maquetteRequested: boolean, fixedFee: number, promoCode: PromoCode | null, specialOfferDiscount: number, shippingDetails: ShippingDetailsForEmail, isQuoteRequest: boolean = false): string {
   const itemsHtml = (cartItems || []).map(item => {
     const itemPersonalizationsHtml = (item.personalizations || []).map(p => {
       let detail = `<li><strong>${p.spot_label}</strong> (+${p.spot_price.toFixed(2)}$)<br>`;
@@ -454,11 +470,16 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
     ${deliveryMessage}${packedBoxesHtml}
   `;
 
+  // Textes dynamiques selon le type (Commande vs Soumission)
+  const titleText = isQuoteRequest ? `Nous avons bien reçu ta demande, ${shippingInfo.fullName} !` : `Merci pour ta commande, ${shippingInfo.fullName} !`;
+  const introText = isQuoteRequest ? `Voici le récapitulatif de ta demande de soumission <strong>#${orderNumber}</strong>. Nous allons valider les détails techniques (broderie) et t'envoyer la facture finale sous peu.` : `Voici le récapitulatif de ta commande <strong>#${orderNumber}</strong> :`;
+  const totalLabel = isQuoteRequest ? `Total estimé:` : `Total payé:`;
+
   return `
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <h2>Merci pour ta commande, ${shippingInfo.fullName} !</h2>
-        <p>Voici le récapitulatif de ta commande <strong>#${orderNumber}</strong> :</p>
+        <h2>${titleText}</h2>
+        <p>${introText}</p>
         <h3>Articles:</h3>
         ${itemsHtml}
         <p>Sous-total: ${subTotal.toFixed(2)}$</p>
@@ -467,7 +488,7 @@ function formatOrderDetailsForEmail(cartItems: CartItem[], shippingInfo: Shippin
         <p>Maquette demandée: <strong>${maquetteRequested ? 'Oui' : 'Non'}</strong> (+${maquetteFee.toFixed(2)}$)</p>
         ${shippingHtml}
         ${promoCodeHtml}
-        <h3>Total payé: ${totalAmount}$ (Taxes incluses)</h3>
+        <h3>${totalLabel} ${totalAmount}$ (Taxes incluses)</h3>
         <h3>Adresse de livraison:</h3>
         <p>
           ${shippingInfo.fullName}<br>
